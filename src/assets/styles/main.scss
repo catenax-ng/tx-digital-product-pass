@@ -2,9 +2,16 @@
 @import "config/variables";
 
 /** Components style import **/
+
 @import "components/general/footer";
 @import "components/general/header";
 @import "components/general/search";
-@import "components/passport/documents";
 @import "components/passport/documentField";
 @import "components/landing/dashboardTable";
+@import "components/landing/dashboardTable";
+@import "components/passport/sections/documents";
+@import "components/passport/sections/batteryComposition";
+@import "components/passport/sections/contractInformation";
+@import "components/passport/sections/electrochemicalProperties";
+@import "components/passport/sections/generalInformation";
+@import "components/passport/sections/stateOfBattery";
