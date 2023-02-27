@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   consumer-backend:
   - apiVersion: v2
+    appVersion: 0.4.3
+    created: "2023-02-27T08:13:29.194298474Z"
+    description: Consumer Backend Helm Deployment for the Product Passport Application
+    digest: 5b8cf6e464140c52ba78bbb2234744eb1fb4907166c375755974f6c282b37394
+    name: consumer-backend
+    type: application
+    urls:
+    - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/consumer-backend-0.2.2/consumer-backend-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     appVersion: v0.4.2
     created: "2023-02-17T11:19:29.319117258Z"
     description: Consumer Backend Helm Deployment for the Product Passport Application
@@ -23,6 +33,16 @@ entries:
     version: 0.2.0
   consumer-ui:
   - apiVersion: v2
+    appVersion: 0.4.3
+    created: "2023-02-27T08:13:29.437790063Z"
+    description: Consumer Frontend Helm Deployment for the Product Passport Application
+    digest: 17451019fc0299b53e22a05167d2e990d7ab1d51f643996a81ceccb9cf043e3b
+    name: consumer-ui
+    type: application
+    urls:
+    - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/consumer-ui-0.2.2/consumer-ui-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     appVersion: v0.4.2
     created: "2023-02-17T11:19:29.556069815Z"
     description: Consumer Frontend Helm Deployment for the Product Passport Application
@@ -42,4 +62,4 @@ entries:
     urls:
     - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/consumer-ui-0.2.0/consumer-ui-0.2.0.tgz
     version: 0.2.0
-generated: "2023-02-17T11:19:29.556082015Z"
+generated: "2023-02-27T08:13:29.437810463Z"
