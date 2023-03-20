@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-for-template-key -->
 <!--
  Copyright 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
  
@@ -14,44 +15,26 @@
  limitations under the License.
 -->
 
-<template v-if="propsData">
+<template>
   <div class="section">
     <!-- Composition of Electrolyte -->
-    <AttributeField
-      :attributes-list="propsData.electrolyteComposition"
-      label="Composition of electrolyte"
-      data-cy="electrolyte-composition"
-    />
-    <!-- Composition of Anode -->
-    <AttributeField
-      :attributes-list="propsData.anodeActiveMaterials"
-      label="Composition of Anode"
-    />
-    <!-- Composition of Anode other -->
-    <AttributeField
-      :attributes-list="propsData.anodeCompositionOther"
-      label="Composition of other Anode materials"
-    />
-    <!-- Composition of Cathode -->
-    <AttributeField
-      :attributes-list="propsData.cathodeActiveMaterials"
-      label="Composition of Cathode"
-    />
-    <!-- Composition of Cathode other -->
-    <AttributeField
-      :attributes-list="propsData.cathodeCompositionOther"
-      label="Composition of other Cathode materials"
-    />
-    <!-- Recyclate content active materials -->
-    <AttributeField
-      :attributes-list="propsData.recyclateContentActiveMaterials"
-      label="Recyclate content active materials"
-    />
+    <template v-for="(item, key) in propsData" :key="key">
+      <AttributeField
+        :attributes-list="item"
+        :label="attributes[key].label"
+        :data-cy="
+          Object.prototype.hasOwnProperty.call(attributes[key], 'dataCy')
+            ? attributes[key]['dataCy']
+            : ''
+        "
+      />
+    </template>
   </div>
 </template>
 
 <script>
 import AttributeField from "../AttributeField.vue";
+import passportUtil from "@/utils/passportUtil.js";
 
 export default {
   name: "CellChemistry",
@@ -66,6 +49,7 @@ export default {
   },
   data() {
     return {
+      attributes: passportUtil.getAttribute("cellChemistry"),
       toggle: false,
       propsData: this.$props.data.data.passport.cellChemistry,
     };

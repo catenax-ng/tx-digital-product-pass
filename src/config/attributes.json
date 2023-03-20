@@ -1,0 +1,114 @@
+{
+    "electrochemicalProperties": {
+        "ratedCapacity": {
+            "label": "Rated capacity",
+            "data-cy": "remaining-capacity",
+            "unit": "W"
+        },
+        "batteryEnergy": {
+            "energyRoundtripEfficiencyChange": {
+                "label": "Energy roundtrip efficiency change",
+                "unit": "%"
+            },
+            "maximumAllowedBatteryEnergy": {
+                "label": "Maximum allowed battery energy",
+                "unit": "%"
+            },
+            "energyRoundtripEfficiency": {
+                "label": "Energy roundtrip efficiency",
+                "unit": "%"
+            }
+        },
+        "ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy": {
+            "label": "Ratio maximum allowed battery power and maximum allowed battery energy",
+            "unit": "%"
+        },
+        "batteryVoltage": {
+            "nominalVoltage": {
+                "label": "Nominal voltage",
+                "unit": "%"
+            },
+            "maxVoltage": {
+                "label": "Max voltage",
+                "unit": "%"
+            },
+            "minVoltage": {
+                "label": "Min voltage",
+                "unit": "%"
+            }
+        },
+        "internalResistance": {
+            "cellInternalResistance": {
+                "label": "Cell internal resistance",
+                "unit": "%"
+            },
+            "packInternalResistanceIncrease": {
+                "label": "Pack internal resistance increase",
+                "unit": "%"
+            },
+            "packInternalResistance": {
+                "label": "Pack internal resistance",
+                "unit": "%"
+            }
+        },
+        "capacityThresholdExhaustion": {
+            "label": "Capacity threshold exhaustion",
+            "unit": "%"
+        },
+        "batteryPower": {
+            "originalPowerCapability": {
+                "label": "Original power capability",
+                "unit": "%"
+            },
+            "powerFade": {
+                "label": "Power fade",
+                "unit": "%"
+            },
+            "originalPowerCapabilityLimits": {
+                "label": "Original power capability limits",
+                "unit": "%"
+            },
+            "maximumAllowedBatteryPower": {
+                "label": "Maximum allowed battery power",
+                "unit": "%"
+            },
+            "powerCapabilityAt20Charge": {
+                "label": "Power capability at 20 charge",
+                "unit": "%"
+            },
+            "originalPower": {
+                "label": "Original power",
+                "unit": "%"
+            },
+            "powerCapabilityAt80Charge": {
+                "label": "Power capability at 80 charge",
+                "unit": "%"
+            }
+        },
+        "capacityFade": {
+            "label": "Capacity fade",
+            "unit": "%"
+        }
+    },
+    "cellChemistry": {
+        "electrolyteComposition": {
+            "label": "Composition of electrolyte",
+            "dataCy": "electrolyte-composition"
+        },
+        "anodeActiveMaterials": {
+            "label": "Composition of Anode"
+        },
+        "anodeCompositionOther": {
+            "label": "Composition of other Anode materials"
+        },
+        "cathodeActiveMaterials": {
+            "label": "Composition of Cathode"
+        },
+        "cathodeCompositionOther": {
+            "label": "Composition of other Cathode materials"
+        },
+        "recyclateContentActiveMaterials": {
+            "label": "Recyclate content active materials"
+        }
+    }
+}

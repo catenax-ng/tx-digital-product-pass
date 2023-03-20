@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<template v-if="propsData">
+<template>
   <div class="section">
     <div class="sub-section-container">
       <Field

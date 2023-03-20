@@ -14,9 +14,10 @@
  limitations under the License.
 -->
 
-<template v-if="propsData">
+<template >
   <div class="section">
     <div class="sub-section-container">
+      
       <DocumentField :field="propsData.responsibleSourcing" />
       <DocumentField :field="propsData.packagingInstructions" />
       <DocumentField :field="propsData.transportationInstructions" />

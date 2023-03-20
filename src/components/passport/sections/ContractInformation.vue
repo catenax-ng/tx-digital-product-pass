@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<template v-if="propsDate">
+<template>
   <div class="section">
     <div class="sub-section-container">
       <Field label="Contract ID" :value="propsData.negotiation.id" />

@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<template v-if="propsData">
+<template>
   <div class="section">
     <!-- Composition of battery -->
     <AttributeField
@@ -114,8 +114,9 @@ export default {
   data() {
     return {
       toggle: false,
-      propsData: this.$props.data.data.passport.composition,
+      propsData: this.$props.data.data.passport.composition
     };
-  },
+  }
+  
 };
 </script>

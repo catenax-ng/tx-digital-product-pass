@@ -15,7 +15,7 @@
 -->
 
 
-<template v-if="propsData">
+<template >
   <div class="section">
     <div v-if="propsData.batteryIdentification" class="sub-section-container">
       <Field
@@ -88,7 +88,7 @@
       />
       <Field
         label="Status of the battery"
-        :value="propsData.stateOfBattery.statusBattery"
+        :value="propsData.stateOfBattery?propsData.stateOfBattery.statusBattery:null"
       />
       <Field
         label="CO2 Footprint Total"
