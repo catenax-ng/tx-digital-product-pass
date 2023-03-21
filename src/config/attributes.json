@@ -76,10 +76,6 @@
                 "label": "Power capability at 20 charge",
                 "unit": "%"
             },
-            "originalPower": {
-                "label": "Original power",
-                "unit": "%"
-            },
             "powerCapabilityAt80Charge": {
                 "label": "Power capability at 80 charge",
                 "unit": "%"
@@ -89,6 +85,9 @@
             "label": "Capacity fade",
             "unit": "%"
         }
+    },
+    "datePlacedOnMarket": {
+      "label": "Date of placing on the market"
     },
     "cellChemistry": {
         "electrolyteComposition": {
@@ -110,5 +109,139 @@
         "recyclateContentActiveMaterials": {
             "label": "Recyclate content active materials"
         }
+    },
+    "physicalDimensions": {
+      "label": "Dimensions of the battery",
+      "unit": "mm",
+      "weight": {
+        "label": "Weight of the battery",
+        "unit": "kg"
+        }
+      },
+      "temperatureRangeIdleState": {
+        "temperatureRangeIdleStateUpperLimit": {
+          "label": "Temperature range idle state upper limit"
+        },
+        "temperatureRangeIdleStateLowerLimit": {
+          "label": "Temperature range idle state lower limit"
+        }
+      },
+      "batteryCycleLife": {
+        "cycleLifeTestCRate": {
+          "label": "Cycle life test c rate"
+        },
+        "cycleLifeTestDepthOfDischarge": {
+          "label": "Cycle life test depth of discharge"
+        },
+        "expectedLifetime": {
+          "label": "Expected lifetime"
+        }
+      },
+      "manufacturer" : {
+        "contact": {
+          "faxNumber": {
+            "label": "Fax"
+          },
+          "website": {
+            "label": "www"
+          },
+          "phoneNumber": {
+            "label": "Tel"
+          },
+          "email": {
+            "label": "Email"
+          }
+        },
+        "address" : {
+          "label": "address"
+          }
+      },
+    "warrantyPeriod": {
+      "label": "Period for which the Commercial Warranty for the calendar life applies"
+    },
+    "composition": {
+      "compositionOfBattery": {
+        "label": "Composition of battery"
+      },
+      "criticalRawMaterials": {
+        "label": "Critical raw materials"
+      },
+      "components": {
+        "componentsPartNumber": {
+          "label": "Components part number"
+        },
+        "componentsSupplier": {
+          "address": {
+            "label": "Address"
+            },
+          "contact": {
+            "label": "Contact",
+            "faxNumber": {
+              "label": "Fax"
+            },
+            "website": {
+              "label": "www"
+            },
+            "phoneNumber": {
+              "label": "Tel"
+            },
+            "email": {
+              "label": "Email"
+            }
+          }
+        }
+      }
+    },
+    "manufacturing": {
+      "dateOfManufacturing": {
+        "label": "Date of Manufacture"
+      },
+      "address": {
+        "label": "Address",
+        "locality": {
+          "value": {
+            "label": "Place of Manufacturing"
+          }
+        }
+      }
+    },
+    "batteryIdentification": {
+      "batteryIDDMCCode": {
+        "label": "Battery ID",
+        "data-cy": "battery-id"
+      },
+      "batteryType":{
+        "label": "Battery Type"
+      },
+      "batteryModel": {
+        "label": "Battery Model"
+      }
+    },
+    "stateOfBattery": {
+      "stateOfHealth": {
+        "label": "State of health",
+        "data-cy": "state-of-charge"
+      },
+      "statusBattery": {
+        "label": "Status battery"
+      },
+      "stateOfCharge": {
+        "label": "State of charge"
+      }
+    },
+    "cO2FootprintTotal": {
+      "label": "CO2 Footprint Total",
+      "unit": "kg"
+    },
+    "contractInformation": {
+      "negotiationId": {
+        "label": "Contract ID"
+      },
+      "contractId": {
+        "label": "Contract Agreement ID"
+      },
+      "transferRequestId": {
+        "label": "Transfer Process ID"
+      }
     }
 }
