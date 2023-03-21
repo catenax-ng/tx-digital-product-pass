@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-for-template-key -->
 <!--
  Copyright 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
  
@@ -17,15 +18,9 @@
 <template >
   <div class="section">
     <div class="sub-section-container">
-      
-      <DocumentField :field="propsData.responsibleSourcing" />
-      <DocumentField :field="propsData.packagingInstructions" />
-      <DocumentField :field="propsData.transportationInstructions" />
-      <DocumentField :field="propsData.vehicleDismantlingProcedure" />
-      <DocumentField :field="propsData.testReportsResults" />
-      <DocumentField :field="propsData.batteryDismantlingProcedure" />
-      <DocumentField :field="propsData.safetyMeasures" />
-      <DocumentField :field="propsData.declarationOfConformity" />
+      <template v-for="(item, key) in propsData" :key="key">
+        <DocumentField :field="item" />
+      </template>
     </div>
   </div>
 </template>

@@ -93,7 +93,7 @@
     "cellChemistry": {
         "electrolyteComposition": {
             "label": "Composition of electrolyte",
-            "dataCy": "electrolyte-composition"
+            "data-cy": "electrolyte-composition"
         },
         "anodeActiveMaterials": {
             "label": "Composition of Anode"

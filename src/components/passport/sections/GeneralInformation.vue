@@ -101,6 +101,7 @@
 
 <script>
 import Field from "../Field.vue";
+import passportUtil from "@/utils/passportUtil.js";
 
 export default {
   name: "GeneralInformation",
@@ -121,6 +122,7 @@ export default {
 
   data() {
     return {
+      attributes: passportUtil.getAttribute("cellChemistry"),
       toggle: false,
       propsData: this.$props.data.data.passport,
     };

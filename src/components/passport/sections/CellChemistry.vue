@@ -23,8 +23,8 @@
         :attributes-list="item"
         :label="attributes[key].label"
         :data-cy="
-          Object.prototype.hasOwnProperty.call(attributes[key], 'dataCy')
-            ? attributes[key]['dataCy']
+          Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy')
+            ? attributes[key]['data-cy']
             : ''
         "
       />
