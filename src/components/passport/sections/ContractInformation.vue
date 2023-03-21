@@ -17,13 +17,13 @@
 <template>
   <div class="section">
     <div class="sub-section-container">
-      <Field label="Contract ID" :value="propsData.negotiation.id" />
+      <Field :label="attributes['negotiationId'].label" :value="propsData.negotiation.id" />
       <Field
-        label="Contract Agreement ID"
+        :label="attributes['contractId'].label"
         :value="propsData.transferRequest.contractId"
       />
       <Field
-        label="Transfer Process ID"
+        :label="attributes['transferRequestId'].label"
         :value="propsData.transferRequest.id"
       />
     </div>
@@ -32,6 +32,8 @@
 
 <script>
 import Field from "../Field.vue";
+import passportUtil from "@/utils/passportUtil.js";
+
 export default {
   name: "ContractInformation",
   components: {
@@ -50,6 +52,7 @@ export default {
   },
   data() {
     return {
+      attributes: passportUtil.getAttribute("contractInformation"),
       toggle: false,
       propsData: this.$props.data.data.metadata,
     };
