@@ -19,80 +19,79 @@
   <div class="section">
     <div v-if="propsData.batteryIdentification" class="sub-section-container">
       <Field
-        data-cy="battery-id"
-        label="Battery ID"
+        :data-cy="batteryIdentification['batteryIDDMCCode'].data-cy"
+        :label="batteryIdentification['batteryIDDMCCode'].label"
         :value="propsData.batteryIdentification.batteryIDDMCCode"
       />
       <Field
-        label="Battery Type"
+        :label="batteryIdentification['batteryType'].label"
         :value="propsData.batteryIdentification.batteryType"
       />
       <Field
-        label="Battery Model"
+        :label="batteryIdentification['batteryModel'].label"
         :value="propsData.batteryIdentification.batteryModel"
       />
     </div>
     <div v-if="propsData.manufacturer" class="sub-section-container">
       <Field
         class="full-width"
-        label="Manufacturer Information"
+        :label="manufacturer['manufacturerInformation'].label"
         :value="propsData.manufacturer.name"
       />
       <Field
         class="longer"
-        label="Address"
+        :label="manufacturer['address'].label"
         :city="propsData.manufacturer.address.locality.value"
         :country="propsData.manufacturer.address.country.shortName"
         :postal="propsData.manufacturer.address.postCode.value"
         :value="propsData.manufacturer.name"
       />
       <Field
-        label="Contact phone number"
+        :label="manufacturer['phoneNumber'].label"
         :value="propsData.manufacturer.contact.phoneNumber"
       />
-      <Field label="Email" :value="propsData.manufacturer.contact.email" />
+      <Field :label="manufacturer['email'].label" :value="propsData.manufacturer.contact.email" />
     </div>
     <div v-if="propsData.physicalDimensions" class="sub-section-container">
       <Field
-        label="Dimensions of the battery"
+        :label="physicalDimensions['title'].label"
         :height="propsData.physicalDimensions.height"
         :length="propsData.physicalDimensions.length"
-        unit="mm"
+        :unit="physicalDimensions['title'].unit"
         :width="propsData.physicalDimensions.width"
       />
 
       <Field
-        label="Weight of the battery"
-        unit="kg"
+        :label="physicalDimensions['weight'].label"
+        :unit="physicalDimensions['weight'].unit"
         :value="propsData.physicalDimensions.weight"
       />
 
       <Field
-        label="Date of Manufacture"
+        :label="manufacturing['dateOfManufacturing'].label"
         :day="propsData.manufacturing.dateOfManufacturing"
       />
       <Field
-        label="Place of Manufacturing"
+        :label="manufacturing['placeOfManufacturing'].label"
         :value="propsData.manufacturing.address.locality.value"
       />
       <Field
         class="two-third-width"
-        label="Date of placing on the market"
+        :label="datePlacedOnMarket['title'].label"
         :day="propsData.datePlacedOnMarket"
       />
       <Field
         class="longer"
-        label="Period for which the Commercial Warranty for the calendar life
-          applies"
+        :label="warrantyPeriod['title'].label"
         :value="propsData.warrantyPeriod"
       />
       <Field
-        label="Status of the battery"
-        :value="propsData.stateOfBattery?propsData.stateOfBattery.statusBattery:null"
+        :label="stateOfBattery['statusBattery'].label"
+        :value="propsData.stateOfBattery ? propsData.stateOfBattery.statusBattery : null"
       />
       <Field
-        label="CO2 Footprint Total"
-        unit="kg"
+        :label="cO2FootprintTotal['cO2FootprintTotal'].label"
+        :unit="cO2FootprintTotal['cO2FootprintTotal'].unit"
         :value="propsData.cO2FootprintTotal"
       />
     </div>
@@ -122,7 +121,15 @@ export default {
 
   data() {
     return {
-      attributes: passportUtil.getAttribute("cellChemistry"),
+      batteryIdentification: passportUtil.getAttribute("batteryIdentification"),
+      physicalDimensions: passportUtil.getAttribute("physicalDimensions"),
+      manufacturer: passportUtil.getAttribute("manufacturer"),
+      manufacturing: passportUtil.getAttribute("manufacturing"),
+      datePlacedOnMarket: passportUtil.getAttribute("datePlacedOnMarket"),
+      warrantyPeriod: passportUtil.getAttribute("warrantyPeriod"),
+      cO2FootprintTotal: passportUtil.getAttribute("cO2FootprintTotal"),
+      stateOfBattery: passportUtil.getAttribute("stateOfBattery"),
+
       toggle: false,
       propsData: this.$props.data.data.passport,
     };

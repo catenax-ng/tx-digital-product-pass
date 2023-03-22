@@ -87,7 +87,9 @@
         }
     },
     "datePlacedOnMarket": {
-      "label": "Date of placing on the market"
+      "title" : {
+        "label": "Date of placing on the market"
+      }
     },
     "cellChemistry": {
         "electrolyteComposition": {
@@ -111,8 +113,10 @@
         }
     },
     "physicalDimensions": {
-      "label": "Dimensions of the battery",
-      "unit": "mm",
+      "title": {
+        "label": "Dimensions of the battery",
+        "unit": "mm"
+      },
       "weight": {
         "label": "Weight of the battery",
         "unit": "kg"
@@ -138,26 +142,23 @@
         }
       },
       "manufacturer" : {
-        "contact": {
-          "faxNumber": {
-            "label": "Fax"
-          },
-          "website": {
-            "label": "www"
-          },
-          "phoneNumber": {
-            "label": "Tel"
-          },
-          "email": {
+        "manufacturerInformation": { 
+          "label": "Manufacturer Information"
+        },
+        "phoneNumber": {
+            "label": "Contact phone number"
+        },
+        "email": {
             "label": "Email"
-          }
         },
         "address" : {
-          "label": "address"
-          }
+          "label": "Address"
+        }
       },
     "warrantyPeriod": {
-      "label": "Period for which the Commercial Warranty for the calendar life applies"
+      "title" :{
+        "label": "Period for which the Commercial Warranty for the calendar life applies"
+      }
     },
     "composition": {
       "compositionOfBattery": {
@@ -167,6 +168,9 @@
         "label": "Critical raw materials"
       },
       "components": {
+        "title": {
+          "label": "Components"
+        },
         "componentsPartNumber": {
           "label": "Components part number"
         },
@@ -175,19 +179,19 @@
             "label": "Address"
             },
           "contact": {
-            "label": "Contact",
-            "faxNumber": {
+            "label": "Contact"
+          },
+          "faxNumber": {
               "label": "Fax"
-            },
-            "website": {
+          },
+          "website": {
               "label": "www"
-            },
-            "phoneNumber": {
+          },
+          "phoneNumber": {
               "label": "Tel"
-            },
-            "email": {
+          },
+          "email": {
               "label": "Email"
-            }
           }
         }
       }
@@ -196,13 +200,8 @@
       "dateOfManufacturing": {
         "label": "Date of Manufacture"
       },
-      "address": {
-        "label": "Address",
-        "locality": {
-          "value": {
-            "label": "Place of Manufacturing"
-          }
-        }
+      "placeOfManufacturing": {
+        "label": "Place of Manufacturing"
       }
     },
     "batteryIdentification": {
@@ -219,19 +218,21 @@
     },
     "stateOfBattery": {
       "stateOfHealth": {
-        "label": "State of health",
-        "data-cy": "state-of-charge"
+        "label": "State of health"
       },
       "statusBattery": {
-        "label": "Status battery"
+        "label": "Battery status"
       },
       "stateOfCharge": {
-        "label": "State of charge"
+        "label": "State of charge",
+        "data-cy": "state-of-charge"
       }
     },
     "cO2FootprintTotal": {
-      "label": "CO2 Footprint Total",
-      "unit": "kg"
+      "cO2FootprintTotal": {
+        "label": "CO2 Footprint Total",
+        "unit": "kg"
+      }
     },
     "contractInformation": {
       "negotiationId": {

@@ -19,12 +19,12 @@
     <!-- Composition of battery -->
     <AttributeField
       :attributes-list="propsData.compositionOfBattery"
-      label="Composition of battery"
+      :label="composition['compositionOfBattery'].label"
     />
     <!-- Critical raw materials -->
     <div class="sub-section-container">
       <div class="sub-title-container">
-        <span class="sub-title">Critical raw materials</span>
+        <span class="sub-title">{{composition['criticalRawMaterials'].label}}</span>
       </div>
       <div v-if="propsData.criticalRawMaterials" class="list-container">
         <ul>
@@ -40,11 +40,11 @@
     <!-- Components -->
     <div class="sub-section-container">
       <div class="sub-title-container">
-        <span class="sub-title">Components</span>
+        <span class="sub-title">{{components['title'].label}}</span>
       </div>
       <div v-if="propsData.components" class="list-container">
         <ul>
-          <span class="list-label">Components part number</span>
+          <span class="list-label">{{components['componentsPartNumber'].label}}</span>
           <li>
             <span>
               {{ propsData.components.componentsPartNumber }}
@@ -57,7 +57,7 @@
         class="list-container"
       >
         <ul>
-          <span class="list-label">Address</span>
+          <span class="list-label">{{componentsSupplier['address'].label}}</span>
           <li
             v-for="supplierDetails in propsData.components.componentsSupplier"
             :key="supplierDetails"
@@ -74,16 +74,16 @@
           </li>
         </ul>
         <ul>
-          <span class="list-label">Contact</span>
+          <span class="list-label">{{componentsSupplier['contact'].label}}</span>
           <li
             v-for="supplierDetails in propsData.components.componentsSupplier"
             :key="supplierDetails"
           >
-            <p>fax: {{ supplierDetails.contact.faxNumber }}</p>
-            <p>www: {{ supplierDetails.contact.website }}</p>
-            <p>tel: {{ supplierDetails.contact.phoneNumber }}</p>
+            <p>{{componentsSupplier['faxNumber'].label}}: {{ supplierDetails.contact.faxNumber }}</p>
+            <p>{{componentsSupplier['website'].label}}: {{ supplierDetails.contact.website }}</p>
+            <p>{{componentsSupplier['phoneNumber'].label}}: {{ supplierDetails.contact.phoneNumber }}</p>
             <p>
-              email:
+              {{componentsSupplier['email'].label}}:
               {{ supplierDetails.contact.email }}
             </p>
           </li>
@@ -95,6 +95,7 @@
 
 <script>
 import AttributeField from "../AttributeField.vue";
+import passportUtil from "@/utils/passportUtil.js";
 
 export default {
   name: "BatteryComposition",
@@ -113,6 +114,9 @@ export default {
   },
   data() {
     return {
+      composition: passportUtil.getAttribute("composition"),
+      components: passportUtil.getAttribute("composition.components"),
+      componentsSupplier: passportUtil.getAttribute("composition.components.componentsSupplier"),
       toggle: false,
       propsData: this.$props.data.data.passport.composition
     };

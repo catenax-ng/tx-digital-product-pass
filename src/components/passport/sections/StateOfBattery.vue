@@ -18,39 +18,39 @@
   <div class="section">
     <div class="sub-section-container">
       <Field
-        data-cy="state-of-charge"
-        label="State of health"
+        :label="stateofBattery['stateOfHealth'].label"
         :value="propsData.stateOfBattery.stateOfHealth"
       />
       <Field
-        label="Status battery"
+        :label="stateofBattery['statusBattery'].label"
         :value="propsData.stateOfBattery.statusBattery"
       />
       <Field
-        label="State of charge"
+        :data-cy="stateofBattery['stateOfCharge'].data-cy"
+        :label="stateofBattery['stateOfCharge'].label"
         :value="propsData.stateOfBattery.stateOfCharge"
       />
       <Field
-        label="Cycle life test c rate"
+        :label="batteryCycleLife['cycleLifeTestCRate'].label"
         :value="propsData.batteryCycleLife.cycleLifeTestCRate"
       />
       <Field
-        label="Cycle life test depth of discharge"
+        :label="batteryCycleLife['cycleLifeTestDepthOfDischarge'].label"
         :value="propsData.batteryCycleLife.cycleLifeTestDepthOfDischarge"
       />
       <Field
-        label="Expected lifetime"
+        :label="batteryCycleLife['expectedLifetime'].label"
         :value="propsData.batteryCycleLife.expectedLifetime"
       />
       <Field
-        label="Temperature range idle state upper limit"
+        :label="temperatureRangeIdleState['temperatureRangeIdleStateUpperLimit'].label"
         :value="
           propsData.temperatureRangeIdleState
             .temperatureRangeIdleStateUpperLimit
         "
       />
       <Field
-        label="Temperature range idle state lower limit"
+        :label="temperatureRangeIdleState['temperatureRangeIdleStateLowerLimit'].label"
         :value="
           propsData.temperatureRangeIdleState
             .temperatureRangeIdleStateLowerLimit
@@ -62,6 +62,7 @@
 
 <script>
 import Field from "../Field.vue";
+import passportUtil from "@/utils/passportUtil.js";
 
 export default {
   name: "StateOfBattery",
@@ -82,6 +83,9 @@ export default {
 
   data() {
     return {
+      stateofBattery: passportUtil.getAttribute("stateOfBattery"),
+      batteryCycleLife: passportUtil.getAttribute("batteryCycleLife"),
+      temperatureRangeIdleState: passportUtil.getAttribute("temperatureRangeIdleState"),
       toggle: false,
       propsData: this.$props.data.data.passport,
     };
