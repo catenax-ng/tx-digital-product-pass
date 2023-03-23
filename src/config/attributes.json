@@ -20,8 +20,10 @@
             }
         },
         "ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy": {
+          "title": {
             "label": "Ratio maximum allowed battery power and maximum allowed battery energy",
             "unit": "%"
+          }
         },
         "batteryVoltage": {
             "nominalVoltage": {
@@ -52,8 +54,10 @@
             }
         },
         "capacityThresholdExhaustion": {
+          "title": {
             "label": "Capacity threshold exhaustion",
             "unit": "%"
+          }
         },
         "batteryPower": {
             "originalPowerCapability": {
@@ -82,9 +86,11 @@
             }
         },
         "capacityFade": {
+          "title": {
             "label": "Capacity fade",
             "unit": "%"
         }
+      }
     },
     "datePlacedOnMarket": {
       "title" : {
