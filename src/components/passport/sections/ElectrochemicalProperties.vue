@@ -18,7 +18,16 @@
 <template>
   <div class="section">
     <div class="sub-section-container">
-      <Field
+      <template v-for="(item, key) in propsData" :key="key">
+        <Field
+          :value="item"
+          :label="attributes[key].label"
+          :unit="Object.prototype.hasOwnProperty.call(attributes[key], 'unit') ? attributes[key]['unit'] : ''"
+          :data-cy="Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy') ? attributes[key]['data-cy'] : ''"
+        />
+      </template>
+      <!-- Commented the below content for reference only -->
+      <!-- <Field
         v-if="propsData.ratedCapacity != null"
         data-cy="remaining-capacity"
         :label="attributes1['ratedCapacity'].label"
@@ -136,7 +145,7 @@
         :label="capacityFade['title'].label"
         :unit="capacityFade['title'].unit"
         :value="propsData.capacityFade"
-      />
+      /> -->
     </div>
   </div>
 </template>
@@ -164,10 +173,9 @@ export default {
   data() {
     return {
       parent: {},
-      attributes: {},
       toggle: false,
       propsData: this.$props.data.data.passport.electrochemicalProperties,
-      attributes1: passportUtil.getAttribute("electrochemicalProperties"),
+      attributes: passportUtil.getAttribute("electrochemicalProperties"),
       batteryEnergy: passportUtil.getAttribute("electrochemicalProperties.batteryEnergy"),
       batteryVoltage: passportUtil.getAttribute("electrochemicalProperties.batteryVoltage"),
       internalResistance: passportUtil.getAttribute("electrochemicalProperties.internalResistance"),
@@ -180,25 +188,10 @@ export default {
     };
   },
   created() {
-    this.parent = passportUtil.getAttribue("electrochemicalProperties");
-    this.attributes = this.getProperties(this.data);
+    this.propsData = passportUtil.filterAttribute(this.propsData);
+    this.attributes = jsonUtil.flatternJson(this.attributes);
+    console.log(this.propsData);
     console.log(this.attributes);
-  },
-  methods: {
-    getProperties(parentObject, properties = {}) {
-      if (!(parentObject instanceof Object)) return properties;
-
-      for (let key in parentObject) {
-        let item = parentObject[key];
-        if (!(item instanceof Object)) {
-          properties[key] = item;
-          continue;
-        }
-
-        properties[key] = jsonUtil.get(key, parentObject[key]);
-      }
-      return properties;
-    },
   },
 };
 </script>

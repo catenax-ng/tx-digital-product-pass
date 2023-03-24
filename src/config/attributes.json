@@ -20,10 +20,8 @@
             }
         },
         "ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy": {
-          "title": {
             "label": "Ratio maximum allowed battery power and maximum allowed battery energy",
             "unit": "%"
-          }
         },
         "batteryVoltage": {
             "nominalVoltage": {
@@ -54,10 +52,8 @@
             }
         },
         "capacityThresholdExhaustion": {
-          "title": {
             "label": "Capacity threshold exhaustion",
             "unit": "%"
-          }
         },
         "batteryPower": {
             "originalPowerCapability": {
@@ -66,6 +62,10 @@
             },
             "powerFade": {
                 "label": "Power fade",
+                "unit": "%"
+            },
+            "originalPower": {
+                "label": "Original Power",
                 "unit": "%"
             },
             "originalPowerCapabilityLimits": {
@@ -86,16 +86,12 @@
             }
         },
         "capacityFade": {
-          "title": {
             "label": "Capacity fade",
             "unit": "%"
-        }
       }
     },
     "datePlacedOnMarket": {
-      "title" : {
         "label": "Date of placing on the market"
-      }
     },
     "cellChemistry": {
         "electrolyteComposition": {
@@ -119,14 +115,12 @@
         }
     },
     "physicalDimensions": {
-      "title": {
         "label": "Dimensions of the battery",
-        "unit": "mm"
-      },
-      "weight": {
-        "label": "Weight of the battery",
-        "unit": "kg"
-        }
+        "unit": "mm",
+        "weight": {
+          "label": "Weight of the battery",
+          "unit": "kg"
+          }
       },
       "temperatureRangeIdleState": {
         "temperatureRangeIdleStateUpperLimit": {
@@ -162,9 +156,7 @@
         }
       },
     "warrantyPeriod": {
-      "title" :{
         "label": "Period for which the Commercial Warranty for the calendar life applies"
-      }
     },
     "composition": {
       "compositionOfBattery": {
@@ -174,9 +166,7 @@
         "label": "Critical raw materials"
       },
       "components": {
-        "title": {
-          "label": "Components"
-        },
+          "label": "Components",
         "componentsPartNumber": {
           "label": "Components part number"
         },

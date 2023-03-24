@@ -14,17 +14,18 @@
  limitations under the License.
 -->
 
-<template>
+<template v-if="propsData">
   <div class="section">
     <!-- Composition of battery -->
     <AttributeField
+      v-if="propsData.compositionOfBattery"
       :attributes-list="propsData.compositionOfBattery"
       :label="composition['compositionOfBattery'].label"
     />
     <!-- Critical raw materials -->
     <div class="sub-section-container">
       <div class="sub-title-container">
-        <span class="sub-title">{{composition['criticalRawMaterials'].label}}</span>
+        <span class="sub-title">{{ composition["criticalRawMaterials"].label }}</span>
       </div>
       <div v-if="propsData.criticalRawMaterials" class="list-container">
         <ul>
@@ -40,11 +41,11 @@
     <!-- Components -->
     <div class="sub-section-container">
       <div class="sub-title-container">
-        <span class="sub-title">{{components['title'].label}}</span>
+        <span class="sub-title">{{ components.label }}</span>
       </div>
       <div v-if="propsData.components" class="list-container">
         <ul>
-          <span class="list-label">{{components['componentsPartNumber'].label}}</span>
+          <span class="list-label">{{ components["componentsPartNumber"].label }}</span>
           <li>
             <span>
               {{ propsData.components.componentsPartNumber }}
@@ -52,16 +53,10 @@
           </li>
         </ul>
       </div>
-      <div
-        v-if="propsData.components.componentsSupplier"
-        class="list-container"
-      >
+      <div v-if="propsData.components.componentsSupplier" class="list-container">
         <ul>
-          <span class="list-label">{{componentsSupplier['address'].label}}</span>
-          <li
-            v-for="supplierDetails in propsData.components.componentsSupplier"
-            :key="supplierDetails"
-          >
+          <span class="list-label">{{ componentsSupplier["address"].label }}</span>
+          <li v-for="supplierDetails in propsData.components.componentsSupplier" :key="supplierDetails">
             <p>{{ supplierDetails.address.locality.value }}</p>
             <p>{{ supplierDetails.address.country.shortName }}</p>
             <p>{{ supplierDetails.address.postCode.value }}</p>
@@ -74,16 +69,13 @@
           </li>
         </ul>
         <ul>
-          <span class="list-label">{{componentsSupplier['contact'].label}}</span>
-          <li
-            v-for="supplierDetails in propsData.components.componentsSupplier"
-            :key="supplierDetails"
-          >
-            <p>{{componentsSupplier['faxNumber'].label}}: {{ supplierDetails.contact.faxNumber }}</p>
-            <p>{{componentsSupplier['website'].label}}: {{ supplierDetails.contact.website }}</p>
-            <p>{{componentsSupplier['phoneNumber'].label}}: {{ supplierDetails.contact.phoneNumber }}</p>
+          <span class="list-label">{{ componentsSupplier["contact"].label }}</span>
+          <li v-for="supplierDetails in propsData.components.componentsSupplier" :key="supplierDetails">
+            <p>{{ componentsSupplier["faxNumber"].label }}: {{ supplierDetails.contact.faxNumber }}</p>
+            <p>{{ componentsSupplier["website"].label }}: {{ supplierDetails.contact.website }}</p>
+            <p>{{ componentsSupplier["phoneNumber"].label }}: {{ supplierDetails.contact.phoneNumber }}</p>
             <p>
-              {{componentsSupplier['email'].label}}:
+              {{ componentsSupplier["email"].label }}:
               {{ supplierDetails.contact.email }}
             </p>
           </li>
@@ -96,6 +88,7 @@
 <script>
 import AttributeField from "../AttributeField.vue";
 import passportUtil from "@/utils/passportUtil.js";
+import jsonUtil from "@/utils/jsonUtil.js";
 
 export default {
   name: "BatteryComposition",
@@ -114,13 +107,21 @@ export default {
   },
   data() {
     return {
+      attributes: passportUtil.getAttribute("composition"),
       composition: passportUtil.getAttribute("composition"),
       components: passportUtil.getAttribute("composition.components"),
       componentsSupplier: passportUtil.getAttribute("composition.components.componentsSupplier"),
       toggle: false,
-      propsData: this.$props.data.data.passport.composition
+      propsData: this.$props.data.data.passport.composition,
     };
-  }
-  
+  },
+  created() {
+    console.log("propsData");
+    console.log(this.propsData);
+    this.propsData = passportUtil.filterAttribute(this.propsData);
+    this.attributes = jsonUtil.flatternJson(this.attributes);
+    console.log(this.attributes);
+    console.log(this.propsData);
+  },
 };
 </script>

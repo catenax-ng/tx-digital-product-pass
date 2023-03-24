@@ -14,19 +14,15 @@
  limitations under the License.
 -->
 
-
-<template >
+<template>
   <div class="section">
     <div v-if="propsData.batteryIdentification" class="sub-section-container">
       <Field
-        :data-cy="batteryIdentification['batteryIDDMCCode'].data-cy"
+        :data-cy="batteryIdentification['batteryIDDMCCode'].data - cy"
         :label="batteryIdentification['batteryIDDMCCode'].label"
         :value="propsData.batteryIdentification.batteryIDDMCCode"
       />
-      <Field
-        :label="batteryIdentification['batteryType'].label"
-        :value="propsData.batteryIdentification.batteryType"
-      />
+      <Field :label="batteryIdentification['batteryType'].label" :value="propsData.batteryIdentification.batteryType" />
       <Field
         :label="batteryIdentification['batteryModel'].label"
         :value="propsData.batteryIdentification.batteryModel"
@@ -46,18 +42,15 @@
         :postal="propsData.manufacturer.address.postCode.value"
         :value="propsData.manufacturer.name"
       />
-      <Field
-        :label="manufacturer['phoneNumber'].label"
-        :value="propsData.manufacturer.contact.phoneNumber"
-      />
+      <Field :label="manufacturer['phoneNumber'].label" :value="propsData.manufacturer.contact.phoneNumber" />
       <Field :label="manufacturer['email'].label" :value="propsData.manufacturer.contact.email" />
     </div>
     <div v-if="propsData.physicalDimensions" class="sub-section-container">
       <Field
-        :label="physicalDimensions['title'].label"
+        :label="physicalDimensions.label"
         :height="propsData.physicalDimensions.height"
         :length="propsData.physicalDimensions.length"
-        :unit="physicalDimensions['title'].unit"
+        :unit="physicalDimensions.unit"
         :width="propsData.physicalDimensions.width"
       />
 
@@ -67,24 +60,13 @@
         :value="propsData.physicalDimensions.weight"
       />
 
-      <Field
-        :label="manufacturing['dateOfManufacturing'].label"
-        :day="propsData.manufacturing.dateOfManufacturing"
-      />
+      <Field :label="manufacturing['dateOfManufacturing'].label" :day="propsData.manufacturing.dateOfManufacturing" />
       <Field
         :label="manufacturing['placeOfManufacturing'].label"
         :value="propsData.manufacturing.address.locality.value"
       />
-      <Field
-        class="two-third-width"
-        :label="datePlacedOnMarket['title'].label"
-        :day="propsData.datePlacedOnMarket"
-      />
-      <Field
-        class="longer"
-        :label="warrantyPeriod['title'].label"
-        :value="propsData.warrantyPeriod"
-      />
+      <Field class="two-third-width" :label="datePlacedOnMarket.label" :day="propsData.datePlacedOnMarket" />
+      <Field class="longer" :label="warrantyPeriod.label" :value="propsData.warrantyPeriod" />
       <Field
         :label="stateOfBattery['statusBattery'].label"
         :value="propsData.stateOfBattery ? propsData.stateOfBattery.statusBattery : null"
