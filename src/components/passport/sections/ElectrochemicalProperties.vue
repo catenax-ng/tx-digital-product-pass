@@ -26,126 +26,6 @@
           :data-cy="Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy') ? attributes[key]['data-cy'] : ''"
         />
       </template>
-      <!-- Commented the below content for reference only -->
-      <!-- <Field
-        v-if="propsData.ratedCapacity != null"
-        data-cy="remaining-capacity"
-        :label="attributes1['ratedCapacity'].label"
-        :unit="attributes1['ratedCapacity'].unit"
-        :value="propsData.ratedCapacity"
-      />
-      <Field
-        v-if="propsData.batteryEnergy != null && propsData.batteryEnergy.energyRoundtripEfficiencyChange != null"
-        :label="batteryEnergy['energyRoundtripEfficiencyChange'].label"
-        :unit="batteryEnergy['energyRoundtripEfficiencyChange'].unit"
-        :value="propsData.batteryEnergy.energyRoundtripEfficiencyChange"
-      />
-      <Field
-        v-if="propsData.batteryEnergy != null && propsData.batteryEnergy.maximumAllowedBatteryEnergy != null"
-        :label="batteryEnergy['maximumAllowedBatteryEnergy'].label"
-        :unit="batteryEnergy['maximumAllowedBatteryEnergy'].unit"
-        :value="propsData.batteryEnergy.maximumAllowedBatteryEnergy"
-      />
-      <Field
-        v-if="propsData.batteryEnergy != null && propsData.batteryEnergy.energyRoundtripEfficiency != null"
-        :label="batteryEnergy['energyRoundtripEfficiency'].label"
-        :unit="batteryEnergy['energyRoundtripEfficiency'].unit"
-        :value="propsData.batteryEnergy.energyRoundtripEfficiency"
-      />
-
-      <Field
-        v-if="propsData.ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy != null"
-        :label="ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy['title'].label"
-        :unit="ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy['title'].unit"
-        :value="propsData.ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy"
-      />
-      <Field
-        v-if="propsData.batteryVoltage != null && propsData.batteryVoltage.nominalVoltage != null"
-        :label="batteryVoltage['nominalVoltage'].label"
-        :unit="batteryVoltage['nominalVoltage'].unit"
-        :value="propsData.batteryVoltage.nominalVoltage"
-      />
-      <Field
-        v-if="propsData.batteryVoltage != null && propsData.batteryVoltage.maxVoltage != null"
-        :label="batteryVoltage['maxVoltage'].label"
-        :unit="batteryVoltage['maxVoltage'].unit"
-        :value="propsData.batteryVoltage.maxVoltage"
-      />
-      <Field
-        v-if="propsData.batteryVoltage != null && propsData.batteryVoltage.minVoltage != null"
-        :label="batteryVoltage['minVoltage'].label"
-        :unit="batteryVoltage['minVoltage'].unit"
-        :value="propsData.batteryVoltage.minVoltage"
-      />
-      <Field
-        v-if="propsData.internalResistance != null && propsData.internalResistance.cellInternalResistance != null"
-        :label="internalResistance['cellInternalResistance'].label"
-        :unit="internalResistance['cellInternalResistance'].label"
-        :value="propsData.internalResistance.cellInternalResistance"
-      />
-      <Field
-        v-if="
-          propsData.internalResistance != null && propsData.internalResistance.packInternalResistanceIncrease != null
-        "
-        :label="internalResistance['packInternalResistanceIncrease'].label"
-        :unit="internalResistance['packInternalResistanceIncrease'].label"
-        :value="propsData.internalResistance.packInternalResistanceIncrease"
-      />
-      <Field
-        v-if="propsData.internalResistance != null && propsData.internalResistance.packInternalResistance != null"
-        :label="internalResistance['packInternalResistance'].label"
-        :unit="internalResistance['packInternalResistance'].label"
-        :value="propsData.internalResistance.packInternalResistance"
-      />
-
-      <Field
-        v-if="propsData.capacityThresholdExhaustion != null"
-        :label="capacityThresholdExhaustion['title'].label"
-        :unit="capacityThresholdExhaustion['title'].label"
-        :value="propsData.capacityThresholdExhaustion"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.originalPowerCapability != null"
-        :label="batteryPower['originalPowerCapability'].label"
-        :unit="batteryPower['originalPowerCapability'].unit"
-        :value="propsData.batteryPower.originalPowerCapability"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.powerFade != null"
-        :label="batteryPower['powerFade'].label"
-        :unit="batteryPower['powerFade'].unit"
-        :value="propsData.batteryPower.powerFade"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.originalPowerCapabilityLimits != null"
-        :label="batteryPower['originalPowerCapabilityLimits'].label"
-        :unit="batteryPower['originalPowerCapabilityLimits'].unit"
-        :value="propsData.batteryPower.originalPowerCapabilityLimits"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.maximumAllowedBatteryPower != null"
-        :label="batteryPower['maximumAllowedBatteryPower'].label"
-        :unit="batteryPower['maximumAllowedBatteryPower'].unit"
-        :value="propsData.batteryPower.maximumAllowedBatteryPower"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.powerCapabilityAt20Charge != null"
-        :label="batteryPower['powerCapabilityAt20Charge'].label"
-        :unit="batteryPower['powerCapabilityAt20Charge'].unit"
-        :value="propsData.batteryPower.powerCapabilityAt20Charge"
-      />
-      <Field
-        v-if="propsData.batteryPower != null && propsData.batteryPower.powerCapabilityAt80Charge != null"
-        :label="batteryPower['powerCapabilityAt80Charge'].label"
-        :unit="batteryPower['powerCapabilityAt80Charge'].unit"
-        :value="propsData.batteryPower.powerCapabilityAt80Charge"
-      />
-      <Field
-        v-if="propsData.capacityFade != null"
-        :label="capacityFade['title'].label"
-        :unit="capacityFade['title'].unit"
-        :value="propsData.capacityFade"
-      /> -->
     </div>
   </div>
 </template>
@@ -176,22 +56,11 @@ export default {
       toggle: false,
       propsData: this.$props.data.data.passport.electrochemicalProperties,
       attributes: passportUtil.getAttribute("electrochemicalProperties"),
-      batteryEnergy: passportUtil.getAttribute("electrochemicalProperties.batteryEnergy"),
-      batteryVoltage: passportUtil.getAttribute("electrochemicalProperties.batteryVoltage"),
-      internalResistance: passportUtil.getAttribute("electrochemicalProperties.internalResistance"),
-      ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy: passportUtil.getAttribute(
-        "electrochemicalProperties.ratioMaximumAllowedBatteryPowerAndMaximumAllowedBatteryEnergy"
-      ),
-      capacityThresholdExhaustion: passportUtil.getAttribute("electrochemicalProperties.capacityThresholdExhaustion"),
-      batteryPower: passportUtil.getAttribute("electrochemicalProperties.batteryPower"),
-      capacityFade: passportUtil.getAttribute("electrochemicalProperties.capacityFade"),
     };
   },
   created() {
     this.propsData = passportUtil.filterAttribute(this.propsData);
     this.attributes = jsonUtil.flatternJson(this.attributes);
-    console.log(this.propsData);
-    console.log(this.attributes);
   },
 };
 </script>

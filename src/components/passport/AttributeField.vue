@@ -15,31 +15,38 @@
 -->
 
 <template>
-  <div v-if="attributesList" class="sub-section-container">
-    <div class="sub-title-container">
-      <span class="sub-title">{{ label }}</span>
-    </div>
-    <div class="list-container">
-      <ul>
-        <span class="list-label"></span>
-        <li v-for="attribute in attributesList" :key="attribute">
-          <span>
-            {{ attribute.materialName }}
-          </span>
-          <span v-if="attribute.materialPercentageMassFraction">
-            - {{ attribute.materialPercentageMassFraction }}%
-          </span>
-          <span v-if="attribute.materialWeight">
-            - {{ attribute.materialWeight }}kg
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <SubSection>
+      <template #title>
+        {{ label }}
+      </template>
+      <template #default>
+          <div class="list-container">
+              <ul>
+                <span class="list-label"></span>
+                <li v-for="attribute in attributesList" :key="attribute">
+                  <span>
+                    {{ attribute.materialName }}
+                  </span>
+                  <span v-if="attribute.materialPercentageMassFraction">
+                    - {{ attribute.materialPercentageMassFraction }}%
+                  </span>
+                  <span v-if="attribute.materialWeight">
+                    - {{ attribute.materialWeight }}kg
+                  </span>
+                </li>
+              </ul>
+          </div>
+      </template>
+  </SubSection>
 </template>
 
 <script>
+import SubSection from "@/components/passport/SubSection.vue"
+
 export default {
+  components:{
+    SubSection
+  },
   name: "AttributeField",
   props: {
     attributesList: { type: Array, default: () => [] },

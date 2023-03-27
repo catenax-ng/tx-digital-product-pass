@@ -58,10 +58,7 @@ export default {
         if (json == null) return null;
         if (!(json instanceof Object)) return json;
         // Deep Copy param into objects
-        console.log(json);
         let objects = JSON.parse(JSON.stringify(json));
-        console.log(objects);
-        console.log(json);
         if (!(objects instanceof Object)) return json;
         let retObjects = {}; // Return/Final Object
         let keys = Object.keys(objects); // Keys that it contains
@@ -72,8 +69,6 @@ export default {
                 // Interate over keys
                 let parentKey = keys[index]; // Get key value in array
                 let parent = objects[parentKey]; // Get current node value
-                console.log(parent);
-                console.log(objects);
                 delete objects[parentKey]; // Delete current node from interation object
 
                 if (parent == null && !allowNull) {
