@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-for-template-key -->
 <!--
  Copyright 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
  
@@ -17,45 +18,18 @@
 <template>
   <div class="section">
     <div class="sub-section-container">
-      <Field
-        :label="stateofBattery['stateOfHealth'].label"
-        :value="propsData.stateOfBattery.stateOfHealth"
-      />
-      <Field
-        :label="stateofBattery['statusBattery'].label"
-        :value="propsData.stateOfBattery.statusBattery"
-      />
-      <Field
-        :data-cy="stateofBattery['stateOfCharge'].data-cy"
-        :label="stateofBattery['stateOfCharge'].label"
-        :value="propsData.stateOfBattery.stateOfCharge"
-      />
-      <Field
-        :label="batteryCycleLife['cycleLifeTestCRate'].label"
-        :value="propsData.batteryCycleLife.cycleLifeTestCRate"
-      />
-      <Field
-        :label="batteryCycleLife['cycleLifeTestDepthOfDischarge'].label"
-        :value="propsData.batteryCycleLife.cycleLifeTestDepthOfDischarge"
-      />
-      <Field
-        :label="batteryCycleLife['expectedLifetime'].label"
-        :value="propsData.batteryCycleLife.expectedLifetime"
-      />
-      <Field
-        :label="temperatureRangeIdleState['temperatureRangeIdleStateUpperLimit'].label"
-        :value="
-          propsData.temperatureRangeIdleState
-            .temperatureRangeIdleStateUpperLimit
-        "
-      />
-      <Field
-        :label="temperatureRangeIdleState['temperatureRangeIdleStateLowerLimit'].label"
-        :value="
-          propsData.temperatureRangeIdleState
-            .temperatureRangeIdleStateLowerLimit
-        "
-      />
+      <template v-for="parent in displayKeys"> 
+        <template v-for="(item, key) in propsData[parent]" :key="key">
+          <Field
+            :label="attributes[key].label"
+            :value="item"
+            :data-cy="
+              Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy')
+                ? attributes[key]['data-cy']
+                : ''"
+          />
+        </template>
+      </template>
     </div>
   </div>
 </template>
@@ -63,6 +37,7 @@
 <script>
 import Field from "../Field.vue";
 import passportUtil from "@/utils/passportUtil.js";
+import jsonUtil from "@/utils/jsonUtil.js";
 
 export default {
   name: "StateOfBattery",
@@ -83,12 +58,14 @@ export default {
 
   data() {
     return {
-      stateofBattery: passportUtil.getAttribute("stateOfBattery"),
-      batteryCycleLife: passportUtil.getAttribute("batteryCycleLife"),
-      temperatureRangeIdleState: passportUtil.getAttribute("temperatureRangeIdleState"),
+      displayKeys: [ "stateOfBattery", "batteryCycleLife", "temperatureRangeIdleState" ],
+      attributes: passportUtil.getAllAttributes(),
       toggle: false,
       propsData: this.$props.data.data.passport,
     };
+  },
+  created() {
+    this.attributes = jsonUtil.flatternJson(this.attributes);
   },
 };
 </script>

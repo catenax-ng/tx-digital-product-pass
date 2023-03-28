@@ -21,6 +21,9 @@ export default {
     getAttribute(attribute, sep = ".", defaultValue = null) {
         return jsonUtil.get(attribute, attributes, sep, defaultValue);
     },
+    getAllAttributes() {
+        return attributes;
+    },
     filterAttribute(attributes) {
         if (!attributes) return null;
         if (!(attributes instanceof Object)) return attributes;
