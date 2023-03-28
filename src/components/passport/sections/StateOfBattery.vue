@@ -27,7 +27,7 @@
                 ? attributes[key]['data-cy']
                 : ''"
           >
-          {{item}}
+          {{item}}{{Object.prototype.hasOwnProperty.call(attributes[key], 'unit') ? attributes[key]['unit'] : ''}}
           </Field>
         </template>
       </template>

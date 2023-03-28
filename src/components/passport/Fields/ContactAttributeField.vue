@@ -15,24 +15,28 @@
 -->
 
 <template>
-  <div class="field-container">
-        <span class="field-label">{{ label }}</span>
-        <span class="field-value"><slot></slot></span>
-  </div>
+  <List title="Contact">
+      <p>fax: {{ contact.faxNumber }}</p>
+      <p>www: {{ contact.website }}</p>
+      <p>tel: {{ contact.phoneNumber }}</p>
+      <p>
+        email:
+        {{ contact.email }}
+      </p>
+  </List>
 </template>
-
 <script>
+import List from "@/components/general/List.vue";
 export default {
-    name: "FieldComponent",
-    props:{
-        label: {
-            type: [String, Number],
-            default: ""
-        }
-     }
-}
+  name: "ContactField",
+  components: {
+    List,
+  },
+  props: {
+    contact: {
+      type: Object,
+      default: Object,
+    },
+  },
+};
 </script>
-
-<style>
-
-</style>

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-multiple-template-root -->
 <!--
  Copyright 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
  
@@ -15,28 +16,28 @@
 -->
 
 <template>
-  <List title="Contact">
-      <p>fax: {{ contact.faxNumber }}</p>
-      <p>www: {{ contact.website }}</p>
-      <p>tel: {{ contact.phoneNumber }}</p>
-      <p>
-        email:
-        {{ contact.email }}
-      </p>
-  </List>
+    <Field :label="attributes['phoneNumber'].label">
+    {{ contact.phoneNumber }}
+    </Field>
+    <Field :label="attributes['email'].label">
+    {{ contact.email }}
+    </Field>
 </template>
+
 <script>
-import List from "@/components/general/List.vue";
+import Field from "../generic/Field.vue";
 export default {
   name: "ContactField",
-  components: {
-    List,
+  components:{
+    Field
   },
   props: {
-    contact: {
-      type: Object,
-      default: Object,
-    },
+    attributes: {type: Object, default: Object},
+    contact: { type: Object, default: Object },
   },
-};
+}
 </script>
+
+<style>
+
+</style>

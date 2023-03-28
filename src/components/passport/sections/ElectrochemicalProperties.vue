@@ -19,12 +19,14 @@
   <div class="section">
     <div class="sub-section-container">
       <template v-for="(item, key) in propsData" :key="key">
-        <Field
-          :value="item"
-          :label="attributes[key].label"
-          :unit="Object.prototype.hasOwnProperty.call(attributes[key], 'unit') ? attributes[key]['unit'] : ''"
-          :data-cy="Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy') ? attributes[key]['data-cy'] : ''"
-        />
+        <template v-if="item && item != null && item !== ''">
+          <Field
+            :label="attributes[key].label"
+            :data-cy="Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy') ? attributes[key]['data-cy'] : ''"
+          >
+          {{item}}{{Object.prototype.hasOwnProperty.call(attributes[key], 'unit') ? attributes[key]['unit'] : ''}}
+          </Field>
+        </template>
       </template>
     </div>
   </div>

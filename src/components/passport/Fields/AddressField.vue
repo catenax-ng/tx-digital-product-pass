@@ -15,27 +15,27 @@
 -->
 
 <template>
-    <div class="field-container">
-        <span class="field-label">{{ label }}</span>
-            <span v-if="city" class="field-value">{{ city ? city : "—" }} </span>
-            <span v-if="postal" class="field-value">{{ postal ? postal : "—" }} </span>
-            <span v-if="country" class="field-value"
-            >{{ country ? country : "—" }}
-        </span>
-    </div>
+  <div class="field-container">
+    <span class="field-label">{{ label }}</span>
+    <span v-if="companyName" class="field-value">{{companyName}}</span>
+    <span v-if="address.locality" class="field-value">{{ address.locality.value ? address.locality.value : "—" }} </span>
+    <span v-if="address.postCode" class="field-value">{{ address.postCode.value ? address.postCode.value : "—" }} </span>
+    <span v-if="address.country" class="field-value"
+      >{{ address.country.shortName ? address.country.shortName : "—" }}
+    </span>
+  </div>
 </template>
 
 <script>
 export default {
   name: "AddressField",
   props: {
-    city: { type: [String, Number], default: "" },
-    postal: { type: [String, Number], default: "" },
-    country: { type: [String, Number], default: "" },
-  }
-}
+    label: { type: String, default: "" },
+    address: {type: Object, default: Object},
+    companyName: {type: String, default: ""} 
+  },
+};
 </script>
 
 <style>
-
 </style>

@@ -21,15 +21,15 @@
         v-for="(seconditem, secondkey) in parent"
         :key="secondkey"
       >
-          <AddressField :address="seconditem.address" />
-          <ContactField :contact="seconditem.contact" />
+          <AddressAttributeField :address="seconditem.address" />
+          <ContactAttributeField :contact="seconditem.contact" />
       </template>
     </template>
   </div>
 </template>
 <script>
-import AddressField from "./AddressAttributeField.vue";
-import ContactField from "./ContactField.vue";
+import AddressAttributeField from "./AddressAttributeField.vue";
+import ContactAttributeField from "./ContactAttributeField.vue";
 export default {
   name: "ComponentField",
   props: {
@@ -43,8 +43,8 @@ export default {
     },
   },
   components: {
-    AddressField,
-    ContactField,
+    AddressAttributeField,
+    ContactAttributeField,
   },
 };
 </script>

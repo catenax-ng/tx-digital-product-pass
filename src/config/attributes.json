@@ -153,36 +153,52 @@
     },
     "physicalDimensions": {
         "label": "Dimensions of the battery",
-        "unit": "mm",
+        "diameter": {
+          "label": "D",
+          "unit": "mm"
+        },
+        "length": {
+          "label": "L",
+          "unit": "mm"
+        },
+        "height": {
+          "label": "H",
+          "unit": "mm"
+        },
+        "width":{
+          "label": "W",
+          "unit": "mm"
+        },
         "weight": {
           "label": "Weight of the battery",
           "unit": "kg"
-          }
+        }
       },
       "temperatureRangeIdleState": {
         "temperatureRangeIdleStateUpperLimit": {
-          "label": "Temperature range idle state upper limit"
+          "label": "Temperature range idle state upper limit",
+          "unit": "°C"
         },
         "temperatureRangeIdleStateLowerLimit": {
-          "label": "Temperature range idle state lower limit"
+          "label": "Temperature range idle state lower limit",
+          "unit": "°C"
         }
       },
       "batteryCycleLife": {
         "cycleLifeTestCRate": {
-          "label": "Cycle life test c rate"
+          "label": "Cycle life test c rate",
+          "unit": " cycles"
         },
         "cycleLifeTestDepthOfDischarge": {
-          "label": "Cycle life test depth of discharge"
+          "label": "Cycle life test depth of discharge",
+          "unit": "%"
         },
         "expectedLifetime": {
-          "label": "Expected lifetime"
+          "label": "Expected lifetime",
+          "unit": " cycles"
         }
       },
       "manufacturer" : {
-        "manufacturerInformation": {
-          "class":  "full-width",
-          "label": "Manufacturer Information"
-        },
         "phoneNumber": {
             "label": "Contact phone number"
         },
@@ -192,6 +208,10 @@
         "address" : {
           "class":  "longer",
           "label": "Address"
+        },
+        "name":{
+          "class":  "full-width",
+          "label": "Manufacturer Information"
         }
       },
     "warrantyPeriod": {
@@ -236,7 +256,7 @@
       "dateOfManufacturing": {
         "label": "Date of Manufacture"
       },
-      "placeOfManufacturing": {
+      "manufactureAddress": {
         "label": "Place of Manufacturing"
       }
     },
@@ -254,21 +274,21 @@
     },
     "stateOfBattery": {
       "stateOfHealth": {
-        "label": "State of health"
+        "label": "State of health",
+        "unit": "%"
       },
       "statusBattery": {
-        "label": "Battery status"
+        "label": "Status of the battery"
       },
       "stateOfCharge": {
         "label": "State of charge",
-        "data-cy": "state-of-charge"
+        "data-cy": "state-of-charge",
+        "unit": "%"
       }
     },
     "cO2FootprintTotal": {
-      "cO2FootprintTotal": {
-        "label": "CO2 Footprint Total",
-        "unit": "kg"
-      }
+      "label": "CO2 Footprint Total",
+      "unit": "kg"
     },
     "contractInformation": {
       "negotiationId": {

@@ -27,7 +27,7 @@
           <li v-for="attribute in attributesList" :key="attribute">
             <template v-for="(att, key, index) in attribute" :key="key">
               <span>
-                <template v-if="index > 0">-</template>{{ att }}
+                <template v-if="index > 0"> - </template>{{ att }}
                 <template
                   v-if="
                     Object.prototype.hasOwnProperty.call(attributes, key) &&
