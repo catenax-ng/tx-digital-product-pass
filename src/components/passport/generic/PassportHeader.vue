@@ -44,8 +44,8 @@
 </template>
 
 <script>
-import IMR18650V1 from "../../media/IMR18650V1.svg";
-import NCR186850B from "../../media/NCR186850B.svg";
+import IMR18650V1 from "@/media/IMR18650V1.svg";
+import NCR186850B from "@/media/NCR186850B.svg";
 export default {
   name: "PassportHeader",
   props: {

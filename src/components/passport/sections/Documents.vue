@@ -26,7 +26,7 @@
 </template>
  
 <script>
-import DocumentField from "../DocumentField.vue";
+import DocumentField from "../Fields/DocumentField.vue";
 
 export default {
   name: "AdditionalDocuments",

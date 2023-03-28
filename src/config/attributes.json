@@ -91,27 +91,64 @@
       }
     },
     "datePlacedOnMarket": {
+        "class": "two-third-width",
         "label": "Date of placing on the market"
     },
     "cellChemistry": {
         "electrolyteComposition": {
             "label": "Composition of electrolyte",
-            "data-cy": "electrolyte-composition"
+            "data-cy": "electrolyte-composition",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         },
         "anodeActiveMaterials": {
-            "label": "Composition of Anode"
+            "label": "Composition of Anode",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         },
         "anodeCompositionOther": {
-            "label": "Composition of other Anode materials"
+            "label": "Composition of other Anode materials",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         },
         "cathodeActiveMaterials": {
-            "label": "Composition of Cathode"
+            "label": "Composition of Cathode",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         },
         "cathodeCompositionOther": {
-            "label": "Composition of other Cathode materials"
+            "label": "Composition of other Cathode materials",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         },
         "recyclateContentActiveMaterials": {
-            "label": "Recyclate content active materials"
+            "label": "Recyclate content active materials",
+            "materialPercentageMassFraction":{
+              "unit": "%"
+            },
+            "materialWeight":{
+              "unit": "kg"
+            }
         }
     },
     "physicalDimensions": {
@@ -142,7 +179,8 @@
         }
       },
       "manufacturer" : {
-        "manufacturerInformation": { 
+        "manufacturerInformation": {
+          "class":  "full-width",
           "label": "Manufacturer Information"
         },
         "phoneNumber": {
@@ -152,10 +190,12 @@
             "label": "Email"
         },
         "address" : {
+          "class":  "longer",
           "label": "Address"
         }
       },
     "warrantyPeriod": {
+        "class": "longer",
         "label": "Period for which the Commercial Warranty for the calendar life applies"
     },
     "composition": {

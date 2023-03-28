@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-for-template-key -->
 <!--
  Copyright 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
  
@@ -16,19 +17,26 @@
 
 <template>
   <div class="section">
-    <div v-if="propsData.batteryIdentification" class="sub-section-container">
-      <Field
-        :data-cy="batteryIdentification['batteryIDDMCCode'].data - cy"
-        :label="batteryIdentification['batteryIDDMCCode'].label"
-        :value="propsData.batteryIdentification.batteryIDDMCCode"
-      />
-      <Field :label="batteryIdentification['batteryType'].label" :value="propsData.batteryIdentification.batteryType" />
-      <Field
-        :label="batteryIdentification['batteryModel'].label"
-        :value="propsData.batteryIdentification.batteryModel"
-      />
+    <div class="sub-section-container">
+
+      <template v-for="parent in displayKeys" :key="parent"> 
+        <template v-for="(item, key) in propsData[parent]" :key="key">
+          <Field
+            :label="attributes[key].label"
+            :data-cy="
+              Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy')
+                ? attributes[key]['data-cy']
+                : ''"
+            :class="Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy')
+                ? attributes[key]['class']
+                : ''"
+          >
+          {{item}}
+          </Field>
+        </template>
+      </template>
     </div>
-    <div v-if="propsData.manufacturer" class="sub-section-container">
+    <!-- <div v-if="propsData.manufacturer" class="sub-section-container">
       <Field
         class="full-width"
         :label="manufacturer['manufacturerInformation'].label"
@@ -42,8 +50,14 @@
         :postal="propsData.manufacturer.address.postCode.value"
         :value="propsData.manufacturer.name"
       />
-      <Field :label="manufacturer['phoneNumber'].label" :value="propsData.manufacturer.contact.phoneNumber" />
-      <Field :label="manufacturer['email'].label" :value="propsData.manufacturer.contact.email" />
+      <Field
+        :label="manufacturer['phoneNumber'].label"
+        :value="propsData.manufacturer.contact.phoneNumber"
+      />
+      <Field
+        :label="manufacturer['email'].label"
+        :value="propsData.manufacturer.contact.email"
+      />
     </div>
     <div v-if="propsData.physicalDimensions" class="sub-section-container">
       <Field
@@ -60,29 +74,45 @@
         :value="propsData.physicalDimensions.weight"
       />
 
-      <Field :label="manufacturing['dateOfManufacturing'].label" :day="propsData.manufacturing.dateOfManufacturing" />
+      <Field
+        :label="manufacturing['dateOfManufacturing'].label"
+        :day="propsData.manufacturing.dateOfManufacturing"
+      />
       <Field
         :label="manufacturing['placeOfManufacturing'].label"
         :value="propsData.manufacturing.address.locality.value"
       />
-      <Field class="two-third-width" :label="datePlacedOnMarket.label" :day="propsData.datePlacedOnMarket" />
-      <Field class="longer" :label="warrantyPeriod.label" :value="propsData.warrantyPeriod" />
+      <Field
+        class="two-third-width"
+        :label="datePlacedOnMarket.label"
+        :day="propsData.datePlacedOnMarket"
+      />
+      <Field
+        class="longer"
+        :label="warrantyPeriod.label"
+        :value="propsData.warrantyPeriod"
+      />
       <Field
         :label="stateOfBattery['statusBattery'].label"
-        :value="propsData.stateOfBattery ? propsData.stateOfBattery.statusBattery : null"
+        :value="
+          propsData.stateOfBattery
+            ? propsData.stateOfBattery.statusBattery
+            : null
+        "
       />
       <Field
         :label="cO2FootprintTotal['cO2FootprintTotal'].label"
         :unit="cO2FootprintTotal['cO2FootprintTotal'].unit"
         :value="propsData.cO2FootprintTotal"
       />
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import Field from "../Field.vue";
+import Field from "../generic/Field.vue";
 import passportUtil from "@/utils/passportUtil.js";
+import jsonUtil from "@/utils/jsonUtil.js";
 
 export default {
   name: "GeneralInformation",
@@ -103,18 +133,18 @@ export default {
 
   data() {
     return {
-      batteryIdentification: passportUtil.getAttribute("batteryIdentification"),
-      physicalDimensions: passportUtil.getAttribute("physicalDimensions"),
-      manufacturer: passportUtil.getAttribute("manufacturer"),
-      manufacturing: passportUtil.getAttribute("manufacturing"),
-      datePlacedOnMarket: passportUtil.getAttribute("datePlacedOnMarket"),
-      warrantyPeriod: passportUtil.getAttribute("warrantyPeriod"),
-      cO2FootprintTotal: passportUtil.getAttribute("cO2FootprintTotal"),
-      stateOfBattery: passportUtil.getAttribute("stateOfBattery"),
-
+      displayKeys: [
+        "batteryIdentification",
+        "manufacturer",
+        "physicalDimensions",
+      ],
+      attributes: passportUtil.getAllAttributes(),
       toggle: false,
       propsData: this.$props.data.data.passport,
     };
   },
+  created(){
+   this.attributes = jsonUtil.flatternJson(this.attributes);
+  }
 };
 </script>

@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import Field from "../Field.vue";
+import Field from "../generic/Field.vue";
 import passportUtil from "@/utils/passportUtil.js";
 import jsonUtil from "@/utils/jsonUtil.js";
 

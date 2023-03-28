@@ -30,7 +30,7 @@
 <script>
 import List from "@/components/general/List.vue";
 export default {
-  name: "AddressField",
+  name: "AddressAttributeField",
   components: {
     List,
   },

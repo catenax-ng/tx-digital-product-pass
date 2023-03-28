@@ -84,7 +84,7 @@ import Documents from "@/components/passport/sections/Documents.vue";
 import ContractInformation from "@/components/passport/sections/ContractInformation.vue";
 import Spinner from "@/components/general/Spinner.vue";
 import HeaderComponent from "@/components/general/Header.vue";
-import PassportHeader from "@/components/passport/PassportHeader.vue";
+import PassportHeader from "@/components/passport/generic/PassportHeader.vue";
 import Alert from "@/components/general/Alert.vue";
 import FooterComponent from "@/components/general/Footer.vue";
 import { API_TIMEOUT, PASSPORT_VERSION } from "@/services/service.const";
@@ -92,7 +92,7 @@ import threadUtil from "@/utils/threadUtil.js";
 import jsonUtil from "@/utils/jsonUtil.js";
 import BackendService from "@/services/BackendService";
 import { inject } from "vue";
-import SectionComponent from "@/components/passport/Section.vue";
+import SectionComponent from "@/components/passport/generic/Section.vue";
 
 export default {
   name: "PassportView",

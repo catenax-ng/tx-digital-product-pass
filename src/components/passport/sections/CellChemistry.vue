@@ -27,13 +27,14 @@
             ? attributes[key]['data-cy']
             : ''
         "
+        :attributes="attributes[key]"
       />
     </template>
   </div>
 </template>
 
 <script>
-import AttributeField from "../AttributeField.vue";
+import AttributeField from "../Fields/AttributeField.vue";
 import passportUtil from "@/utils/passportUtil.js";
 
 export default {

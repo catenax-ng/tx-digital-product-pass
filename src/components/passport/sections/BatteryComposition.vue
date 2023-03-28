@@ -63,11 +63,11 @@
 </template>
 
 <script>
-import ComponentField from "../ComponentField.vue";
-import AttributeField from "../AttributeField.vue";
+import ComponentField from "../Fields/ComponentField.vue";
+import AttributeField from "../Fields/AttributeField.vue";
 import passportUtil from "@/utils/passportUtil.js";
 import jsonUtil from "@/utils/jsonUtil.js";
-import SubSection from "../SubSection.vue";
+import SubSection from "../generic/SubSection.vue";
 export default {
   name: "BatteryComposition",
   components: {

@@ -28,7 +28,7 @@
   </div>
 </template>
 <script>
-import AddressField from "./AddressField.vue";
+import AddressField from "./AddressAttributeField.vue";
 import ContactField from "./ContactField.vue";
 export default {
   name: "ComponentField",

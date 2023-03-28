@@ -17,21 +17,23 @@
 <template>
   <div class="section">
     <div class="sub-section-container">
-      <Field :label="attributes['negotiationId'].label" :value="propsData.negotiation.id" />
+      <Field :label="attributes['negotiationId'].label">          
+        {{ propsData.negotiation.id }}
+      </Field>
       <Field
-        :label="attributes['contractId'].label"
-        :value="propsData.transferRequest.contractId"
-      />
+        :label="attributes['contractId'].label">
+        {{ propsData.transferRequest.contractId }}
+      </Field>
       <Field
-        :label="attributes['transferRequestId'].label"
-        :value="propsData.transferRequest.id"
-      />
+        :label="attributes['transferRequestId'].label">
+        {{ propsData.transferRequest.id }}
+      </Field>
     </div>
   </div>
 </template>
 
 <script>
-import Field from "../Field.vue";
+import Field from "../generic/Field.vue";
 import passportUtil from "@/utils/passportUtil.js";
 
 export default {

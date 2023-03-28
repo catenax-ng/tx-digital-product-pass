@@ -18,16 +18,17 @@
 <template>
   <div class="section">
     <div class="sub-section-container">
-      <template v-for="parent in displayKeys"> 
+      <template v-for="parent in displayKeys" :key="parent"> 
         <template v-for="(item, key) in propsData[parent]" :key="key">
           <Field
             :label="attributes[key].label"
-            :value="item"
             :data-cy="
               Object.prototype.hasOwnProperty.call(attributes[key], 'data-cy')
                 ? attributes[key]['data-cy']
                 : ''"
-          />
+          >
+          {{item}}
+          </Field>
         </template>
       </template>
     </div>
@@ -35,7 +36,7 @@
 </template>
 
 <script>
-import Field from "../Field.vue";
+import Field from "../generic/Field.vue";
 import passportUtil from "@/utils/passportUtil.js";
 import jsonUtil from "@/utils/jsonUtil.js";
 
