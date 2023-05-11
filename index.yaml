@@ -162,4 +162,15 @@ entries:
     urls:
     - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/consumer-ui-0.2.0/consumer-ui-0.2.0.tgz
     version: 0.2.0
-generated: "2023-05-09T13:54:28.974515771Z"
+  digital-product-pass:
+  - apiVersion: v2
+    appVersion: 0.7.0
+    created: "2023-05-11T07:04:16.73573958Z"
+    description: A Helm chart for Kubernetes
+    digest: 8ff9b4cc66e6aafedd6d618ec1d9485771b1ff3752df7e5d9fa806f0634bcaa2
+    name: digital-product-pass
+    type: application
+    urls:
+    - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/digital-product-pass-0.3.2/digital-product-pass-0.3.2.tgz
+    version: 0.3.2
+generated: "2023-05-11T07:04:16.73576308Z"
