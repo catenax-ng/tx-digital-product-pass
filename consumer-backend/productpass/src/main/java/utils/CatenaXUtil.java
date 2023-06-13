@@ -25,6 +25,7 @@ package utils;
 
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import utils.exceptions.UtilException;
 
@@ -52,6 +53,21 @@ public final class CatenaXUtil {
         }
         return matcher.group();
     }
+    public static String buildManagementEndpoint(Environment env, String path){
+        String edcEndpoint = env.getProperty("configuration.edc.endpoint");
+        String managementEndpoint = env.getProperty("configuration.edc.management");
+        if(edcEndpoint.endsWith("/") && edcEndpoint.startsWith("/")) {
+            return edcEndpoint + managementEndpoint.substring(1);
+        } else if (edcEndpoint.endsWith("/") && !edcEndpoint.startsWith("/")) {
+            return edcEndpoint + managementEndpoint;
+        } else if(!edcEndpoint.endsWith("/") && !edcEndpoint.startsWith("/")) {
+            return edcEndpoint + "/"+ managementEndpoint;
+        } else{
+            return edcEndpoint;
+        }
+
+    }
+
     public static String buildEndpoint(String endpoint){
         try {
             if (CatenaXUtil.containsEdcEndpoint(endpoint)) {

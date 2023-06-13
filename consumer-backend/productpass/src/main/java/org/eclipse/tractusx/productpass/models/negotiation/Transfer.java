@@ -49,7 +49,6 @@ public class Transfer extends DidDocument{
     @JsonProperty("edc:dataRequest")
     DataRequest dataRequest;
 
-
     @JsonProperty("edc:receiverHttpEndpoint")
     String receiverHttpEndpoint;
 

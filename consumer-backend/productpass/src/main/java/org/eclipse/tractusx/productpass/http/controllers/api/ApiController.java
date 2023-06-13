@@ -51,6 +51,7 @@ import utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,9 +72,9 @@ public class ApiController {
     private @Autowired PassportConfig passportConfig;
     private @Autowired HttpUtil httpUtil;
 
-    public Offer getContractOfferByAssetId(String assetId, String providerUrl) throws ControllerException {
+    public Dataset getContractOfferByAssetId(String assetId, String providerUrl) throws ControllerException {
         /*
-         *   This method receives the assetId (partInstanceId or Battery_ID_DMC_Code) and looks up for targets with the same name.
+         *   This method receives the assetId and looks up for targets with the same name.
          */
         try {
             Catalog catalog = dataService.getContractOfferCatalog(providerUrl);
@@ -93,48 +94,6 @@ public class ApiController {
         httpUtil.redirect(httpResponse,"/passport");
         return httpUtil.getResponse("Redirect to UI");
     }
-
-    @RequestMapping(value = "/contracts/{assetId}", method = {RequestMethod.GET})
-    @Operation(summary = "Returns first found available contract offers for asset Id", responses = {
-            @ApiResponse(description = "Default Response Structure", content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
-            @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = ContractOffer.class)))
-    })
-    public Response getContract(
-        @PathVariable("assetId") String assetId,
-        @RequestParam(value = "providerUrl", required = false, defaultValue = "") String providerUrl
-    ) {
-        // Check if user is Authenticated
-        if(!authService.isAuthenticated(httpRequest)){
-            Response response = httpUtil.getNotAuthorizedResponse();
-            return httpUtil.buildResponse(response, httpResponse);
-        }
-        if(providerUrl == null || providerUrl.equals("")){
-            providerUrl = env.getProperty("configuration.endpoints.providerUrl", "");
-        }
-        Response response = httpUtil.getResponse();
-        ContractOffer contractOffer = null;
-        try {
-            contractOffer = this.getContractOfferByAssetId(assetId, providerUrl);
-        } catch (ControllerException e) {
-            response.message = e.getMessage();
-            response.status = 500;
-            response.statusText = "Server Internal Error";
-            return httpUtil.buildResponse(response, httpResponse);
-        }
-        if (contractOffer == null) {
-            response.message = "Asset ID not found in any contract!";
-            response.status = 404;
-            response.statusText = "Not Found";
-            return httpUtil.buildResponse(response, httpResponse);
-        }
-        ;
-        response.message = "Asset ID: " + assetId + " found in contractOffer [" + contractOffer.getId() + "]";
-        response.data = contractOffer;
-        return httpUtil.buildResponse(response, httpResponse);
-    }
-
 
     /**
      * @param id Asset id that identifies the object that has a passport

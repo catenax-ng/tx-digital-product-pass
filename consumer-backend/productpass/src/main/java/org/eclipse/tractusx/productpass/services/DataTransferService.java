@@ -91,11 +91,11 @@ public class DataTransferService extends BaseService {
         try {
             this.checkEmptyVariables();
             String provider = providerUrl;
-            String path = "/consumer/data/catalog";
+            String path = env.getProperty("configuration.edc.catalog");
             if (providerUrl == null) {
                 provider = this.providerUrl;
             }
-            String url =  this.serverUrl  + path;
+            String url = edcTools
             Map<String, Object> params = httpUtil.getParams();
             params.put("providerUrl", provider);
             HttpHeaders headers = httpUtil.getHeaders();
