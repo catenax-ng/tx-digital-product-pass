@@ -3,6 +3,8 @@
  * Catena-X - Product Passport Consumer Backend
  *
  * Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+ * Copyright (c) 2022, 2023 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,39 +27,13 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Offer extends Dataset {
+public class EdcResponse extends DidDocument{
+    @JsonProperty("edc:createdAt")
+    Integer createdAt;
 
-    @JsonProperty("offerId")
-    String offerId;
-
-    @JsonProperty("assetId")
-    String assetId;
-
-    public void open(){
-        this.offerId = this.policy.id;
-        this.assetId = this.policy.target;
-    }
-    public void close(){
-        this.offerId = null;
-        this.assetId = null;
-    }
-
-    public String getOfferId() {
-        return offerId;
-    }
-
-    public void setOfferId(String offerId) {
-        this.offerId = offerId;
-    }
-
-    @Override
-    public String getAssetId() {
-        return assetId;
-    }
-
-    @Override
-    public void setAssetId(String assetId) {
-        this.assetId = assetId;
-    }
+    @JsonProperty("@context")
+    JsonNode context;
 }

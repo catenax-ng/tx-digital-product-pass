@@ -3,6 +3,8 @@
  * Catena-X - Product Passport Consumer Backend
  *
  * Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+ * Copyright (c) 2022, 2023 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,51 +25,29 @@
 
 package org.eclipse.tractusx.productpass.models.negotiation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public abstract class MetaData {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class DataService extends DidDocument {
+    @JsonProperty("dct:terms")
+    String terms;
+    @JsonProperty("dct:endpointUrl")
+    String endpoint;
 
-    @JsonProperty("createdAt")
-    Long createdAt;
-
-    @JsonProperty("updatedAt")
-    Long updatedAt;
-
-    @JsonProperty("state")
-    String state;
-
-    @JsonProperty("type")
-    String type;
-
-    public Long getCreatedAt() {
-        return createdAt;
+    public String getTerms() {
+        return terms;
     }
 
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
+    public void setTerms(String terms) {
+        this.terms = terms;
     }
 
-    public Long getUpdatedAt() {
-        return updatedAt;
+    public String getEndpoint() {
+        return endpoint;
     }
 
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }

@@ -28,14 +28,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NegotiationOffer {
-    @JsonProperty("connectorId")
+
+    @JsonProperty("@context")
+    String context;
+
+    @JsonProperty("@type")
+    String protocol;
+    @JsonProperty("providerId")
     String connectorId;
+
+    @JsonProperty("providerId")
+    String providerId;
 
     @JsonProperty("connectorAddress")
     String connectorAddress;
 
     @JsonProperty("offer")
     Offer offer;
+
     public NegotiationOffer(){
 
     }
@@ -68,5 +78,29 @@ public class NegotiationOffer {
 
     public void setOffer(Offer offer) {
         this.offer = offer;
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

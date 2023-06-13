@@ -3,6 +3,8 @@
  * Catena-X - Product Passport Consumer Backend
  *
  * Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+ * Copyright (c) 2022, 2023 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,38 +27,54 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Asset {
-    @JsonProperty("id")
-    String id;
-    @JsonProperty("createdAt")
-    String createdAt;
-    @JsonProperty("properties")
-    JsonNode properties;
+public class Distribution {
+    @JsonProperty("@type")
+    String type;
 
-    public String getId() {
-        return id;
+    @JsonProperty("dct:format")
+    Format format;
+
+    @JsonProperty("dcat:accessService")
+    String accessService;
+
+    public String getType() {
+        return type;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public Format getFormat() {
+        return format;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setFormat(Format format) {
+        this.format = format;
     }
 
-    public JsonNode getProperties() {
-        return properties;
+    public String getAccessService() {
+        return accessService;
     }
 
-    public void setProperties(JsonNode properties) {
-        this.properties = properties;
+    public void setAccessService(String accessService) {
+        this.accessService = accessService;
     }
+
+    static class Format{
+        @JsonProperty("@id")
+        String id;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+    }
+
+
 }

@@ -27,39 +27,34 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Transfer {
-    @JsonProperty("id")
-    String id;
-    @JsonProperty("createdAt")
-    String createdAt;
-
-    @JsonProperty("updatedAt")
-    String updatedAt;
-    @JsonProperty("type")
-    String type;
-    @JsonProperty("state")
+public class Transfer extends DidDocument{
+    @JsonProperty("edc:state")
     String state;
-
-    @JsonProperty("stateTimestamp")
+    @JsonProperty("edc:stateTimestamp")
     Long stateTimestamp;
 
-    @JsonProperty("errorDetail")
-    String errorDetail;
+    @JsonProperty("edc:type")
+    String edcType;
 
-    @JsonProperty("dataRequest")
+    @JsonProperty("edc:callbackAddresses")
+    List<JsonNode> callbackAddresses;
+
+    @JsonProperty("edc:dataDestination")
+    DataDestination dataDestination;
+
+
+    @JsonProperty("edc:dataRequest")
     DataRequest dataRequest;
 
-    @JsonProperty("dataDestination")
-    JsonNode dataDestination;
 
-    public String getType() {
-        return type;
-    }
+    @JsonProperty("edc:receiverHttpEndpoint")
+    String receiverHttpEndpoint;
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    @JsonProperty("@context")
+    JsonNode context;
 
     public String getState() {
         return state;
@@ -77,12 +72,28 @@ public class Transfer {
         this.stateTimestamp = stateTimestamp;
     }
 
-    public String getErrorDetail() {
-        return errorDetail;
+    public String getEdcType() {
+        return edcType;
     }
 
-    public void setErrorDetail(String errorDetail) {
-        this.errorDetail = errorDetail;
+    public void setEdcType(String edcType) {
+        this.edcType = edcType;
+    }
+
+    public List<JsonNode> getCallbackAddresses() {
+        return callbackAddresses;
+    }
+
+    public void setCallbackAddresses(List<JsonNode> callbackAddresses) {
+        this.callbackAddresses = callbackAddresses;
+    }
+
+    public DataDestination getDataDestination() {
+        return dataDestination;
+    }
+
+    public void setDataDestination(DataDestination dataDestination) {
+        this.dataDestination = dataDestination;
     }
 
     public DataRequest getDataRequest() {
@@ -93,13 +104,28 @@ public class Transfer {
         this.dataRequest = dataRequest;
     }
 
-    static class DataRequest {
-        @JsonProperty("assetId")
+    public String getReceiverHttpEndpoint() {
+        return receiverHttpEndpoint;
+    }
+
+    public void setReceiverHttpEndpoint(String receiverHttpEndpoint) {
+        this.receiverHttpEndpoint = receiverHttpEndpoint;
+    }
+
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
+    }
+
+
+    static class DataRequest extends DidDocument{
+        @JsonProperty("edc:assetId")
         String assetId;
-        @JsonProperty("contractId")
+        @JsonProperty("edc:contractId")
         String contractId;
-        @JsonProperty("connectorId")
-        String connectorId;
 
         public String getAssetId() {
             return assetId;
@@ -116,57 +142,19 @@ public class Transfer {
         public void setContractId(String contractId) {
             this.contractId = contractId;
         }
-
-        public String getConnectorId() {
-            return connectorId;
-        }
-
-        public void setConnectorId(String connectorId) {
-            this.connectorId = connectorId;
-        }
     }
 
     static class DataDestination {
-        @JsonProperty("properties")
-        Properties properties;
+        @JsonProperty("edc:type")
+        String type;
 
-        public Properties getProperties() {
-            return properties;
+        public String getType() {
+            return type;
         }
 
-        public void setProperties(Properties properties) {
-            this.properties = properties;
+        public void setType(String type) {
+            this.type = type;
         }
-    }
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public JsonNode getDataDestination() {
-        return dataDestination;
-    }
-
-    public void setDataDestination(JsonNode properties) {
-        this.dataDestination = properties;
-    }
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
 

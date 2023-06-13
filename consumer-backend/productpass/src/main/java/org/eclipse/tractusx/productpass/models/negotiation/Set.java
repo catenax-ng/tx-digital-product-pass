@@ -25,39 +25,51 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Offer extends Dataset {
+public class Set extends DidDocument{
+    @JsonProperty("odrl:permission")
+    List<Constraint> permissions;
+    @JsonProperty("odrl:prohibition")
+    List<Constraint> prohibitions;
+    @JsonProperty("odrl:obligation")
+    List<Constraint> obligations;
+    @JsonProperty("odrl:target")
+    String target;
 
-    @JsonProperty("offerId")
-    String offerId;
-
-    @JsonProperty("assetId")
-    String assetId;
-
-    public void open(){
-        this.offerId = this.policy.id;
-        this.assetId = this.policy.target;
-    }
-    public void close(){
-        this.offerId = null;
-        this.assetId = null;
+    public String getTarget() {
+        return target;
     }
 
-    public String getOfferId() {
-        return offerId;
+    public void setTarget(String target) {
+        this.target = target;
     }
 
-    public void setOfferId(String offerId) {
-        this.offerId = offerId;
+    public List<Constraint> getPermissions() {
+        return permissions;
     }
 
-    @Override
-    public String getAssetId() {
-        return assetId;
+    public void setPermissions(List<Constraint> permissions) {
+        this.permissions = permissions;
     }
 
-    @Override
-    public void setAssetId(String assetId) {
-        this.assetId = assetId;
+    public List<Constraint> getProhibitions() {
+        return prohibitions;
     }
+
+    public void setProhibitions(List<Constraint> prohibitions) {
+        this.prohibitions = prohibitions;
+    }
+
+    public List<Constraint> getObligations() {
+        return obligations;
+    }
+
+    public void setObligations(List<Constraint> obligations) {
+        this.obligations = obligations;
+    }
+
 }

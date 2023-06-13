@@ -25,38 +25,50 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Offer extends Dataset {
+public class Dataset extends DidDocument{
+    @JsonProperty("odrl:hasPolicy")
+    Set policy;
+    @JsonProperty("dcat:distribution")
+    List<Distribution> distributions;
 
-    @JsonProperty("offerId")
-    String offerId;
-
-    @JsonProperty("assetId")
+    @JsonProperty("edc:description")
+    String assetDescription;
+    @JsonProperty("edc:id")
     String assetId;
 
-    public void open(){
-        this.offerId = this.policy.id;
-        this.assetId = this.policy.target;
-    }
-    public void close(){
-        this.offerId = null;
-        this.assetId = null;
+
+    public Set getPolicy() {
+        return policy;
     }
 
-    public String getOfferId() {
-        return offerId;
+    public void setPolicy(Set policy) {
+        this.policy = policy;
     }
 
-    public void setOfferId(String offerId) {
-        this.offerId = offerId;
+    public List<Distribution> getDistributions() {
+        return distributions;
     }
 
-    @Override
+    public void setDistributions(List<Distribution> distributions) {
+        this.distributions = distributions;
+    }
+
+    public String getAssetDescription() {
+        return assetDescription;
+    }
+
+    public void setAssetDescription(String assetDescription) {
+        this.assetDescription = assetDescription;
+    }
+
     public String getAssetId() {
         return assetId;
     }
 
-    @Override
     public void setAssetId(String assetId) {
         this.assetId = assetId;
     }

@@ -25,60 +25,39 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransferRequest {
-    @JsonProperty("id")
-    String id;
-    @JsonProperty("connectorId")
-    String connectorId;
-    @JsonProperty("connectorAddress")
-    String connectorAddress;
-    @JsonProperty("contractId")
-    String contractId;
+
+    @JsonProperty("@context")
+    JsonNode context;
     @JsonProperty("assetId")
     String assetId;
+    @JsonProperty("connectorAddress")
+    String connectorAddress;
+    @JsonProperty("connectorId")
+    String connectorId;
+    @JsonProperty("contractId")
+    String contractId;
+    @JsonProperty("dataDestination")
+    DataDestination dataDestination;
     @JsonProperty("managedResources")
     Boolean managedResources;
-    @JsonProperty("dataDestination")
-    Properties dataDestination;
+    @JsonProperty("privateProperties")
+    PrivateProperties privateProperties;
+    @JsonProperty("protocol")
+    String protocol;
+    @JsonProperty("transferType")
+    TransferType transferType;
 
-    public TransferRequest(String id, String connectorId, String connectorAddress, String contractId, String assetId, Boolean managedResources, String destinationType) {
-        this.id = id;
-        this.connectorId = connectorId;
-        this.connectorAddress = connectorAddress;
-        this.contractId = contractId;
-        this.assetId = assetId;
-        this.managedResources = managedResources;
-        this.dataDestination = new Properties(destinationType);
+    public JsonNode getContext() {
+        return context;
     }
 
-    public TransferRequest() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getConnectorId() {
-        return connectorId;
-    }
-
-    public void setConnectorId(String connectorId) {
-        this.connectorId = connectorId;
-    }
-
-    public String getConnectorAddress() {
-        return connectorAddress;
-    }
-
-    public void setConnectorAddress(String connectorAddress) {
-        this.connectorAddress = connectorAddress;
+    public void setContext(JsonNode context) {
+        this.context = context;
     }
 
     public String getAssetId() {
@@ -89,20 +68,20 @@ public class TransferRequest {
         this.assetId = assetId;
     }
 
-    public Boolean getManagedResources() {
-        return managedResources;
+    public String getConnectorAddress() {
+        return connectorAddress;
     }
 
-    public void setManagedResources(Boolean managedResources) {
-        this.managedResources = managedResources;
+    public void setConnectorAddress(String connectorAddress) {
+        this.connectorAddress = connectorAddress;
     }
 
-    public Properties getDataDestination() {
-        return dataDestination;
+    public String getConnectorId() {
+        return connectorId;
     }
 
-    public void setDataDestination(Properties dataDestination) {
-        this.dataDestination = dataDestination;
+    public void setConnectorId(String connectorId) {
+        this.connectorId = connectorId;
     }
 
     public String getContractId() {
@@ -113,4 +92,93 @@ public class TransferRequest {
         this.contractId = contractId;
     }
 
+    public DataDestination getDataDestination() {
+        return dataDestination;
+    }
+
+    public void setDataDestination(DataDestination dataDestination) {
+        this.dataDestination = dataDestination;
+    }
+
+    public Boolean getManagedResources() {
+        return managedResources;
+    }
+
+    public void setManagedResources(Boolean managedResources) {
+        this.managedResources = managedResources;
+    }
+
+    public PrivateProperties getPrivateProperties() {
+        return privateProperties;
+    }
+
+    public void setPrivateProperties(PrivateProperties privateProperties) {
+        this.privateProperties = privateProperties;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public TransferType getTransferType() {
+        return transferType;
+    }
+
+    public void setTransferType(TransferType transferType) {
+        this.transferType = transferType;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    static class TransferType{
+        @JsonProperty("contentType")
+        String contentType;
+        @JsonProperty("isFinite")
+        String isFinite;
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
+        }
+
+        public String getIsFinite() {
+            return isFinite;
+        }
+
+        public void setIsFinite(String isFinite) {
+            this.isFinite = isFinite;
+        }
+    }
+
+    static class DataDestination {
+        @JsonProperty("properties")
+        Properties properties;
+
+        public Properties getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Properties properties) {
+            this.properties = properties;
+        }
+    }
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    static class PrivateProperties{
+        @JsonProperty("receiverHttpEndpoint")
+        String receiverHttpEndpoint;
+
+        public String getReceiverHttpEndpoint() {
+            return receiverHttpEndpoint;
+        }
+
+        public void setReceiverHttpEndpoint(String receiverHttpEndpoint) {
+            this.receiverHttpEndpoint = receiverHttpEndpoint;
+        }
+    }
 }

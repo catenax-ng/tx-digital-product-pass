@@ -25,54 +25,37 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Negotiation extends MetaData {
-    @JsonProperty("id")
-    String id;
-    @JsonProperty("contractAgreementId")
-    String contractAgreementId;
+public class Negotiation extends DidDocument {
+    @JsonProperty("edc:type")
+    String edcType;
 
-    @JsonProperty("counterPartyAddress")
-    String counterPartyAddress;
-
-    @JsonProperty("errorDetail")
-    String errorDetail;
-
-    @JsonProperty("protocol")
+    @JsonProperty("edc:protocol")
     String protocol;
 
+    @JsonProperty("edc:state")
+    String state;
 
-    public String getId() {
-        return id;
+    @JsonProperty("edc:counterPartyAddress")
+    String counterPartyAddress;
+
+    @JsonProperty("edc:callbackAddresses")
+    String callbackAddresses;
+
+    @JsonProperty("edc:contractAgreementId")
+    String contractAgreementId;
+
+    @JsonProperty("@context")
+    JsonNode context;
+
+    public String getEdcType() {
+        return edcType;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getContractAgreementId() {
-        return contractAgreementId;
-    }
-
-    public void setContractAgreementId(String contractAgreementId) {
-        this.contractAgreementId = contractAgreementId;
-    }
-
-    public String getCounterPartyAddress() {
-        return counterPartyAddress;
-    }
-
-    public void setCounterPartyAddress(String counterPartyAddress) {
-        this.counterPartyAddress = counterPartyAddress;
-    }
-
-    public String getErrorDetail() {
-        return errorDetail;
-    }
-
-    public void setErrorDetail(String errorDetail) {
-        this.errorDetail = errorDetail;
+    public void setEdcType(String edcType) {
+        this.edcType = edcType;
     }
 
     public String getProtocol() {
@@ -83,4 +66,43 @@ public class Negotiation extends MetaData {
         this.protocol = protocol;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCounterPartyAddress() {
+        return counterPartyAddress;
+    }
+
+    public void setCounterPartyAddress(String counterPartyAddress) {
+        this.counterPartyAddress = counterPartyAddress;
+    }
+
+    public String getCallbackAddresses() {
+        return callbackAddresses;
+    }
+
+    public void setCallbackAddresses(String callbackAddresses) {
+        this.callbackAddresses = callbackAddresses;
+    }
+
+    public String getContractAgreementId() {
+        return contractAgreementId;
+    }
+
+    public void setContractAgreementId(String contractAgreementId) {
+        this.contractAgreementId = contractAgreementId;
+    }
+
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
+    }
 }

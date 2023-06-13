@@ -26,41 +26,44 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Catalog {
-    @JsonProperty("id")
-    String id;
-    @JsonProperty("contractOffers")
-    List<Offer> contractOffers;
+public class Catalog extends DidDocument {
+
+    @JsonProperty("dcat:dataset")
+    List<Dataset> contractOffers;
+
+    @JsonProperty("dcat:service")
+    DataService service;
+
+    @JsonProperty("edc:participantId")
+    String participantId;
+
+    @JsonProperty("@context")
+    JsonNode context;
 
     @JsonIgnore
     protected Map<String, Integer> contractOffersMap = new HashMap<>();
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
 
-    public List<Offer> getContractOffers() {
+    public List<Dataset> getContractOffers() {
         return contractOffers;
     }
 
-    public void setContractOffers(List<Offer> contractOffers) {
+    public void setContractOffers(List<Dataset> contractOffers) {
         this.contractOffers = contractOffers;
     }
 
     public Map<String, Integer> loadContractOffersMapByAssetId(){
         int i = 0;
-        for(Offer contractOffer: this.contractOffers){
-            this.contractOffersMap.put(contractOffer.getAsset().getId(),i);
+        for(Dataset contractOffer: this.contractOffers){
+            this.contractOffersMap.put(contractOffer.getAssetId(),i);
             i++;
         }
         return this.contractOffersMap;
@@ -71,5 +74,29 @@ public class Catalog {
 
     public void setContractOffersMap(Map<String, Integer> contractOffersMap) {
         this.contractOffersMap = contractOffersMap;
+    }
+
+    public DataService getService() {
+        return service;
+    }
+
+    public void setService(DataService service) {
+        this.service = service;
+    }
+
+    public String getParticipantId() {
+        return participantId;
+    }
+
+    public void setParticipantId(String participantId) {
+        this.participantId = participantId;
+    }
+
+    public JsonNode getContext() {
+        return context;
+    }
+
+    public void setContext(JsonNode context) {
+        this.context = context;
     }
 }
