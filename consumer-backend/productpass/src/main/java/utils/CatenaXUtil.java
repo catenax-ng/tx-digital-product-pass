@@ -29,6 +29,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import utils.exceptions.UtilException;
 
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,18 +55,16 @@ public final class CatenaXUtil {
         return matcher.group();
     }
     public static String buildManagementEndpoint(Environment env, String path){
+        try {
         String edcEndpoint = env.getProperty("configuration.edc.endpoint");
         String managementEndpoint = env.getProperty("configuration.edc.management");
-        if(edcEndpoint.endsWith("/") && edcEndpoint.startsWith("/")) {
-            return edcEndpoint + managementEndpoint.substring(1);
-        } else if (edcEndpoint.endsWith("/") && !edcEndpoint.startsWith("/")) {
-            return edcEndpoint + managementEndpoint;
-        } else if(!edcEndpoint.endsWith("/") && !edcEndpoint.startsWith("/")) {
-            return edcEndpoint + "/"+ managementEndpoint;
-        } else{
-            return edcEndpoint;
+        if(edcEndpoint == null || managementEndpoint == null){
+            throw new UtilException(CatenaXUtil.class,"[ERROR] EDC endpoint is null or Management endpoint is null");
         }
-
+        return Paths.get(edcEndpoint, managementEndpoint, path).toAbsolutePath().toString();
+        }catch (Exception e){
+            throw new UtilException(CatenaXUtil.class,"[ERROR] Invalid edc endpoint or management endpoint");
+        }
     }
 
     public static String buildEndpoint(String endpoint){

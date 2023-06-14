@@ -26,6 +26,7 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.cglib.core.Block;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -37,8 +38,6 @@ public class TransferRequest {
     String assetId;
     @JsonProperty("connectorAddress")
     String connectorAddress;
-    @JsonProperty("connectorId")
-    String connectorId;
     @JsonProperty("contractId")
     String contractId;
     @JsonProperty("dataDestination")
@@ -51,6 +50,21 @@ public class TransferRequest {
     String protocol;
     @JsonProperty("transferType")
     TransferType transferType;
+
+    public TransferRequest(JsonNode context, String assetId, String connectorAddress, String contractId, DataDestination dataDestination, Boolean managedResources, PrivateProperties privateProperties, String protocol, TransferType transferType) {
+        this.context = context;
+        this.assetId = assetId;
+        this.connectorAddress = connectorAddress;
+        this.contractId = contractId;
+        this.dataDestination = dataDestination;
+        this.managedResources = managedResources;
+        this.privateProperties = privateProperties;
+        this.protocol = protocol;
+        this.transferType = transferType;
+    }
+
+    public TransferRequest() {
+    }
 
     public JsonNode getContext() {
         return context;
@@ -76,13 +90,6 @@ public class TransferRequest {
         this.connectorAddress = connectorAddress;
     }
 
-    public String getConnectorId() {
-        return connectorId;
-    }
-
-    public void setConnectorId(String connectorId) {
-        this.connectorId = connectorId;
-    }
 
     public String getContractId() {
         return contractId;
@@ -133,11 +140,11 @@ public class TransferRequest {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class TransferType{
+    public static class TransferType{
         @JsonProperty("contentType")
         String contentType;
         @JsonProperty("isFinite")
-        String isFinite;
+        Boolean isFinite;
 
         public String getContentType() {
             return contentType;
@@ -147,16 +154,16 @@ public class TransferRequest {
             this.contentType = contentType;
         }
 
-        public String getIsFinite() {
+        public Boolean getIsFinite() {
             return isFinite;
         }
 
-        public void setIsFinite(String isFinite) {
+        public void setIsFinite(Boolean isFinite) {
             this.isFinite = isFinite;
         }
     }
-
-    static class DataDestination {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class DataDestination {
         @JsonProperty("properties")
         Properties properties;
 
@@ -169,7 +176,7 @@ public class TransferRequest {
         }
     }
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class PrivateProperties{
+    public static class PrivateProperties{
         @JsonProperty("receiverHttpEndpoint")
         String receiverHttpEndpoint;
 

@@ -71,23 +71,7 @@ public class ApiController {
     private @Autowired AuthenticationService authService;
     private @Autowired PassportConfig passportConfig;
     private @Autowired HttpUtil httpUtil;
-
-    public Dataset getContractOfferByAssetId(String assetId, String providerUrl) throws ControllerException {
-        /*
-         *   This method receives the assetId and looks up for targets with the same name.
-         */
-        try {
-            Catalog catalog = dataService.getContractOfferCatalog(providerUrl);
-            Map<String, Integer> offers = catalog.loadContractOffersMapByAssetId();
-            if (!offers.containsKey(assetId)) {
-                return null;
-            }
-            Integer index = offers.get(assetId);
-            return catalog.getContractOffers().get(index);
-        } catch (Exception e) {
-            throw new ControllerException(this.getClass().getName(), e, "It was not possible to get Contract Offer for assetId [" + assetId + "]");
-        }
-    }
+    private @Autowired JsonUtil jsonUtil;
     @RequestMapping(value="/api/*", method = RequestMethod.GET)
     @Hidden         // hide this endpoint from api documentation - swagger-ui
     Response index() throws Exception{
@@ -192,7 +176,7 @@ public class ApiController {
             /*[1]=========================================*/
             // Get catalog with all the contract offers
             try {
-                contractOffer = this.getContractOfferByAssetId(assetId, connectorAddress);
+                contractOffer = (Offer) dataService.getContractOfferByAssetId(assetId, connectorAddress);
             } catch (ControllerException e) {
                 response.message = "The EDC is not reachable, it was not possible to retrieve catalog!";
                 response.status = 502;
@@ -247,16 +231,30 @@ public class ApiController {
             }
 
 
+            String receiverEndpoint = env.getProperty("configuration.edc.receiverEndpoint");
+            TransferRequest.TransferType transferType = null;
+
+            transferType.setContentType("application/octet-stream");
+            transferType.setIsFinite(true);
+
+            TransferRequest.DataDestination dataDestination = null;
+            dataDestination.setProperties(new Properties("HttpProxy"));
+
+            TransferRequest.PrivateProperties privateProperties = null;
+            privateProperties.setReceiverHttpEndpoint(receiverEndpoint);
+
             /*[6]=========================================*/
             // Configure Transfer Request
             TransferRequest transferRequest = new TransferRequest(
-                    DataTransferService.generateTransferId(negotiation, connectorId, connectorAddress),
-                    connectorId,
-                    connectorAddress,
-                    negotiation.getContractAgreementId(),
+                    jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
                     assetId,
+                    connectorAddress,
+                    contractOffer.getOfferId(),
+                    dataDestination,
                     false,
-                    "HttpProxy"
+                    privateProperties,
+                    "dataspace-protocol-http",
+                    transferType
             );
             /*[7]=========================================*/
             // Initiate the transfer process
@@ -304,9 +302,9 @@ public class ApiController {
             Integer maxRetries = env.getProperty("configuration.maxRetries", Integer.class,5);
             while (actualRetries <= maxRetries) {
                 try {
-                    response = dataController.getPassport(transferRequest.getId(), version);
+                    response = dataController.getPassport(transferRequest.getAssetId(), version);
                 } catch (Exception e) {
-                    LogUtil.printError("[" + transferRequest.getId() + "] Waiting 5 seconds and retrying #"+actualRetries+" of "+maxRetries+"... ");
+                    LogUtil.printError("[" + transferRequest.getAssetId() + "] Waiting 5 seconds and retrying #"+actualRetries+" of "+maxRetries+"... ");
                     Thread.sleep(5000);
                 }
                 if(response.data!=null){
@@ -330,7 +328,7 @@ public class ApiController {
 
             // Error or Exception response
             if(response.message == null){
-                response.message = "Passport for transfer [" + transferRequest.getId() + "] not found in provider!";
+                response.message = "Passport for transfer [" + transferRequest.getAssetId() + "] not found in provider!";
                 response.status = 404;
                 response.statusText = "Not Found";
                 LogUtil.printError("["+response.status+" Not Found]: "+response.message);

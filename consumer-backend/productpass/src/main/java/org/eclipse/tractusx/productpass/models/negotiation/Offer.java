@@ -25,6 +25,9 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Offer extends Dataset {
 
@@ -33,6 +36,26 @@ public class Offer extends Dataset {
 
     @JsonProperty("assetId")
     String assetId;
+
+    public Offer(String id, String type, Set policy, List<Distribution> distributions, String assetDescription, String assetId, String offerId, String assetId1) {
+        super(id, type, policy, distributions, assetDescription, assetId);
+        this.offerId = offerId;
+        this.assetId = assetId1;
+    }
+
+    public Offer(String id, String type, String offerId, String assetId) {
+        super(id, type);
+        this.offerId = offerId;
+        this.assetId = assetId;
+    }
+
+    public Offer(String id, String type, Set policy, List<Distribution> distributions, String assetDescription, String assetId) {
+        super(id, type, policy, distributions, assetDescription, assetId);
+    }
+
+    public Offer(String id, String type) {
+        super(id, type);
+    }
 
     public void open(){
         this.offerId = this.policy.id;

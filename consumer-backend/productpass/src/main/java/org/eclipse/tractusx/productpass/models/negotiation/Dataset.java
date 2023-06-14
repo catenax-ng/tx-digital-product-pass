@@ -40,6 +40,18 @@ public class Dataset extends DidDocument{
     @JsonProperty("edc:id")
     String assetId;
 
+    public Dataset(String id, String type, Set policy, List<Distribution> distributions, String assetDescription, String assetId) {
+        super(id, type);
+        this.policy = policy;
+        this.distributions = distributions;
+        this.assetDescription = assetDescription;
+        this.assetId = assetId;
+    }
+
+    public Dataset(String id, String type) {
+        super(id, type);
+    }
+
 
     public Set getPolicy() {
         return policy;

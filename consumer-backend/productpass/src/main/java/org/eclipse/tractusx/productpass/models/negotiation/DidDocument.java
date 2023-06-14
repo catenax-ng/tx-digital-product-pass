@@ -35,6 +35,14 @@ public class DidDocument {
     @JsonProperty("@type")
     String type;
 
+    public DidDocument(String id, String type) {
+        this.id = id;
+        this.type = type;
+    }
+
+    public DidDocument() {
+    }
+
     public String getId() {
         return id;
     }

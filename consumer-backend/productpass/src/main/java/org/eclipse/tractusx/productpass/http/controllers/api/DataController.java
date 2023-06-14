@@ -39,6 +39,7 @@ import org.eclipse.tractusx.productpass.services.AuthenticationService;
 import org.eclipse.tractusx.productpass.services.DataTransferService;
 import org.eclipse.tractusx.productpass.services.VaultService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import utils.HttpUtil;
 import utils.LogUtil;
@@ -59,7 +60,7 @@ public class DataController {
     private @Autowired AasService aasService;
     private @Autowired AuthenticationService authService;
 
-
+    private @Autowired Environment env;
     @Autowired
     HttpUtil httpUtil;
 
@@ -79,7 +80,7 @@ public class DataController {
         Response response = httpUtil.getResponse();
         Passport passport = null;
         if(version.equals("v3.0.1")) { // Currently supporting just version v3
-            passport = dataService.getPassportV3(transferId);
+            passport = dataService.getPassportV3(transferId,  env.getProperty("configuration.passport.dataTransfer.endpoint"));
         }else{
             response.message = "Version is not available!";
             response.status = 400;

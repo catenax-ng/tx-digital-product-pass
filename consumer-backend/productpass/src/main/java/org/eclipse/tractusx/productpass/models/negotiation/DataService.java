@@ -35,6 +35,12 @@ public class DataService extends DidDocument {
     @JsonProperty("dct:endpointUrl")
     String endpoint;
 
+    public DataService(String id, String type, String terms, String endpoint) {
+        super(id, type);
+        this.terms = terms;
+        this.endpoint = endpoint;
+    }
+
     public String getTerms() {
         return terms;
     }

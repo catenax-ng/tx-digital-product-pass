@@ -36,4 +36,14 @@ public class EdcResponse extends DidDocument{
 
     @JsonProperty("@context")
     JsonNode context;
+
+    public EdcResponse(String id, String type, Integer createdAt, JsonNode context) {
+        super(id, type);
+        this.createdAt = createdAt;
+        this.context = context;
+    }
+
+    public EdcResponse(String id, String type) {
+        super(id, type);
+    }
 }

@@ -24,20 +24,20 @@
 package org.eclipse.tractusx.productpass.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
-import org.sonarsource.scanner.api.internal.shaded.minimaljson.Json;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import utils.*;
 
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -48,63 +48,107 @@ import java.util.Map;
 public class DataTransferService extends BaseService {
 
 
+
     private final HttpUtil httpUtil;
 
     private final JsonUtil jsonUtil;
 
-    public String APIKey;
+    public String apiKey;
+    public String bpnNumber;
 
-    public String serverUrl;
-    public String providerUrl;
+    public String edcEndpoint;
+
+    public String managementPath;
+    public String catalogPath;
+    public String negotiationPath;
+    public String transferPath;
+
+    public Environment env;
 
 
     @Autowired
     public DataTransferService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.jsonUtil = jsonUtil;
+        this.env = env;
         this.init(vaultService, env);
-        this.checkEmptyVariables(List.of("APIKey")); // Add API Key as optional for initialization
+        this.checkEmptyVariables(List.of("apiKey")); // Add API Key as optional for initialization
     }
 
     public void init(VaultService vaultService, Environment env){
-        this.APIKey = (String) vaultService.getLocalSecret("apiKey");
-        this.serverUrl = env.getProperty("configuration.endpoints.serverUrl", "");
-        this.providerUrl = env.getProperty("configuration.endpoints.providerUrl", "");
+        this.apiKey = (String) vaultService.getLocalSecret("edc.apiKey");
+        this.bpnNumber = (String) vaultService.getLocalSecret("edc.participantId");
+        this.edcEndpoint = env.getProperty("configuration.edc.endpoint", "");
+        this.catalogPath = env.getProperty("configuration.edc.catalog", "");
+        this.managementPath = env.getProperty("configuration.edc.management", "");
+        this.negotiationPath = env.getProperty("configuration.edc.negotiation", "");
+        this.transferPath = env.getProperty("configuration.edc.transfer", "");
     }
 
     @Override
     public List<String> getEmptyVariables() {
         List<String> missingVariables = new ArrayList<>();
-        if (this.serverUrl == null || this.serverUrl.isEmpty()) {
-            missingVariables.add("serverUrl");
+        if (this.edcEndpoint == null || this.edcEndpoint.isEmpty()) {
+            missingVariables.add("endpoint");
         }
-        if (APIKey == null || APIKey.isEmpty()) {
-            missingVariables.add("APIKey");
+        if (this.apiKey == null || this.apiKey.isEmpty()) {
+            missingVariables.add("apiKey");
         }
-        if (this.serverUrl == null || this.providerUrl.isEmpty()) {
-            missingVariables.add("providerUrl");
+        if (this.bpnNumber == null || this.bpnNumber.isEmpty()) {
+            missingVariables.add("bpnNumber");
         }
+        if (this.managementPath == null || this.managementPath.isEmpty()) {
+            missingVariables.add("management");
+        }
+        if (this.catalogPath == null || this.catalogPath.isEmpty()) {
+            missingVariables.add("catalog");
+        }
+        if (this.negotiationPath == null || this.negotiationPath.isEmpty()) {
+            missingVariables.add("negotiation");
+        }
+        if (this.transferPath == null || this.transferPath.isEmpty()) {
+            missingVariables.add("transfer");
+        }
+
         return missingVariables;
+    }
+
+    public Dataset getContractOfferByAssetId(String assetId, String providerUrl) throws ControllerException {
+        /*
+         *   This method receives the assetId and looks up for targets with the same name.
+         */
+        try {
+            Catalog catalog = this.getContractOfferCatalog(providerUrl);
+            Map<String, Integer> offers = catalog.loadContractOffersMapByAssetId();
+            if (!offers.containsKey(assetId)) {
+                return null;
+            }
+            Integer index = offers.get(assetId);
+            return catalog.getContractOffers().get(index);
+        } catch (Exception e) {
+            throw new ControllerException(this.getClass().getName(), e, "It was not possible to get Contract Offer for assetId [" + assetId + "]");
+        }
     }
 
     public Catalog getContractOfferCatalog(String providerUrl) {
         try {
             this.checkEmptyVariables();
-            String provider = providerUrl;
-            String path = env.getProperty("configuration.edc.catalog");
-            if (providerUrl == null) {
-                provider = this.providerUrl;
-            }
-            String url = edcTools
-            Map<String, Object> params = httpUtil.getParams();
-            params.put("providerUrl", provider);
+
+            String url = CatenaXUtil.buildManagementEndpoint(env, this.catalogPath);
+            LogUtil.printMessage("Request Url: "+url);
+            // Simple catalog request query with no limitation.
+            Object body = new CatalogRequest(
+                jsonUtil.newJsonNode(),
+                providerUrl,
+                new CatalogRequest.QuerySpec()
+            );
+
             HttpHeaders headers = httpUtil.getHeaders();
             headers.add("Content-Type", "application/json");
-            headers.add("X-Api-Key", APIKey);
-            ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, false, false);
-            String body = (String) response.getBody();
-            JsonNode json = jsonUtil.toJsonNode(body);
-            return (Catalog) jsonUtil.bindJsonNode(json, Catalog.class);
+            headers.add("X-Api-Key", this.apiKey);
+            ResponseEntity<?> response = httpUtil.doPost(url, JsonNode.class, headers, httpUtil.getParams(), body, false, false);
+            JsonNode result = (JsonNode) response.getBody();
+            return (Catalog) jsonUtil.bindJsonNode(result, Catalog.class);
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getContractOfferCatalog",
                     e,
@@ -116,21 +160,17 @@ public class DataTransferService extends BaseService {
         try {
             this.checkEmptyVariables();
             contractOffer.open();
-            String provider = providerUrl;
             LogUtil.printDebug("["+contractOffer.getId()+"] ===== [INITIALIZING CONTRACT NEGOTIATION] ===========================================", true);
+            String url = CatenaXUtil.buildManagementEndpoint(env, this.negotiationPath);
+            Object body = new NegotiationRequest(
+                jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
+                    providerUrl,
+                    this.bpnNumber,
+                    contractOffer
+            );
             HttpHeaders headers = httpUtil.getHeaders();
-            String path = "/consumer/data/contractnegotiations";
-            // Get variables from configuration
-            if (providerUrl == null) {
-                provider = this.providerUrl;
-            }
-            if (this.serverUrl .equals("") || APIKey == null) {
-                return null;
-            }
-            String url =  this.serverUrl  + path;
             headers.add("Content-Type", "application/json");
-            headers.add("X-Api-Key", APIKey);
-            Object body = new NegotiationOffer(contractOffer.getConnectorId(), provider, contractOffer);
+            headers.add("X-Api-Key", this.apiKey);
             ResponseEntity<?> response = httpUtil.doPost(url, JsonNode.class, headers, httpUtil.getParams(), body, false, false);
             JsonNode result = (JsonNode) response.getBody();
             return (Negotiation) jsonUtil.bindJsonNode(result, Negotiation.class);
@@ -144,15 +184,14 @@ public class DataTransferService extends BaseService {
     public Negotiation getNegotiation(String Id) {
         try {
             this.checkEmptyVariables();
-            HttpHeaders headers = httpUtil.getHeaders();
-            String path = "/consumer/data/contractnegotiations";
+
+            String endpoint = CatenaXUtil.buildManagementEndpoint(env, this.negotiationPath);
             // Get variables from configuration
-            if (this.serverUrl .equals("") || APIKey == null) {
-                return null;
-            }
-            String url = this.serverUrl  + path + "/" + Id;
+            String url = Paths.get(endpoint, Id).toAbsolutePath().toString();
+
+            HttpHeaders headers = httpUtil.getHeaders();
             headers.add("Content-Type", "application/json");
-            headers.add("X-Api-Key", APIKey);
+            headers.add("X-Api-Key", this.apiKey);
             Map<String, Object> params = httpUtil.getParams();
             JsonNode body = null;
             String actualState = "";
@@ -174,7 +213,7 @@ public class DataTransferService extends BaseService {
                             "It was not possible to do contract negotiations!");
                 }
                 String state = body.get("state").asText();
-                if (state.equals("CONFIRMED") || state.equals("ERROR")) {
+                if (state.equals("CONFIRMED") || state.equals("ERROR") || state.equals("FINALIZED")) {
                     sw = false;
                     LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT NEGOTIATION] ===========================================", true);
                 }
@@ -199,11 +238,11 @@ public class DataTransferService extends BaseService {
         try {
             this.checkEmptyVariables();
             HttpHeaders headers = httpUtil.getHeaders();
-            String path = "/consumer/data/transferprocess";
             // Get variables from configuration
-            String url = this.serverUrl + path;
+            String url = CatenaXUtil.buildManagementEndpoint(env, this.transferPath);
+
             headers.add("Content-Type", "application/json");
-            headers.add("X-Api-Key", APIKey);
+            headers.add("X-Api-Key", this.apiKey);
             Object body = transferRequest;
             ResponseEntity<?> response = httpUtil.doPost(url, String.class, headers, httpUtil.getParams(), body, false, false);
             String responseBody = (String) response.getBody();
@@ -219,10 +258,10 @@ public class DataTransferService extends BaseService {
         try {
             this.checkEmptyVariables();
             HttpHeaders headers = httpUtil.getHeaders();
-            String path = "/consumer/data/transferprocess";
-            String url = this.serverUrl  + path + "/" + Id;
+            String endpoint = CatenaXUtil.buildManagementEndpoint(env, this.transferPath);
             headers.add("Content-Type", "application/json");
-            headers.add("X-Api-Key", APIKey);
+            headers.add("X-Api-Key", this.apiKey);
+            String url = Paths.get(endpoint, Id).toAbsolutePath().toString();
             Map<String, Object> params = httpUtil.getParams();
             JsonNode body =  null;
             String actualState = "";
@@ -265,18 +304,17 @@ public class DataTransferService extends BaseService {
     }
 
 
-    public PassportV3 getPassportV3(String transferProcessId) {
+    public PassportV3 getPassportV3(String transferProcessId, String endpoint) {
         try {
             this.checkEmptyVariables();
-            String path = "/consumer_backend";
-            String url = this.serverUrl  + path + "/" + transferProcessId;
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = httpUtil.getHeaders();
             headers.add("Accept", "application/octet-stream");
             boolean retry = false;
+
             ResponseEntity<?> response = null;
             try {
-                response = httpUtil.doGet(url, String.class, headers, params, false, false);
+                response = httpUtil.doGet(endpoint, String.class, headers, params, false, false);
             }catch (Exception e){
                 throw new ServiceException(this.getClass().getName() + ".getPassportV3", "It was not possible to get passport with id " + transferProcessId);
             }

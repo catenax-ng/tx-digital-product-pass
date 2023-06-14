@@ -41,6 +41,22 @@ public class CatalogRequest {
     @JsonProperty("querySpec")
     QuerySpec querySpec;
 
+    public CatalogRequest(JsonNode context, String providerUrl, QuerySpec querySpec) {
+        this.context = context;
+        this.protocol = "dataspace-protocol-http";
+        this.providerUrl = providerUrl;
+        this.querySpec = querySpec;
+    }
+    public CatalogRequest(JsonNode context, String protocol, String providerUrl, QuerySpec querySpec) {
+        this.context = context;
+        this.protocol = protocol;
+        this.providerUrl = providerUrl;
+        this.querySpec = querySpec;
+    }
+
+    public CatalogRequest() {
+    }
+
     public JsonNode getContext() {
         return context;
     }
@@ -75,7 +91,7 @@ public class CatalogRequest {
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    static class QuerySpec {
+    public static class QuerySpec {
         @JsonProperty("offset")
         Integer offset;
 
@@ -87,13 +103,34 @@ public class CatalogRequest {
 
         @JsonProperty("range")
         Range range;
+
+        public QuerySpec(Integer offset, Integer limit, String filter, Range range, String sortField, String criterion) {
+            this.offset = offset;
+            this.limit = limit;
+            this.filter = filter;
+            this.range = range;
+            this.sortField = sortField;
+            this.criterion = criterion;
+        }
+
+        public QuerySpec() {
+        }
+
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        static class Range {
+        public static class Range {
             @JsonProperty("from")
             Integer from;
 
             @JsonProperty("to")
             Integer to;
+
+            public Range(Integer from, Integer to) {
+                this.from = from;
+                this.to = to;
+            }
+
+            public Range() {
+            }
 
             public Integer getFrom() {
                 return from;

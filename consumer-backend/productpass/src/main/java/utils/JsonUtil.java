@@ -87,6 +87,9 @@ public final class JsonUtil {
     public ObjectNode newJson(){
         return JsonNodeFactory.instance.objectNode();
     }
+    public JsonNode newJsonNode(){
+        return JsonNodeFactory.instance.objectNode();
+    }
 
     public Boolean isJson(String jsonString){
         try {
@@ -251,6 +254,16 @@ public final class JsonUtil {
             throw new UtilException(JsonUtil.class, "It was not possible to parse json -> [" + e.getMessage() + "]");
         }
     }
+
+    public JsonNode toJsonNode(Map<String, Object> json){
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.valueToTree(json);
+        } catch (Exception e) {
+            throw new UtilException(JsonUtil.class, "It was not possible to parse json -> [" + e.getMessage() + "]");
+        }
+    }
+
 
     public Map<?,?> toMap(Object obj){
         ObjectMapper mapper = new ObjectMapper();

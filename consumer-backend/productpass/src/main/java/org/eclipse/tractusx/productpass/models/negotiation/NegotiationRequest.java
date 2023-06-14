@@ -25,35 +25,68 @@ package org.eclipse.tractusx.productpass.models.negotiation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NegotiationOffer {
+public class NegotiationRequest {
 
     @JsonProperty("@context")
-    String context;
+    JsonNode context;
 
     @JsonProperty("@type")
+    String type;
+    @JsonProperty("connectorAddress")
+    String connectorAddress;
+    @JsonProperty("protocol")
     String protocol;
-    @JsonProperty("providerId")
+
+    @JsonProperty("connectorId")
     String connectorId;
 
     @JsonProperty("providerId")
     String providerId;
 
-    @JsonProperty("connectorAddress")
-    String connectorAddress;
-
     @JsonProperty("offer")
     Offer offer;
 
-    public NegotiationOffer(){
-
+    public NegotiationRequest(JsonNode context, String connectorAddress, String protocol, String connectorId, String providerId, Offer offer) {
+        this.context = context;
+        this.type = "NegotiationInitiateRequestDto";
+        this.connectorAddress = connectorAddress;
+        this.protocol = protocol;
+        this.connectorId = connectorId;
+        this.providerId = providerId;
+        this.offer = offer;
+    }
+    public NegotiationRequest(JsonNode context, String connectorAddress, String connectorId, String providerId, Offer offer) {
+        this.context = context;
+        this.type = "NegotiationInitiateRequestDto";
+        this.connectorAddress = connectorAddress;
+        this.protocol = "dataspace-protocol-http";
+        this.connectorId = connectorId;
+        this.providerId = providerId;
+        this.offer = offer;
+    }
+    public NegotiationRequest(JsonNode context, String connectorAddress, String connectorId, Offer offer) {
+        this.context = context;
+        this.type = "NegotiationInitiateRequestDto";
+        this.connectorAddress = connectorAddress;
+        this.protocol = "dataspace-protocol-http";
+        this.connectorId = connectorId;
+        this.offer = offer;
+    }
+    public NegotiationRequest(JsonNode context, String type, String connectorAddress, String protocol, String connectorId, String providerId, Offer offer) {
+        this.context = context;
+        this.type = type;
+        this.connectorAddress = connectorAddress;
+        this.protocol = protocol;
+        this.connectorId = connectorId;
+        this.providerId = providerId;
+        this.offer = offer;
     }
 
-    public NegotiationOffer(String connectorId, String connectorAddress, Offer offer) {
-        this.connectorId = connectorId;
-        this.connectorAddress = connectorAddress;
-        this.offer = offer;
+
+    public NegotiationRequest() {
     }
 
     public String getConnectorId() {
@@ -80,11 +113,11 @@ public class NegotiationOffer {
         this.offer = offer;
     }
 
-    public String getContext() {
+    public JsonNode getContext() {
         return context;
     }
 
-    public void setContext(String context) {
+    public void setContext(JsonNode context) {
         this.context = context;
     }
 
@@ -102,5 +135,13 @@ public class NegotiationOffer {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -40,6 +40,28 @@ public class Set extends DidDocument{
     @JsonProperty("odrl:target")
     String target;
 
+    public Set(String id, String type, List<Constraint> permissions, List<Constraint> prohibitions, List<Constraint> obligations, String target) {
+        super(id, type);
+        this.permissions = permissions;
+        this.prohibitions = prohibitions;
+        this.obligations = obligations;
+        this.target = target;
+    }
+
+    public Set(List<Constraint> permissions, List<Constraint> prohibitions, List<Constraint> obligations, String target) {
+        this.permissions = permissions;
+        this.prohibitions = prohibitions;
+        this.obligations = obligations;
+        this.target = target;
+    }
+
+    public Set(String id, String type) {
+        super(id, type);
+    }
+
+    public Set() {
+    }
+
     public String getTarget() {
         return target;
     }

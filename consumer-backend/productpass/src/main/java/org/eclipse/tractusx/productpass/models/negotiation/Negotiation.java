@@ -50,6 +50,30 @@ public class Negotiation extends DidDocument {
     @JsonProperty("@context")
     JsonNode context;
 
+    public Negotiation(String id, String type, String edcType, String protocol, String state, String counterPartyAddress, String callbackAddresses, String contractAgreementId, JsonNode context) {
+        super(id, type);
+        this.edcType = edcType;
+        this.protocol = protocol;
+        this.state = state;
+        this.counterPartyAddress = counterPartyAddress;
+        this.callbackAddresses = callbackAddresses;
+        this.contractAgreementId = contractAgreementId;
+        this.context = context;
+    }
+
+    public Negotiation(String edcType, String protocol, String state, String counterPartyAddress, String callbackAddresses, String contractAgreementId, JsonNode context) {
+        this.edcType = edcType;
+        this.protocol = protocol;
+        this.state = state;
+        this.counterPartyAddress = counterPartyAddress;
+        this.callbackAddresses = callbackAddresses;
+        this.contractAgreementId = contractAgreementId;
+        this.context = context;
+    }
+
+    public Negotiation() {
+    }
+
     public String getEdcType() {
         return edcType;
     }

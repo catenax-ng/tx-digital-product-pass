@@ -55,6 +55,36 @@ public class Transfer extends DidDocument{
     @JsonProperty("@context")
     JsonNode context;
 
+    public Transfer(String id, String type, String state, Long stateTimestamp, String edcType, List<JsonNode> callbackAddresses, DataDestination dataDestination, DataRequest dataRequest, String receiverHttpEndpoint, JsonNode context) {
+        super(id, type);
+        this.state = state;
+        this.stateTimestamp = stateTimestamp;
+        this.edcType = edcType;
+        this.callbackAddresses = callbackAddresses;
+        this.dataDestination = dataDestination;
+        this.dataRequest = dataRequest;
+        this.receiverHttpEndpoint = receiverHttpEndpoint;
+        this.context = context;
+    }
+
+    public Transfer(String state, Long stateTimestamp, String edcType, List<JsonNode> callbackAddresses, DataDestination dataDestination, DataRequest dataRequest, String receiverHttpEndpoint, JsonNode context) {
+        this.state = state;
+        this.stateTimestamp = stateTimestamp;
+        this.edcType = edcType;
+        this.callbackAddresses = callbackAddresses;
+        this.dataDestination = dataDestination;
+        this.dataRequest = dataRequest;
+        this.receiverHttpEndpoint = receiverHttpEndpoint;
+        this.context = context;
+    }
+
+    public Transfer(String id, String type) {
+        super(id, type);
+    }
+
+    public Transfer() {
+    }
+
     public String getState() {
         return state;
     }
