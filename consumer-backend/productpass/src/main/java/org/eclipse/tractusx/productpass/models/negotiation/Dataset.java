@@ -52,6 +52,9 @@ public class Dataset extends DidDocument{
         super(id, type);
     }
 
+    public Dataset() {
+    }
+
 
     public Set getPolicy() {
         return policy;

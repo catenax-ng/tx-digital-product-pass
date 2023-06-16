@@ -135,7 +135,6 @@ public class DataTransferService extends BaseService {
             this.checkEmptyVariables();
 
             String url = CatenaXUtil.buildManagementEndpoint(env, this.catalogPath);
-            LogUtil.printMessage("Request Url: "+url);
             // Simple catalog request query with no limitation.
             Object body = new CatalogRequest(
                 jsonUtil.newJsonNode(),

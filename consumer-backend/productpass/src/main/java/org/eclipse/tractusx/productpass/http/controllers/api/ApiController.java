@@ -114,21 +114,13 @@ public class ApiController {
         Response response = httpUtil.getResponse();
         List<String> versions = passportConfig.getVersions();
         try {
-            // Configure digital twin registry query and params
-            AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = aasService.new DigitalTwinRegistryQueryById(id, idType, dtIndex, idShort);
+            Offer contractOffer = null;
+
+            // Start Digital Twin Query
+            AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = null;
             Thread digitalTwinRegistryThread = ThreadUtil.runThread(digitalTwinRegistry);
 
-            // Initialize variables
-            Offer contractOffer = null;
-            // Check if version is available
-            if (!versions.contains(version)) {
-                response.message = "This passport version is not available at the moment!";
-                response.status = 403;
-                response.statusText = "Forbidden";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            // Wait for thread to close and give a response
+            // Wait for digital twin query
             digitalTwinRegistryThread.join();
             DigitalTwin digitalTwin;
             SubModel subModel;
@@ -138,7 +130,8 @@ public class ApiController {
                 digitalTwin = digitalTwinRegistry.getDigitalTwin();
                 subModel = digitalTwinRegistry.getSubModel();
                 connectorId = subModel.getIdShort();
-                // Get first connectorAddress, a posibility is to check for "EDC" type
+
+                // Get first connectorAddress, a possibility is to check for "EDC" type
                 connectorAddress = subModel.getEndpoints().get(0).getProtocolInformation().getEndpointAddress();
 
             } catch (Exception e) {
@@ -154,6 +147,7 @@ public class ApiController {
                 response.data = subModel;
                 return httpUtil.buildResponse(response, httpResponse);
             }
+
 
             try {
                 connectorAddress = CatenaXUtil.buildEndpoint(connectorAddress);
@@ -191,8 +185,6 @@ public class ApiController {
                 response.statusText = "Not Found";
                 return httpUtil.buildResponse(response, httpResponse);
             }
-
-
             /*[2]=========================================*/
             // Start Negotiation
             Negotiation negotiation;

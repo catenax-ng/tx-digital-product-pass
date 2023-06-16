@@ -39,6 +39,15 @@ public class Distribution {
     @JsonProperty("dcat:accessService")
     String accessService;
 
+    public Distribution(String type, Format format, String accessService) {
+        this.type = type;
+        this.format = format;
+        this.accessService = accessService;
+    }
+
+    public Distribution() {
+    }
+
     public String getType() {
         return type;
     }
@@ -66,6 +75,13 @@ public class Distribution {
     static class Format{
         @JsonProperty("@id")
         String id;
+
+        public Format(String id) {
+            this.id = id;
+        }
+
+        public Format() {
+        }
 
         public String getId() {
             return id;

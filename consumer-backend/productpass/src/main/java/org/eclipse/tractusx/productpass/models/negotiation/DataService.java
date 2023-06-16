@@ -41,6 +41,9 @@ public class DataService extends DidDocument {
         this.endpoint = endpoint;
     }
 
+    public DataService() {
+    }
+
     public String getTerms() {
         return terms;
     }

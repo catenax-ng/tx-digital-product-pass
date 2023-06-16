@@ -46,6 +46,7 @@ public final class LogUtil {
     private static final Level DEBUG = Level.forName("DEBUGGER", 450);
     private static final Level EXCEPTION = Level.forName( "EXCEPTION", 100);
     private static final Level WARNING = Level.forName("WARNING", 300);
+    private static final Level HTTPError = Level.forName("HTTP ERROR", 200);
     private static final Level ERROR = Level.forName("ERROR", 200);
     private static final Level FATAL = Level.forName("FATAL", 200);
     private static final Level TEST = Level.forName("TEST", 400);
@@ -53,6 +54,7 @@ public final class LogUtil {
                     FATAL,1,
                     ERROR, 2,
                     EXCEPTION,3,
+                    HTTPError,4,
                     WARNING, 5,
                     HTTP, 6,
                     INFO, 7,
@@ -84,6 +86,13 @@ public final class LogUtil {
     }
     public static void printHTTPMessage(String strMessage){
         Level logLevel = HTTP;
+        if(!LogUtil.checkLogLevel(logLevel)){
+            return;
+        }
+        LogUtil.printLog(logLevel, strMessage);
+    }
+    public static void printHTTPErrorMessage(String strMessage){
+        Level logLevel = HTTPError;
         if(!LogUtil.checkLogLevel(logLevel)){
             return;
         }

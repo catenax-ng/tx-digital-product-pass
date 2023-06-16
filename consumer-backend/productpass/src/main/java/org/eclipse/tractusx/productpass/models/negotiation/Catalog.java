@@ -50,17 +50,19 @@ public class Catalog extends DidDocument {
     @JsonIgnore
     protected Map<String, Integer> contractOffersMap = new HashMap<>();
 
-    public Catalog(String id, String type, List<Dataset> contractOffers, DataService service, String participantId, JsonNode context, Map<String, Integer> contractOffersMap) {
+    public Catalog(String id, String type, List<Dataset> contractOffers, DataService service, String participantId, JsonNode context) {
         super(id, type);
         this.contractOffers = contractOffers;
         this.service = service;
         this.participantId = participantId;
         this.context = context;
-        this.contractOffersMap = contractOffersMap;
     }
 
     public Catalog(String id, String type) {
         super(id, type);
+    }
+
+    public Catalog() {
     }
 
 

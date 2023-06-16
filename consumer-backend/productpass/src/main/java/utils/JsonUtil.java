@@ -129,6 +129,32 @@ public final class JsonUtil {
         }
     }
 
+    public Boolean checkJsonKeys(Object sourceObj, List<String> keyPaths, String pathSep){
+        try {
+            if(sourceObj == null){
+                //Uncomment for debug logTools.printError("[DEBUG] Object == null!");
+                return false;
+            }
+            if(keyPaths == null || keyPaths.isEmpty() || pathSep.equals("")){
+                //Uncomment for debug logTools.printError("[DEBUG] keyPath empty or pathSep empty!");
+                return false;
+            }
+            Object trigger = null;
+            for (String keyPath : keyPaths) {
+
+                trigger = this.getValue(sourceObj, keyPath, pathSep, null);
+                if(trigger == null){
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            throw new UtilException(JsonUtil.class, e,  "It was not possible to check for json keys!");
+        }
+    }
+
+
+
     public Object getValue(Object sourceObj, String keyPath, String pathSep, Object defaultValue){
         try {
             if(sourceObj == null){

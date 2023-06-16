@@ -38,6 +38,15 @@ public class Constraint {
     @JsonProperty("odrl:action")
     Action action;
 
+    public Constraint(String target, Action action, List<Operator> constraints) {
+        this.target = target;
+        this.action = action;
+        this.constraints = constraints;
+    }
+
+    public Constraint() {
+    }
+
     public String getTarget() {
         return target;
     }
@@ -56,6 +65,13 @@ public class Constraint {
     static class Action{
         @JsonProperty("odrl:type")
         String type;
+
+        public Action(String type) {
+            this.type = type;
+        }
+
+        public Action() {
+        }
 
         public String getType() {
             return type;
@@ -83,6 +99,13 @@ public class Constraint {
         @JsonProperty("odrl:or")
         List<OrOperator> orOperator;
 
+        public Operator(List<OrOperator> orOperator) {
+            this.orOperator = orOperator;
+        }
+
+        public Operator() {
+        }
+
         public List<OrOperator> getOrOperator() {
             return orOperator;
         }
@@ -98,6 +121,15 @@ public class Constraint {
             String operator;
             @JsonProperty("odrl:rightOperand")
             String rightOperand;
+
+            public OrOperator(String leftOperand, String operator, String rightOperand) {
+                this.leftOperand = leftOperand;
+                this.operator = operator;
+                this.rightOperand = rightOperand;
+            }
+
+            public OrOperator() {
+            }
 
             public String getLeftOperand() {
                 return leftOperand;

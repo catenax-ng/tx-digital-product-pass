@@ -23,6 +23,7 @@
 
 package utils;
 
+import org.apache.juli.logging.Log;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -36,7 +37,7 @@ import java.util.regex.Pattern;
 public final class CatenaXUtil {
 
     private final static String bpnNumberPattern = "BPN[LSA][A-Z0-9]{12}";
-    private final static String edcDataEndpoint = "/api/v1/ids/data";
+    private final static String edcDataEndpoint = "/api/v1/dsp";
 
     public static Boolean containsBPN(String str){
         return str.matches(".*"+bpnNumberPattern+".*");
@@ -61,9 +62,9 @@ public final class CatenaXUtil {
         if(edcEndpoint == null || managementEndpoint == null){
             throw new UtilException(CatenaXUtil.class,"[ERROR] EDC endpoint is null or Management endpoint is null");
         }
-        return Paths.get(edcEndpoint, managementEndpoint, path).toAbsolutePath().toString();
+        return edcEndpoint + managementEndpoint + path;
         }catch (Exception e){
-            throw new UtilException(CatenaXUtil.class,"[ERROR] Invalid edc endpoint or management endpoint");
+            throw new UtilException(CatenaXUtil.class,e, "[ERROR] Invalid edc endpoint or management endpoint");
         }
     }
 
@@ -81,7 +82,7 @@ public final class CatenaXUtil {
                 return String.format("%s"+edcDataEndpoint,cleanUrl);
             }
         }catch (Exception e){
-            throw new UtilException(CatenaXUtil.class,"[ERROR] Invalid url ["+endpoint+"] given!");
+            throw new UtilException(CatenaXUtil.class,e,"[ERROR] Invalid url ["+endpoint+"] given!");
         }
 
     }
