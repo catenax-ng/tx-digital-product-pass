@@ -3,6 +3,8 @@
  * Catena-X - Product Passport Consumer Backend
  *
  * Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+ * Copyright (c) 2022, 2023 Contributors to the CatenaX (ng) GitHub Organisation.
+ *
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,25 +23,45 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-package org.eclipse.tractusx.productpass.managers;
+package org.eclipse.tractusx.productpass.config;
 
-import org.eclipse.tractusx.productpass.models.manager.Manager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import utils.LogUtil;
-import utils.ReflectionUtil;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-public abstract class PassportManager extends Manager {
+import java.util.List;
 
-    public PassportManager(){
-        super();
-        this.setManager(ReflectionUtil.getCurrentClassName(this.getClass()));
-        LogUtil.printMessage("[DEBUG] "+this.getDataModelName()+" created! : ["+this.dataModelPath +"]");
+@Configuration
+@ConfigurationProperties(prefix="configuration.process")
+public class ProcessConfig {
+
+    private Boolean store = true;
+
+
+    private String dir;
+
+    private Boolean indent = true;
+    public Boolean getIndent() {
+        return indent;
     }
 
-    @Override
-    public String getDataModelName(){
-        return "passportDataModel";
+    public void setIndent(Boolean indent) {
+        this.indent = indent;
     }
 
+
+    public Boolean getStore() {
+        return store;
+    }
+
+    public void setStore(Boolean store) {
+        this.store = store;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
 }

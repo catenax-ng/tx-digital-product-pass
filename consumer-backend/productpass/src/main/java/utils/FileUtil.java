@@ -105,6 +105,10 @@ public final class FileUtil {
             throw new UtilException(FileUtil.class,"[ERROR] Something when wrong when reading file in path [" + resourcePath + "], " + e.getMessage());
         }
     }
+    public String getDataDir(){
+        String workDir = this.getWorkdirPath();
+        return Paths.get(workDir ,"data").toAbsolutePath().toString();
+    }
 
     public String createDataDir(String name){
         String workDir = this.getWorkdirPath();

@@ -30,8 +30,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
+import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
+import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
@@ -47,6 +50,7 @@ import org.eclipse.tractusx.productpass.services.DataTransferService;
 import org.eclipse.tractusx.productpass.services.VaultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import utils.*;
 
@@ -71,6 +75,9 @@ public class DataController {
     private @Autowired AuthenticationService authService;
     private @Autowired PassportConfig passportConfig;
     private @Autowired Environment env;
+
+    private @Autowired ProcessConfig processConfig;
+    private @Autowired ProcessManager processManager;
     @Autowired
     HttpUtil httpUtil;
     private @Autowired JsonUtil jsonUtil;
@@ -90,7 +97,6 @@ public class DataController {
             return httpUtil.buildResponse(response, httpResponse);
         }
         try{
-            Boolean storeProcess = env.getProperty("configuration.edc.store", Boolean.class,true);
             List<String> mandatoryParams = List.of("id", "version");
             if(!jsonUtil.checkJsonKeys(searchBody, mandatoryParams, ".")){
                 response = httpUtil.getBadRequest("One or all the mandatory parameters "+mandatoryParams+" are missing");
@@ -179,6 +185,7 @@ public class DataController {
             }
 
             String processId = CrypUtil.getUUID();
+            LogUtil.printMessage(processId);
             response = null;
             response = httpUtil.getResponse();
 
@@ -186,6 +193,10 @@ public class DataController {
                     "id", processId,
                     "dataset", dataset
             );
+
+            if(processConfig.getStore()){
+                processManager.saveDataset(processId, dataset);
+            }
 
             return httpUtil.buildResponse(response, httpResponse);
     } catch (InterruptedException e) {

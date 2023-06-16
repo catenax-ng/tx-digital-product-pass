@@ -47,7 +47,11 @@ configuration:
     negotiation: '/contractnegotiations'
     transfer: '/transferprocesses'
     receiverEndpoint: 'https://materialpass.dev.demo.catena-x.net/endpoint'
+
+  process:
     store: true
+    dir: 'process'
+    indent: true
 
   endpoints:
     registryUrl: 'https://semantics.dev.demo.catena-x.net'
