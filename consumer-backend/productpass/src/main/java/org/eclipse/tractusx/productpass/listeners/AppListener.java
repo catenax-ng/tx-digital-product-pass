@@ -35,6 +35,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import utils.HttpUtil;
 import utils.LogUtil;
 
@@ -50,8 +54,7 @@ public class AppListener {
     @Autowired
     HttpUtil httpUtil;
 
-    @Autowired
-    HttpServletRequest httpRequest;
+
     @EventListener(ApplicationReadyEvent.class)
     public void onStartUp() {
         String serverStartUpMessage = "\n\n" +
@@ -66,9 +69,21 @@ public class AppListener {
         LogUtil.printMessage(serverStartUpMessage);
         LogUtil.printMessage("[ LOGGING STARTED ] <-----------------------------------------");
         LogUtil.printMessage("Creating log file...");
+        try{
+        RequestAttributes requestAttributes = RequestContextHolder
+                .currentRequestAttributes();
+        ServletRequestAttributes attributes = (ServletRequestAttributes) requestAttributes;
+        HttpServletRequest httpRequest = attributes.getRequest();
+        if(httpRequest != null){
+            httpUtil.setSessionValue(httpRequest, "processDataModel", new ProcessDataModel());
+            LogUtil.printMessage("[PROCESS] Ready to start processing requests... ");
+        }else{
+            LogUtil.printError("[PROCESS] Failed to start process data model... ");
+        }}catch (Exception e){
+            LogUtil.printException(e, "[PROCESS] Failed to start process data model due to exception... ");
+        }
+
         // Store the process manager in memory
-        httpUtil.setSessionValue(httpRequest, "processDataModel", new ProcessDataModel());
-        LogUtil.printMessage("[PROCESS] Ready to start processing requests... ");
        }
 
 }
