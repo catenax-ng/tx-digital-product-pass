@@ -136,26 +136,29 @@ public class Status {
     public Map<String,History> getHistory() {
         return history;
     }
+    public Boolean historyExists(String name) {
+        return this.history.containsKey(name);
+    }
 
     public void setHistory(Map<String,History> history) {
         this.history = history;
     }
 
-    public void addHistory(String id, History history) {
-        this.history.put(id, history);
+    public void setHistory(String name, History history) {
+        this.history.put(name, history);
     }
     public void deleteHistory() {
         this.history = new HashMap<>();
     }
-    public Boolean removeHistory(String id) {
-        if(!this.history.containsKey(id)){
+    public Boolean removeHistory(String name) {
+        if(!this.history.containsKey(name)){
             return false;
         }
-        this.history.remove(id);
+        this.history.remove(name);
         return true;
     }
-    public History getHistory(String id) {
-        return this.history.getOrDefault(id, null);
+    public History getHistory(String name) {
+        return this.history.getOrDefault(name, null);
     }
 
 }

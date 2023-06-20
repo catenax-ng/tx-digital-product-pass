@@ -32,8 +32,8 @@ import utils.DateTimeUtil;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class History {
 
-    @JsonProperty("name")
-    public String name;
+    @JsonProperty("id")
+    public String id;
 
     @JsonProperty("status")
     public String status;
@@ -46,31 +46,31 @@ public class History {
     @JsonProperty("attempts")
     public Integer attempts;
 
-    public History(String name, String status, Integer attempts) {
-        this.name = name;
+    public History(String id, String status, Integer attempts) {
+        this.id = id;
         this.status = status;
         this.started = DateTimeUtil.getTimestamp();
         this.updated = DateTimeUtil.getTimestamp();
         this.attempts = attempts;
     }
 
-    public History(String name, String status, Long started) {
-        this.name = name;
+    public History(String id, String status, Long started) {
+        this.id = id;
         this.status = status;
         this.started = started;
         this.updated = DateTimeUtil.getTimestamp();
     }
 
-    public History(String name, String status, Long started, Integer attempts) {
-        this.name = name;
+    public History(String id, String status, Long started, Integer attempts) {
+        this.id = id;
         this.status = status;
         this.started = started;
         this.updated = DateTimeUtil.getTimestamp();
         this.attempts = attempts;
     }
 
-    public History(String name, String status) {
-        this.name = name;
+    public History(String id, String status) {
+        this.id = id;
         this.status = status;
         this.started = DateTimeUtil.getTimestamp();
         this.updated = DateTimeUtil.getTimestamp();
@@ -79,15 +79,15 @@ public class History {
     public History() {
     }
 
-    public History(String name,String status, Long started, Long updated) {
-        this.name = name;
+    public History(String id,String status, Long started, Long updated) {
+        this.id = id;
         this.status = status;
         this.started = started;
         this.updated = updated;
     }
 
-    public History(String name,String status, Long started, Long updated, Integer attempts) {
-        this.name = name;
+    public History(String id,String status, Long started, Long updated, Integer attempts) {
+        this.id = id;
         this.status = status;
         this.started = started;
         this.updated = updated;
@@ -137,11 +137,11 @@ public class History {
         this.updated = DateTimeUtil.getTimestamp();
     }
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 }

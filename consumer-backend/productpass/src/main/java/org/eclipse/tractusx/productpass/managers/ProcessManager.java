@@ -35,6 +35,8 @@ import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import utils.*;
 
 import java.nio.file.Path;
@@ -44,8 +46,6 @@ import java.util.Map;
 @Component
 public class ProcessManager {
 
-
-    private @Autowired HttpServletRequest httpRequest;
     private HttpUtil httpUtil;
     private JsonUtil jsonUtil;
 
@@ -60,14 +60,30 @@ public class ProcessManager {
     private final String processDataModelName = "processDataModel";
 
 
-    public ProcessDataModel loadDataModel() {
+    @Autowired
+    public ProcessManager(HttpUtil httpUtil, JsonUtil jsonUtil, FileUtil fileUtil, ProcessConfig processConfig) {
+        this.httpUtil = httpUtil;
+        this.jsonUtil = jsonUtil;
+        this.fileUtil = fileUtil;
+        this.processConfig = processConfig;
+    }
+
+    public ProcessDataModel loadDataModel(HttpServletRequest httpRequest) {
         try {
-            return (ProcessDataModel) httpUtil.getSessionValue(httpRequest, this.processDataModelName);
+            ProcessDataModel processDataModel = (ProcessDataModel) httpUtil.getSessionValue(httpRequest, this.processDataModelName);
+            if(processDataModel == null){
+                processDataModel = new ProcessDataModel();
+                this.httpUtil.setSessionValue(httpRequest, "processDataModel", processDataModel);
+                LogUtil.printMessage("[PROCESS] Process Data Model created, the server is ready to start processing requests...");
+            }
+            LogUtil.printMessage("DataModel: ["+jsonUtil.toJson(processDataModel.dataModel, true)+"]");
+            return processDataModel;
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "Failed to load Process DataModel!");
         }
     }
-    public void saveDataModel(ProcessDataModel dataModel) {
+
+    public void saveDataModel(HttpServletRequest httpRequest, ProcessDataModel dataModel) {
         try {
             httpUtil.setSessionValue(httpRequest, this.processDataModelName, dataModel);
         } catch (Exception e) {
@@ -75,40 +91,47 @@ public class ProcessManager {
         }
     }
 
-
-    public Process getProcess(String processId) {
+    public Process getProcess(HttpServletRequest httpRequest, String processId) {
         try {
             // Getting a process
-            ProcessDataModel dataModel = this.loadDataModel();
+            ProcessDataModel dataModel = this.loadDataModel(httpRequest);
             return dataModel.getProcess(processId);
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to get process [" + processId + "]");
         }
     }
 
-    public void setProcess(Process process) {
+
+    public String generateToken(Process process, String contractId){
+        return  CrypUtil.sha256("signToken=[" + process.getCreated() + "|" + process.id + "|" + contractId + "|" + processConfig.getSignToken()+"]"); // Add extra level of security, that just the user that has this token can sign
+    }
+    public Boolean checkProcess(HttpServletRequest httpRequest, String processId) {
+        try {
+            // Getting a process
+            ProcessDataModel dataModel = this.loadDataModel(httpRequest);
+            return dataModel.processExists(processId);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to check if process exists [" + processId + "]");
+        }
+    }
+
+
+    public void setProcess(HttpServletRequest httpRequest, Process process) {
         try { // Setting and updating a process
-            ProcessDataModel dataModel = this.loadDataModel();
-            this.saveDataModel(dataModel.addProcess(process));
+            ProcessDataModel dataModel = this.loadDataModel(httpRequest);
+            this.saveDataModel(httpRequest, dataModel.addProcess(process));
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to set process [" + process.id + "]");
         }
     }
 
-    public void setProcessState(String processId, String processState) {
+    public void setProcessState(HttpServletRequest httpRequest, String processId, String processState) {
         try { // Setting and updating a process state
             ProcessDataModel dataModel = (ProcessDataModel) httpUtil.getSessionValue(httpRequest, this.processDataModelName);
-            this.saveDataModel(dataModel.setState(processId, processState));
+            this.saveDataModel(httpRequest, dataModel.setState(processId, processState));
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to set process state [" + processState + "] for process [" + processId + "]");
         }
-    }
-
-    @Autowired
-    public ProcessManager(JsonUtil jsonUtil, FileUtil fileUtil, ProcessConfig processConfig) {
-        this.jsonUtil = jsonUtil;
-        this.fileUtil = fileUtil;
-        this.processConfig = processConfig;
     }
 
     private String getProcessDir(String processId, Boolean absolute) {
@@ -120,9 +143,9 @@ public class ProcessManager {
         }
     }
 
-    public Process createProcess(){
+    public Process createProcess(HttpServletRequest httpRequest) {
         Process process = new Process(CrypUtil.getUUID(), "CREATED");
-        this.setProcess(process);
+        this.setProcess(httpRequest, process);
         return process;
     }
 
@@ -146,12 +169,12 @@ public class ProcessManager {
             Status statusFile = null;
             if (!fileUtil.pathExists(path)) {
                 statusFile = new Status(processId, history.getStatus(), DateTimeUtil.getTimestamp());
-                statusFile.addHistory(historyId, history);
+                statusFile.setHistory(historyId, history);
             } else {
                 statusFile = (Status) jsonUtil.fromJsonFileToObject(path, Status.class);
                 statusFile.setStatus(history.getStatus());
                 statusFile.setModified(DateTimeUtil.getTimestamp());
-                statusFile.addHistory(historyId, history);
+                statusFile.setHistory(historyId, history);
             }
 
             return jsonUtil.toJsonFile(path, statusFile, processConfig.getIndent()); // Store the plain JSON
@@ -160,13 +183,22 @@ public class ProcessManager {
         }
     }
 
+    public String setDecline(String processId){
+        return this.setStatus(processId,"contract-decline", new History(
+                processId,
+                "DECLINED"
+        ));
+    }
+
+
     public String saveDataset(String processId, Dataset dataset, Long startedTime) {
         History history = new History(
-                "contract-dataset",
+                dataset.getId(),
                 "AVAILABLE",
                 startedTime
         ); // Set the history for the Dataset
-        this.setStatus(processId, dataset.getId(), history);
+        String id = "contract-dataset";
+        this.setStatus(processId, id, history);
         String path = this.getProcessFilePath(processId, this.datasetFileName);
         String returnPath = jsonUtil.toJsonFile(path, dataset, processConfig.getIndent());
         if (returnPath == null) {

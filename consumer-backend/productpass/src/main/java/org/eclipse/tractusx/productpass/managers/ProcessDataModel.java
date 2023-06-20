@@ -27,6 +27,7 @@ package org.eclipse.tractusx.productpass.managers;
 
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.springframework.stereotype.Component;
+import utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +65,10 @@ public class ProcessDataModel {
 
     public Process getProcess(String processId){
         return this.dataModel.getOrDefault(processId, null);
+    }
+
+    public Boolean processExists(String processId){
+        return this.dataModel.containsKey(processId);
     }
     public Map<String, Process> getDataModel() {
         return dataModel;

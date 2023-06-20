@@ -38,7 +38,7 @@ public class Process {
     @JsonProperty("state")
     public String state;
 
-    @JsonProperty("started")
+    @JsonProperty("created")
     public Long created;
 
     @JsonProperty("updated")

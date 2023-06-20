@@ -49,11 +49,6 @@ import utils.LogUtil;
 public class AppListener {
     @Autowired
     BuildProperties buildProperties;
-    @Autowired
-    Environment env;
-    @Autowired
-    HttpUtil httpUtil;
-
 
     @EventListener(ApplicationReadyEvent.class)
     public void onStartUp() {
@@ -69,20 +64,6 @@ public class AppListener {
         LogUtil.printMessage(serverStartUpMessage);
         LogUtil.printMessage("[ LOGGING STARTED ] <-----------------------------------------");
         LogUtil.printMessage("Creating log file...");
-        try{
-        RequestAttributes requestAttributes = RequestContextHolder
-                .currentRequestAttributes();
-        ServletRequestAttributes attributes = (ServletRequestAttributes) requestAttributes;
-        HttpServletRequest httpRequest = attributes.getRequest();
-        if(httpRequest != null){
-            httpUtil.setSessionValue(httpRequest, "processDataModel", new ProcessDataModel());
-            LogUtil.printMessage("[PROCESS] Ready to start processing requests... ");
-        }else{
-            LogUtil.printError("[PROCESS] Failed to start process data model... ");
-        }}catch (Exception e){
-            LogUtil.printException(e, "[PROCESS] Failed to start process data model due to exception... ");
-        }
-
         // Store the process manager in memory
        }
 

@@ -36,10 +36,23 @@ public class Negotiate {
     @NotNull(message = "ContractId needs to be defined!")
     @JsonProperty("contractId")
     String contractId;
+    @NotNull(message = "Token needs to be defined!")
+    @JsonProperty("token")
+    String token;
 
-    public Negotiate(String processId, String contractId) {
+
+    public Negotiate(String processId, String contractId, String token) {
         this.processId = processId;
         this.contractId = contractId;
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public Negotiate() {

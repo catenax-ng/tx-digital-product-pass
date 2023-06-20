@@ -145,7 +145,7 @@ public final class JsonUtil {
         }
     }
 
-    public Boolean checkJsonKeys(Object sourceObj, List<String> keyPaths, String pathSep){
+    public Boolean checkJsonKeys(Object sourceObj, List<String> keyPaths, String pathSep, Boolean allowEmpty){
         try {
             if(sourceObj == null){
                 //Uncomment for debug logTools.printError("[DEBUG] Object == null!");
@@ -160,6 +160,9 @@ public final class JsonUtil {
 
                 trigger = this.getValue(sourceObj, keyPath, pathSep, null);
                 if(trigger == null){
+                    return false;
+                }
+                if(!allowEmpty && trigger.equals("")){
                     return false;
                 }
             }

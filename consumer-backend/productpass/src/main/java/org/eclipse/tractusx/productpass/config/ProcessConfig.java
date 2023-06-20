@@ -40,6 +40,17 @@ public class ProcessConfig {
     private String dir;
 
     private Boolean indent = true;
+
+
+    private String signToken;
+    public String getSignToken() {
+        return signToken;
+    }
+
+    public void setSignToken(String signToken) {
+        this.signToken = signToken;
+    }
+
     public Boolean getIndent() {
         return indent;
     }
