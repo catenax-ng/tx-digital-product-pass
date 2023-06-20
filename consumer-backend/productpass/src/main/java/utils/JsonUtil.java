@@ -84,6 +84,14 @@ public final class JsonUtil {
             throw new UtilException(JsonUtil.class, "I was not possible to parse JSON! -> [" + e.getMessage() + "]");
         }
     }
+    public Object parseJson(String jsonString, Class<?> bindClass){
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(jsonString, bindClass);
+        } catch (Exception e) {
+            throw new UtilException(JsonUtil.class, "I was not possible to parse JSON! -> [" + e.getMessage() + "]");
+        }
+    }
     public ObjectNode newJson(){
         return JsonNodeFactory.instance.objectNode();
     }
@@ -124,6 +132,14 @@ public final class JsonUtil {
         try {
             String fileContent = fileUtil.readFile(path);
             return this.parseJson(fileContent);
+        } catch (Exception e) {
+            throw new UtilException(JsonUtil.class, "I was not possible to create JSON file ["+path+"]! -> [" + e.getMessage() + "]");
+        }
+    }
+    public Object fromJsonFileToObject(String path, Class<?> bindClass){
+        try {
+            String fileContent = fileUtil.readFile(path);
+            return this.parseJson(fileContent, bindClass);
         } catch (Exception e) {
             throw new UtilException(JsonUtil.class, "I was not possible to create JSON file ["+path+"]! -> [" + e.getMessage() + "]");
         }
@@ -300,7 +316,7 @@ public final class JsonUtil {
         }
     }
 
-    public Object bindJsonNode(JsonNode jsonNode, Class bindClass){
+    public Object bindJsonNode(JsonNode jsonNode, Class<?> bindClass){
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.treeToValue(jsonNode, bindClass);
@@ -308,7 +324,7 @@ public final class JsonUtil {
             throw new UtilException(JsonUtil.class, "It was not possible to parse json -> [" + e.getMessage() + "]");
         }
     }
-    public Object bindMap(Map<String,Object> json, Class bindClass){
+    public Object bindMap(Map<String,Object> json, Class<?> bindClass){
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.convertValue(mapper.valueToTree(json), bindClass);
@@ -316,7 +332,7 @@ public final class JsonUtil {
             throw new UtilException(JsonUtil.class, "It was not possible to parse json -> [" + e.getMessage() + "]");
         }
     }
-    public Object bindObject(Object json, Class bindClass){
+    public Object bindObject(Object json, Class<?> bindClass){
         ObjectMapper mapper = new ObjectMapper();
         try {
             return this.bindJsonNode(mapper.valueToTree(json), bindClass);

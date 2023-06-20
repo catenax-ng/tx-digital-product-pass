@@ -34,11 +34,15 @@ import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
+import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
+import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
+import org.eclipse.tractusx.productpass.models.http.requests.Negotiate;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
+import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.negotiation.Catalog;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
 import org.eclipse.tractusx.productpass.models.negotiation.Offer;
@@ -50,7 +54,6 @@ import org.eclipse.tractusx.productpass.services.DataTransferService;
 import org.eclipse.tractusx.productpass.services.VaultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import utils.*;
 
@@ -75,143 +78,10 @@ public class DataController {
     private @Autowired AuthenticationService authService;
     private @Autowired PassportConfig passportConfig;
     private @Autowired Environment env;
-
-    private @Autowired ProcessConfig processConfig;
-    private @Autowired ProcessManager processManager;
     @Autowired
     HttpUtil httpUtil;
     private @Autowired JsonUtil jsonUtil;
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
-    @Operation(summary = "Searches for a passport with the following id", responses = {
-            @ApiResponse(description = "Default Response Structure", content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
-            @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Dataset.class)))
-    })
-    public Response search(@Valid @RequestBody Search searchBody) {
-        Response response = httpUtil.getResponse();
-        response.status = 500;
-        response.statusText = "Internal Server Error";
-        if(!authService.isAuthenticated(httpRequest)){
-            response = httpUtil.getNotAuthorizedResponse();
-            return httpUtil.buildResponse(response, httpResponse);
-        }
-        try{
-            List<String> mandatoryParams = List.of("id", "version");
-            if(!jsonUtil.checkJsonKeys(searchBody, mandatoryParams, ".")){
-                response = httpUtil.getBadRequest("One or all the mandatory parameters "+mandatoryParams+" are missing");
-                return httpUtil.buildResponse(response, httpResponse);
-            };
 
-            List<String> versions = passportConfig.getVersions();
-            // Initialize variables
-            // Check if version is available
-            if (!versions.contains(searchBody.getVersion())) {
-                return httpUtil.buildResponse(httpUtil.getForbiddenResponse("This passport version is not available at the moment!"), httpResponse);
-            }
-
-            // Start Digital Twin Query
-            AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = aasService.new DigitalTwinRegistryQueryById(searchBody);
-            Thread digitalTwinRegistryThread = ThreadUtil.runThread(digitalTwinRegistry);
-
-            // Wait for digital twin query
-            digitalTwinRegistryThread.join();
-            DigitalTwin digitalTwin;
-            SubModel subModel;
-            String connectorId;
-            String connectorAddress;
-            try {
-                digitalTwin = digitalTwinRegistry.getDigitalTwin();
-                subModel = digitalTwinRegistry.getSubModel();
-                connectorId = subModel.getIdShort();
-                // Get first connectorAddress, a possibility is to check for "EDC" type
-                connectorAddress = subModel.getEndpoints().get(0).getProtocolInformation().getEndpointAddress();
-
-            } catch (Exception e) {
-                response.message = "Failed to get the submodel from the digital twin registry!";
-                response.status = 404;
-                response.statusText = "Not Found";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            if (connectorId.isEmpty() || connectorAddress.isEmpty()) {
-                response.message = "Failed to get connectorId and connectorAddress!";
-                response.status = 400;
-                response.statusText = "Bad Request";
-                response.data = subModel;
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-
-            try {
-                connectorAddress = CatenaXUtil.buildEndpoint(connectorAddress);
-            }catch (Exception e) {
-                response.message = "Failed to build endpoint url to ["+connectorAddress+"]!";
-                response.status = 422;
-                response.statusText = "Unprocessable Content";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            if (connectorAddress.isEmpty()) {
-                response.message = "Failed to parse endpoint ["+connectorAddress+"]!";
-                response.status = 422;
-                response.statusText = "Unprocessable Content";
-                response.data = subModel;
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            String assetId = String.join("-",digitalTwin.getIdentification(), subModel.getIdentification());
-
-            /*[1]=========================================*/
-            // Get catalog with all the contract offers
-
-            LogUtil.printMessage(connectorAddress);
-            LogUtil.printMessage(assetId);
-            Dataset dataset = null;
-            try {
-                dataset = dataService.getContractOfferByAssetId(assetId, connectorAddress);
-            } catch (ControllerException e) {
-                LogUtil.printException(e, "Exception on edc");
-                response.message = "The EDC is not reachable, it was not possible to retrieve catalog!";
-                response.status = 502;
-                response.statusText = "Bad Gateway";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            // Check if contract offer was not received
-            if (dataset == null) {
-                response.message = "Asset Id not found in any contract!";
-                response.status = 404;
-                response.statusText = "Not Found";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            String processId = CrypUtil.getUUID();
-            LogUtil.printMessage(processId);
-            response = null;
-            response = httpUtil.getResponse();
-
-            response.data = Map.of(
-                    "id", processId,
-                    "dataset", dataset
-            );
-
-            if(processConfig.getStore()){
-                processManager.saveDataset(processId, dataset);
-            }
-
-            return httpUtil.buildResponse(response, httpResponse);
-    } catch (InterruptedException e) {
-        // Restore interrupted state...
-        Thread.currentThread().interrupt();
-        response.message = e.getMessage();
-        return httpUtil.buildResponse(response, httpResponse);
-    } catch (Exception e) {
-        response.message = e.getMessage();
-        return httpUtil.buildResponse(response, httpResponse);
-    }
-
-
-
-    }
 
     @RequestMapping(value = "/passport/{transferId}", method = {RequestMethod.GET})
     @Operation(summary = "Returns product passport by transfer process Id", responses = {
@@ -220,17 +90,17 @@ public class DataController {
             @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = PassportV3.class)))
     })
-    public Response getPassport(@PathVariable("transferId") String transferId, @RequestParam(value="version", required = false, defaultValue = "v3.0.1") String version) {
+    public Response getPassport(@PathVariable("transferId") String transferId, @RequestParam(value = "version", required = false, defaultValue = "v3.0.1") String version) {
         // Check if user is Authenticated
-        if(!authService.isAuthenticated(httpRequest)){
+        if (!authService.isAuthenticated(httpRequest)) {
             Response response = httpUtil.getNotAuthorizedResponse();
             return httpUtil.buildResponse(response, httpResponse);
         }
         Response response = httpUtil.getResponse();
         Passport passport = null;
-        if(version.equals("v3.0.1")) { // Currently supporting just version v3
-            passport = dataService.getPassportV3(transferId,  env.getProperty("configuration.passport.dataTransfer.endpoint"));
-        }else{
+        if (version.equals("v3.0.1")) { // Currently supporting just version v3
+            passport = dataService.getPassportV3(transferId, env.getProperty("configuration.passport.dataTransfer.endpoint"));
+        } else {
             response.message = "Version is not available!";
             response.status = 400;
             response.statusText = "Bad Request";

@@ -32,6 +32,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import jakarta.servlet.http.HttpServletRequest;
 import org.eclipse.tractusx.productpass.models.http.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,7 +64,6 @@ import java.util.Map;
 public class Application {
     @Autowired
     BuildProperties buildProperties;
-
     @Autowired
     Environment env;
 	public static void main(String[] args) {

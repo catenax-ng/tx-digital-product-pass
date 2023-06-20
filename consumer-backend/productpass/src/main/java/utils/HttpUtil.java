@@ -72,7 +72,7 @@ public class HttpUtil {
     private  final String POST_ERROR_MESSAGE = "It was not possible to do POST request to ";
 
 
-    public  Object getSessionValue(HttpServletRequest httpRequest, String key) {
+    public Object getSessionValue(HttpServletRequest httpRequest, String key) {
         return httpRequest.getSession().getAttribute(key);
     }
 
@@ -276,6 +276,22 @@ public class HttpUtil {
                 message,
                 400,
                 "Bad Request"
+        );
+    }
+
+    public  Response getInternalError() {
+        return new Response(
+                null,
+                500,
+                "Internal Server Error"
+        );
+    }
+
+    public  Response getInternalError(String message) {
+        return new Response(
+                message,
+                500,
+                "Internal Server Error"
         );
     }
     public Response getForbiddenResponse(String message) {
