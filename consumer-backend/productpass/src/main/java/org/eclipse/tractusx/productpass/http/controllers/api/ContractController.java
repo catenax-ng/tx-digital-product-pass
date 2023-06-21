@@ -209,15 +209,123 @@ public class ContractController {
             return httpUtil.buildResponse(response, httpResponse);
         }
     }
+    @RequestMapping(value = "/status/{processId}", method = RequestMethod.GET)
+    @Operation(summary = "Get status from process")
+    public Response status(@PathVariable String processId) {
+        Response response = httpUtil.getInternalError();
+
+
+        // Check for authentication
+        if (!authService.isAuthenticated(httpRequest)) {
+            response = httpUtil.getNotAuthorizedResponse();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+        try {
+            // Check for processId
+            if (!processManager.checkProcess(httpRequest, processId)) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Get status
+            response = httpUtil.getResponse();
+            response.data = processManager.getStatus(processId);
+            return httpUtil.buildResponse(response, httpResponse);
+
+        } catch (Exception e) {
+            response.message = e.getMessage();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+    }
+    @RequestMapping(value = "/sign", method = RequestMethod.POST)
+    @Operation(summary = "Sign contract retrieved from provider and start negotiation")
+    public Response sign(@Valid @RequestBody Negotiate negotiateBody) {
+        Long signedAt = DateTimeUtil.getTimestamp();
+        Response response = httpUtil.getInternalError();
+
+        // Check for authentication
+        if (!authService.isAuthenticated(httpRequest)) {
+            response = httpUtil.getNotAuthorizedResponse();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+        try {
+            // Check for the mandatory fields
+            List<String> mandatoryParams = List.of("processId", "contractId", "token");
+            if (!jsonUtil.checkJsonKeys(negotiateBody, mandatoryParams, ".", false)) {
+                response = httpUtil.getBadRequest("One or all the mandatory parameters " + mandatoryParams + " are missing");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check for processId
+            String processId = negotiateBody.getProcessId();
+            if (!processManager.checkProcess(httpRequest, processId)) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+
+            Process process = processManager.getProcess(httpRequest, processId);
+            if (process == null) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Get status to check for contract id
+            String contractId = negotiateBody.getContractId();
+            Status status = processManager.getStatus(processId);
+
+            // Check if was already declined
+            if (status.historyExists("contract-decline")) {
+                response = httpUtil.getForbiddenResponse("This contract was declined! Please request a new one");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check if was already signed
+            if (status.historyExists("contract-signed")) {
+                response = httpUtil.getForbiddenResponse("This contract is already signed!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check if there is a contract available
+            if (!status.historyExists("contract-dataset")) {
+                response = httpUtil.getBadRequest("No contract is available!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check if the contract id is correct
+            History history = status.getHistory("contract-dataset");
+            if (!history.getId().equals(contractId)) {
+                response = httpUtil.getBadRequest("This contract id is incorrect!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check the validity of the token
+            String expectedToken = processManager.generateToken(process, contractId);
+            String token = negotiateBody.getToken();
+            if (!expectedToken.equals(token)) {
+                response = httpUtil.getForbiddenResponse("The token is invalid!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Sign contract
+            String statusPath = processManager.setSigned(httpRequest, processId, contractId, signedAt);
+            if (statusPath == null) {
+                response.message = "Something went wrong when signing the contract!";
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+            response = httpUtil.getResponse("The contract was signed successfully! Negotiation started!");
+            response.data = processManager.getStatus(processId);
+            return httpUtil.buildResponse(response, httpResponse);
+
+        } catch (Exception e) {
+            response.message = e.getMessage();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+    }
 
 
     @RequestMapping(value = "/decline", method = RequestMethod.POST)
-    @Operation(summary = "Searches for a passport with the following id", responses = {
-            @ApiResponse(description = "Default Response Structure", content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Response.class))),
-            @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Dataset.class)))
-    })
+    @Operation(summary = "Decline passport negotiation")
     public Response decline(@Valid @RequestBody Negotiate negotiateBody) {
         Response response = httpUtil.getInternalError();
 
@@ -252,15 +360,19 @@ public class ContractController {
             String contractId = negotiateBody.getContractId();
             Status status = processManager.getStatus(processId);
 
-            if(status.historyExists("contract-declined")){
+            // Check if was already declined
+            if(status.historyExists("contract-decline")){
                 response = httpUtil.getForbiddenResponse("This contract has already been declined!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
+
+            // Check if there is a contract available
             if(!status.historyExists("contract-dataset")){
-                response = httpUtil.getBadRequest("No contract is available");
+                response = httpUtil.getBadRequest("No contract is available!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
+            // Check if the contract id is correct
             History history = status.getHistory("contract-dataset");
             if(!history.getId().equals(contractId)){
                 response = httpUtil.getBadRequest("This contract id is incorrect!");
@@ -275,15 +387,14 @@ public class ContractController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-
-            String statusPath = processManager.setDecline(processId);
+            // Decline contract
+            String statusPath = processManager.setDecline(httpRequest, processId);
             if(statusPath == null){
                 response.message = "Something went wrong when declining the contract!";
                 return httpUtil.buildResponse(response, httpResponse);
             }
-
             response = httpUtil.getResponse("The contract negotiation was successfully declined");
-            return response;
+            return httpUtil.buildResponse(response, httpResponse);
 
         } catch (Exception e) {
             response.message = e.getMessage();

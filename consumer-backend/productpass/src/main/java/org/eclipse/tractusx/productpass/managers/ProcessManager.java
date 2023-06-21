@@ -76,7 +76,6 @@ public class ProcessManager {
                 this.httpUtil.setSessionValue(httpRequest, "processDataModel", processDataModel);
                 LogUtil.printMessage("[PROCESS] Process Data Model created, the server is ready to start processing requests...");
             }
-            LogUtil.printMessage("DataModel: ["+jsonUtil.toJson(processDataModel.dataModel, true)+"]");
             return processDataModel;
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "Failed to load Process DataModel!");
@@ -183,29 +182,46 @@ public class ProcessManager {
         }
     }
 
-    public String setDecline(String processId){
+    public String setDecline(HttpServletRequest httpRequest, String processId){
+
+        this.setProcessState(httpRequest, processId, "ABORTED");
+
         return this.setStatus(processId,"contract-decline", new History(
                 processId,
                 "DECLINED"
         ));
     }
 
+    public String setSigned(HttpServletRequest httpRequest, String processId, String contractId, Long signedAt){
 
-    public String saveDataset(String processId, Dataset dataset, Long startedTime) {
-        History history = new History(
-                dataset.getId(),
-                "AVAILABLE",
-                startedTime
-        ); // Set the history for the Dataset
-        String id = "contract-dataset";
-        this.setStatus(processId, id, history);
-        String path = this.getProcessFilePath(processId, this.datasetFileName);
-        String returnPath = jsonUtil.toJsonFile(path, dataset, processConfig.getIndent());
-        if (returnPath == null) {
-            history.setStatus("FAILED");
-            this.setStatus(processId, dataset.getId(), history);
+        this.setProcessState(httpRequest, processId, "STARTING");
+
+        return this.setStatus(processId,"contract-signed", new History(
+                contractId,
+                "SIGNED",
+                signedAt
+        ));
+    }
+
+
+    public void saveDataset(String processId, Dataset dataset, Long startedTime) {
+        try {
+            History history = new History(
+                    dataset.getId(),
+                    "AVAILABLE",
+                    startedTime
+            ); // Set the history for the Dataset
+            String id = "contract-dataset";
+            this.setStatus(processId, id, history);
+            String path = this.getProcessFilePath(processId, this.datasetFileName);
+            String returnPath = jsonUtil.toJsonFile(path, dataset, processConfig.getIndent());
+            if (returnPath == null) {
+                history.setStatus("FAILED");
+                this.setStatus(processId, dataset.getId(), history);
+            }
+        }catch (Exception e){
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the dataset!");
         }
-        return returnPath;
     }
 
 }

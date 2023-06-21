@@ -25,8 +25,11 @@
 
 package org.eclipse.tractusx.productpass.managers;
 
+import org.eclipse.tractusx.productpass.exceptions.DataModelException;
+import org.eclipse.tractusx.productpass.exceptions.ManagerException;
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.springframework.stereotype.Component;
+import utils.DateTimeUtil;
 import utils.LogUtil;
 
 import java.util.HashMap;
@@ -44,13 +47,14 @@ public class ProcessDataModel {
         this.dataModel.put(process.id, process);
         return this;
     }
-
     public ProcessDataModel setState(String processId, String state){
         Process process = this.dataModel.getOrDefault(processId, null);
-        if(process != null){
-            process.state = state;
-            this.dataModel.put(processId, process);
+        if(process == null){
+            throw new DataModelException(this.getClass().getName(), "The process does not exists!");
         }
+        process.state = state;
+        process.updated = DateTimeUtil.getTimestamp();
+        this.dataModel.put(processId, process);
         return this;
     }
     public ProcessDataModel startProcess(String processId, Thread thread){
