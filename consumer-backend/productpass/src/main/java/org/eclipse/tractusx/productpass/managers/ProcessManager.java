@@ -122,26 +122,20 @@ public class ProcessManager {
     }
 
 
-    public NegotiationRequest startNegotiation(HttpServletRequest httpRequest, String processId) {
+    public void startNegotiation(HttpServletRequest httpRequest, String processId, Runnable contractNegotiation) {
         try {
-            Dataset dataset = this.loadDataset(processId);
-            if (dataset == null) {
-                throw new ManagerException(this.getClass().getName(), "Something when wrong when loading the dataset [" + processId + "]");
-            }
-
-            return new NegotiationRequest();
-
+            // Start the negotiation
+            ProcessDataModel dataModel = this.loadDataModel(httpRequest);
+            dataModel.startProcess(processId, contractNegotiation);
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to start negotiation for [" + processId + "]");
         }
-
-
     }
 
     public void setProcess(HttpServletRequest httpRequest, Process process) {
         try { // Setting and updating a process
             ProcessDataModel dataModel = this.loadDataModel(httpRequest);
-            this.saveDataModel(httpRequest, dataModel.addProcess(process));
+            dataModel.addProcess(process);
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to set process [" + process.id + "]");
         }
@@ -150,7 +144,7 @@ public class ProcessManager {
     public void setProcessState(HttpServletRequest httpRequest, String processId, String processState) {
         try { // Setting and updating a process state
             ProcessDataModel dataModel = (ProcessDataModel) httpUtil.getSessionValue(httpRequest, this.processDataModelName);
-            this.saveDataModel(httpRequest, dataModel.setState(processId, processState));
+            dataModel.setState(processId, processState);
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to set process state [" + processState + "] for process [" + processId + "]");
         }

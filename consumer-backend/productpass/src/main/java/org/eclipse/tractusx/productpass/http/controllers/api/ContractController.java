@@ -164,7 +164,7 @@ public class ContractController {
             Process process = processManager.createProcess(httpRequest,connectorAddress);
 
             processManager.saveDigitalTwin(process.id, digitalTwin, dtRequestTime);
-            LogUtil.printStatus("[PROCESS "+process.id+"] Digital Twin ["+digitalTwin.getIdentification()+"] and Submodel ["+subModel.getIdentification()+"] with EDC endpoint ["+connectorAddress+"] retrieved from DTR");
+            LogUtil.printDebug("[PROCESS "+process.id+"] Digital Twin ["+digitalTwin.getIdentification()+"] and Submodel ["+subModel.getIdentification()+"] with EDC endpoint ["+connectorAddress+"] retrieved from DTR");
             String assetId = String.join("-", digitalTwin.getIdentification(), subModel.getIdentification());
 
             /*[1]=========================================*/
@@ -189,7 +189,7 @@ public class ContractController {
                 response.statusText = "Not Found";
                 return httpUtil.buildResponse(response, httpResponse);
             }
-            LogUtil.printStatus("[PROCESS "+process.id+"] Contract found for asset [" + assetId + "] in EDC Endpoint ["+connectorAddress+"]");
+            LogUtil.printDebug("[PROCESS "+process.id+"] Contract found for asset [" + assetId + "] in EDC Endpoint ["+connectorAddress+"]");
 
             response = null;
             response = httpUtil.getResponse();
@@ -310,8 +310,13 @@ public class ContractController {
                 response = httpUtil.getForbiddenResponse("The token is invalid!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
+            Dataset dataset = processManager.loadDataset(processId);
 
-            // Sign contract
+            if(dataset == null){
+                response.message = "Dataset not found!";
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
             String statusPath = processManager.setSigned(httpRequest, processId, contractId, signedAt);
             if (statusPath == null) {
                 response.message = "Something went wrong when signing the contract!";
@@ -319,7 +324,9 @@ public class ContractController {
             }
             LogUtil.printMessage("[PROCESS "+processId+"] Contract ["+contractId+"] signed! Starting negotiation...");
 
-
+            DataTransferService.NegotiateContract contractNegotiation = dataService.new NegotiateContract(processManager.loadDataModel(httpRequest), processId, dataset);
+            processManager.startNegotiation(httpRequest, processId, contractNegotiation);
+            LogUtil.printStatus("[PROCESS "+processId+"] Negotiation for ["+contractId+"] started!");
 
             response = httpUtil.getResponse("The contract was signed successfully! Negotiation started!");
             response.data = processManager.getStatus(processId);

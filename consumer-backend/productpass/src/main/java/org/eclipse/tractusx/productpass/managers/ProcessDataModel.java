@@ -31,6 +31,7 @@ import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.springframework.stereotype.Component;
 import utils.DateTimeUtil;
 import utils.LogUtil;
+import utils.ThreadUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,14 +58,20 @@ public class ProcessDataModel {
         this.dataModel.put(processId, process);
         return this;
     }
-    public ProcessDataModel startProcess(String processId, Thread thread){
-        Process process = this.dataModel.getOrDefault(processId, null);
-        if(process != null){
+    public ProcessDataModel startProcess(String processId, Runnable processRunnable){
+        try {
+            Process process = this.dataModel.getOrDefault(processId, null);
+            if (process == null) {
+                throw new DataModelException(this.getClass().getName(), "The process does not exists!");
+            }
             process.state = "RUNNING";
-            process.thread = thread;
+            process.thread = ThreadUtil.runThread(processRunnable, processId);
+            process.updated = DateTimeUtil.getTimestamp();
             this.dataModel.put(processId, process);
+            return this;
+        }catch (Exception e){
+            throw new DataModelException(this.getClass().getName(), e, "It was not possible to start the process");
         }
-        return this;
     }
 
     public Process getProcess(String processId){

@@ -44,7 +44,7 @@ public class Process {
     @JsonProperty("updated")
     public Long updated;
 
-    @JsonProperty("threadId")
+    @JsonProperty("thread")
     public Thread thread;
 
     public Process(String id, String state, Thread thread) {

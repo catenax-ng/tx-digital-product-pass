@@ -24,12 +24,16 @@
 package org.eclipse.tractusx.productpass.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.servlet.http.HttpServletRequest;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
+import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
+import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
+import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
@@ -68,11 +72,13 @@ public class DataTransferService extends BaseService {
 
     public Environment env;
 
+    public ProcessManager processManager;
 
     @Autowired
-    public DataTransferService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService) throws ServiceInitializationException {
+    public DataTransferService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, ProcessManager processManager) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.jsonUtil = jsonUtil;
+        this.processManager = processManager;
         this.env = env;
         this.init(vaultService, env);
         this.checkEmptyVariables(List.of("apiKey")); // Add API Key as optional for initialization
@@ -135,15 +141,18 @@ public class DataTransferService extends BaseService {
 
     public class NegotiateContract implements Runnable{
         private NegotiationRequest negotiationRequest;
-
+        private ProcessDataModel dataModel;
         private Dataset dataset;
 
         private Negotiation negotiation;
 
         private Integer attempts;
 
+        private String processId;
 
-        public NegotiateContract(Dataset dataset){
+        public NegotiateContract(ProcessDataModel dataModel, String processId, Dataset dataset){
+            this.dataModel = dataModel;
+            this.processId = processId;
             this.dataset = dataset;
             this.negotiationRequest = this.buildRequest(dataset);
         }
@@ -154,13 +163,30 @@ public class DataTransferService extends BaseService {
 
         @Override
         public void run() {
+            processManager.setStatus(processId, "NEGOTIATING");
+            this.doNegotation();
+            String dummyUuid = CrypUtil.getUUID();
+            processManager.setStatus(processId,"contract-negotiation",new History(
+                    dummyUuid,
+                    "NEGOTIATED"
+            ));
+            processManager.setStatus(processId, "TRANSFERRING");
+            this.doTransfer();
+            String dummyUuid2 = CrypUtil.getUUID();
+            processManager.setStatus(processId,"contract-transfer",new History(
+                    dummyUuid2,
+                    "TRANSFERRED"
+            ));
+            this.dataModel.setState(processId, "COMPLETED");
         }
 
 
-        public NegotiationRequest getNegotiationRequest() {
-            return negotiationRequest;
+        public void doNegotation() {
+            LogUtil.printWarning("No negotiation logic is implemented!");
         }
-
+        public void doTransfer() {
+            LogUtil.printWarning("No transfer logic is implemented!");
+        }
         public void setNegotiationRequest(NegotiationRequest negotiationRequest) {
             this.negotiationRequest = negotiationRequest;
         }
