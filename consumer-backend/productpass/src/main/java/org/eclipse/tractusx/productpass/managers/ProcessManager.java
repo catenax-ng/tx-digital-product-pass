@@ -30,6 +30,7 @@ import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ManagerException;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
+import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.manager.Status;
@@ -289,6 +290,37 @@ public class ProcessManager {
             return this.saveProcessPayload(processId, payload, fileName, DateTimeUtil.getTimestamp(), assetId, status, eventKey);
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "Failed to save payload!");
+        }
+    }
+    public String saveNegotiation(String processId, Negotiation negotiation) {
+        try {
+
+            String path = this.getProcessFilePath(processId, this.negotiationFileName);
+            Map<String, Object> negotiationPayload = (Map<String, Object>) jsonUtil.fromJsonFileToObject(path, Map.class);
+            negotiationPayload.put("get", Map.of("request", Map.of(), "response", negotiation));
+
+            return this.saveProcessPayload(
+                    processId,
+                    negotiationPayload,
+                    this.negotiationFileName,
+                    negotiation.getContractAgreementId(),
+                    "ACCEPTED",
+                    "negotiation-accepted");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the negotiation!");
+        }
+    }
+    public String saveNegotiationRequest(String processId, NegotiationRequest negotiationRequest, IdResponse negotiationResponse) {
+        try {
+            return this.saveProcessPayload(
+                    processId,
+                    Map.of("init",Map.of("request", negotiationRequest, "response", negotiationResponse)),
+                    this.negotiationFileName,
+                    negotiationRequest.getOffer().getOfferId(),
+                    "NEGOTIATING",
+                    "negotiation-request");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the negotiation request!");
         }
     }
 

@@ -36,6 +36,7 @@ import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
+import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.Passport;
 import org.eclipse.tractusx.productpass.models.passports.PassportResponse;
@@ -178,9 +179,9 @@ public class ApiController {
             }
             /*[2]=========================================*/
             // Start Negotiation
-            Negotiation negotiation;
+            IdResponse negotiationResponse;
             try {
-                negotiation = dataService.doContractNegotiations(contractOffer, connectorAddress);
+                negotiationResponse = dataService.doContractNegotiations(contractOffer, connectorAddress);
             } catch (Exception e) {
                 response.message = "Negotiation Id not received, something went wrong" + " [" + e.getMessage() + "]";
                 response.status = 400;
@@ -188,27 +189,9 @@ public class ApiController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-            if (negotiation.getId() == null) {
+            if (negotiationResponse.getId() == null) {
                 response.message = "Negotiation Id not received, something went wrong";
                 response.status = 400;
-                response.statusText = "Bad Request";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            /*[3]=========================================*/
-            // Check for negotiation status
-            try {
-                negotiation = dataService.getNegotiation(negotiation.getId());
-            } catch (Exception e) {
-                response.message = "The negotiation for asset id failed!" + " [" + e.getMessage() + "]";
-                response.status = 400;
-                response.statusText = "Bad Request";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            if (negotiation.getState().equals("ERROR")) {
-                response.message = "The negotiation for asset id failed!";
-                response.status = 400;
-                response.data = negotiation;
                 response.statusText = "Bad Request";
                 return httpUtil.buildResponse(response, httpResponse);
             }
@@ -301,7 +284,7 @@ public class ApiController {
                 Passport passport = (Passport) response.data;
                 Map<String, Object> metadata = Map.of(
                         "contractOffer", contractOffer,
-                        "negotiation", negotiation,
+                        "negotiation", new Negotiation(),
                         "transferRequest", transferRequest,
                         "transfer", transfer
                 );
