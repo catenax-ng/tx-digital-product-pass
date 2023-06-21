@@ -111,6 +111,7 @@ public class ContractController {
 
             // Start Digital Twin Query
             AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = aasService.new DigitalTwinRegistryQueryById(searchBody);
+            Long dtRequestTime = DateTimeUtil.getTimestamp();
             Thread digitalTwinRegistryThread = ThreadUtil.runThread(digitalTwinRegistry);
 
             // Wait for digital twin query
@@ -159,6 +160,11 @@ public class ContractController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
+
+            Process process = processManager.createProcess(httpRequest,connectorAddress);
+
+            processManager.saveDigitalTwin(process.id, digitalTwin, dtRequestTime);
+            LogUtil.printStatus("[PROCESS "+process.id+"] Digital Twin ["+digitalTwin.getIdentification()+"] and Submodel ["+subModel.getIdentification()+"] with EDC endpoint ["+connectorAddress+"] retrieved from DTR");
             String assetId = String.join("-", digitalTwin.getIdentification(), subModel.getIdentification());
 
             /*[1]=========================================*/
@@ -183,8 +189,8 @@ public class ContractController {
                 response.statusText = "Not Found";
                 return httpUtil.buildResponse(response, httpResponse);
             }
+            LogUtil.printStatus("[PROCESS "+process.id+"] Contract found for asset [" + assetId + "] in EDC Endpoint ["+connectorAddress+"]");
 
-            Process process = processManager.createProcess(httpRequest);
             response = null;
             response = httpUtil.getResponse();
             response.data = Map.of(
@@ -213,8 +219,6 @@ public class ContractController {
     @Operation(summary = "Get status from process")
     public Response status(@PathVariable String processId) {
         Response response = httpUtil.getInternalError();
-
-
         // Check for authentication
         if (!authService.isAuthenticated(httpRequest)) {
             response = httpUtil.getNotAuthorizedResponse();
@@ -313,6 +317,10 @@ public class ContractController {
                 response.message = "Something went wrong when signing the contract!";
                 return httpUtil.buildResponse(response, httpResponse);
             }
+            LogUtil.printMessage("[PROCESS "+processId+"] Contract ["+contractId+"] signed! Starting negotiation...");
+
+
+
             response = httpUtil.getResponse("The contract was signed successfully! Negotiation started!");
             response.data = processManager.getStatus(processId);
             return httpUtil.buildResponse(response, httpResponse);
@@ -393,6 +401,8 @@ public class ContractController {
                 response.message = "Something went wrong when declining the contract!";
                 return httpUtil.buildResponse(response, httpResponse);
             }
+
+            LogUtil.printMessage("[PROCESS "+processId+"] Contract ["+contractId+"] declined!");
             response = httpUtil.getResponse("The contract negotiation was successfully declined");
             return httpUtil.buildResponse(response, httpResponse);
 

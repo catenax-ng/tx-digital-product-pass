@@ -31,6 +31,11 @@ spring:
     serialization:
       indent_output: true
 
+logging:
+  level:
+    root: INFO
+    utils: INFO
+
 configuration:
   maxRetries: 5
 

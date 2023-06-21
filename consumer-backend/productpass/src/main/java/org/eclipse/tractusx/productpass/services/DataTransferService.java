@@ -27,6 +27,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
+import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
+import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
+import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
@@ -130,6 +133,63 @@ public class DataTransferService extends BaseService {
         }
     }
 
+    public class NegotiateContract implements Runnable{
+        private NegotiationRequest negotiationRequest;
+
+        private Dataset dataset;
+
+        private Negotiation negotiation;
+
+        private Integer attempts;
+
+
+        public NegotiateContract(Dataset dataset){
+            this.dataset = dataset;
+            this.negotiationRequest = this.buildRequest(dataset);
+        }
+
+        public NegotiationRequest buildRequest(Dataset dataset){
+            return new NegotiationRequest();
+        }
+
+        @Override
+        public void run() {
+        }
+
+
+        public NegotiationRequest getNegotiationRequest() {
+            return negotiationRequest;
+        }
+
+        public void setNegotiationRequest(NegotiationRequest negotiationRequest) {
+            this.negotiationRequest = negotiationRequest;
+        }
+
+        public Dataset getDataset() {
+            return dataset;
+        }
+
+        public void setDataset(Dataset dataset) {
+            this.dataset = dataset;
+        }
+
+        public Negotiation getNegotiation() {
+            return negotiation;
+        }
+
+        public void setNegotiation(Negotiation negotiation) {
+            this.negotiation = negotiation;
+        }
+
+        public Integer getAttempts() {
+            return attempts;
+        }
+
+        public void setAttempts(Integer attempts) {
+            this.attempts = attempts;
+        }
+    }
+
     public Catalog getContractOfferCatalog(String providerUrl) {
         try {
             this.checkEmptyVariables();
@@ -158,8 +218,7 @@ public class DataTransferService extends BaseService {
     public Negotiation doContractNegotiations(Offer contractOffer,String providerUrl) {
         try {
             this.checkEmptyVariables();
-            contractOffer.open();
-            LogUtil.printDebug("["+contractOffer.getId()+"] ===== [INITIALIZING CONTRACT NEGOTIATION] ===========================================", true);
+            LogUtil.printDebug("["+contractOffer.getOfferId()+"] ===== [INITIALIZING CONTRACT NEGOTIATION] ===========================================");
             String url = CatenaXUtil.buildManagementEndpoint(env, this.negotiationPath);
             Object body = new NegotiationRequest(
                 jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
@@ -197,7 +256,7 @@ public class DataTransferService extends BaseService {
             boolean sw = true;
             Instant start = Instant.now();
             Instant end = start;
-            LogUtil.printDebug("["+Id+"] ===== [STARTING CHECKING STATUS FOR CONTRACT NEGOTIATION]  ===========================================", true);
+            LogUtil.printDebug("["+Id+"] ===== [STARTING CHECKING STATUS FOR CONTRACT NEGOTIATION]  ===========================================");
             while (sw) {
                 ResponseEntity<?> response = httpUtil.doGet(url, JsonNode.class, headers, params, false, false);
                 body = (JsonNode) response.getBody();
@@ -207,20 +266,20 @@ public class DataTransferService extends BaseService {
                             "No response received from url [" + url + "]!");
                 }
                 if (!body.has("state") || body.get("state") == null) {
-                    LogUtil.printDebug("["+Id+"] ===== [ERROR CONTRACT NEGOTIATION] ===========================================", true);
+                    LogUtil.printDebug("["+Id+"] ===== [ERROR CONTRACT NEGOTIATION] ===========================================");
                     throw new ServiceException(this.getClass().getName() + "." + "getNegotiations",
                             "It was not possible to do contract negotiations!");
                 }
                 String state = body.get("state").asText();
                 if (state.equals("CONFIRMED") || state.equals("ERROR") || state.equals("FINALIZED")) {
                     sw = false;
-                    LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT NEGOTIATION] ===========================================", true);
+                    LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT NEGOTIATION] ===========================================");
                 }
                 if (!state.equals(actualState)) {
                     actualState = state; // Update current state
                     end = Instant.now();
                     Duration timeElapsed = Duration.between(start, end);
-                    LogUtil.printDebug("["+Id+"] The contract negotiation status changed: [" + state + "] - TIME->[" + timeElapsed + "]s", true);
+                    LogUtil.printDebug("["+Id+"] The contract negotiation status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
                 }
             }
@@ -267,7 +326,7 @@ public class DataTransferService extends BaseService {
             boolean sw = true;
             Instant start = Instant.now();
             Instant end = start;
-            LogUtil.printDebug("["+Id+"] ===== [STARTING CONTRACT TRANSFER] ===========================================", true);
+            LogUtil.printDebug("["+Id+"] ===== [STARTING CONTRACT TRANSFER] ===========================================");
             while (sw) {
                 ResponseEntity<?> response = httpUtil.doGet(url, JsonNode.class, headers, params, false, false);
                 body = (JsonNode) response.getBody();
@@ -277,20 +336,20 @@ public class DataTransferService extends BaseService {
                             "No response received from url [" + url + "]!");
                 }
                 if (!body.has("state") || body.get("state") == null) {
-                    LogUtil.printDebug("["+Id+"] ===== [ERROR CONTRACT TRANSFER]===========================================", true);
+                    LogUtil.printDebug("["+Id+"] ===== [ERROR CONTRACT TRANSFER]===========================================");
                     throw new ServiceException(this.getClass().getName() + "." + "getTransfer",
                             "It was not possible to do the transfer process!");
                 }
                 String state = body.get("state").asText();
                 if (state.equals("COMPLETED") || state.equals("ERROR")) {
-                    LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT TRANSFER] ["+Id+"]===========================================", true);
+                    LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT TRANSFER] ["+Id+"]===========================================");
                     sw = false;
                 }
                 if (!state.equals(actualState)) {
                     actualState = state; // Update current state
                     end = Instant.now();
                     Duration timeElapsed = Duration.between(start, end);
-                    LogUtil.printDebug("["+Id+"] The data transfer status changed: [" + state + "] - TIME->[" + timeElapsed + "]s", true);
+                    LogUtil.printDebug("["+Id+"] The data transfer status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
                 }
             }

@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Offer extends Dataset {
+public class Offer {
 
     @JsonProperty("offerId")
     String offerId;
@@ -37,33 +37,17 @@ public class Offer extends Dataset {
     @JsonProperty("assetId")
     String assetId;
 
-    public Offer(String id, String type, Set policy, List<Distribution> distributions, String assetDescription, String assetId, String offerId, String assetId1) {
-        super(id, type, policy, distributions, assetDescription, assetId);
-        this.offerId = offerId;
-        this.assetId = assetId1;
-    }
+    @JsonProperty("policy")
+    Set policy;
 
-    public Offer(String id, String type, String offerId, String assetId) {
-        super(id, type);
+
+    public Offer(String offerId, String assetId, Set policy) {
         this.offerId = offerId;
         this.assetId = assetId;
+        this.policy = policy;
     }
 
-    public Offer(String id, String type, Set policy, List<Distribution> distributions, String assetDescription, String assetId) {
-        super(id, type, policy, distributions, assetDescription, assetId);
-    }
-
-    public Offer(String id, String type) {
-        super(id, type);
-    }
-
-    public void open(){
-        this.offerId = this.policy.id;
-        this.assetId = this.policy.target;
-    }
-    public void close(){
-        this.offerId = null;
-        this.assetId = null;
+    public Offer() {
     }
 
     public String getOfferId() {
@@ -74,13 +58,19 @@ public class Offer extends Dataset {
         this.offerId = offerId;
     }
 
-    @Override
     public String getAssetId() {
         return assetId;
     }
 
-    @Override
     public void setAssetId(String assetId) {
         this.assetId = assetId;
+    }
+
+    public Set getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(Set policy) {
+        this.policy = policy;
     }
 }

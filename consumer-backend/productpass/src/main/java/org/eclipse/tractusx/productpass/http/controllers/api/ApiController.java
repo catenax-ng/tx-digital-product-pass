@@ -169,15 +169,6 @@ public class ApiController {
 
             /*[1]=========================================*/
             // Get catalog with all the contract offers
-            try {
-                contractOffer = (Offer) dataService.getContractOfferByAssetId(assetId, connectorAddress);
-            } catch (ControllerException e) {
-                response.message = "The EDC is not reachable, it was not possible to retrieve catalog!";
-                response.status = 502;
-                response.statusText = "Bad Gateway";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
             // Check if contract offer was not received
             if (contractOffer == null) {
                 response.message = "Asset Id not found in any contract!";

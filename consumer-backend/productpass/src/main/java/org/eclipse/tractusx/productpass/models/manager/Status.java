@@ -48,38 +48,45 @@ public class Status {
     public Long modified;
 
 
+    @JsonProperty("endpoint")
+    public String endpoint;
+
     @JsonProperty("history")
     public Map<String, History> history;
 
-    public Status(String id, String status, Long created, Long modified, Map<String, History> history) {
+    public Status(String id, String status, Long created, Long modified, String endpoint, Map<String, History> history) {
         this.id = id;
         this.status = status;
         this.created = created;
         this.modified = modified;
+        this.endpoint = endpoint;
         this.history = history;
     }
 
-    public Status(String id, String status, Long modified, Map<String, History> history) {
+    public Status(String id, String status, Long modified, String endpoint, Map<String, History> history) {
         this.id = id;
         this.status = status;
         this.created = DateTimeUtil.getTimestamp();
         this.modified = modified;
+        this.endpoint = endpoint;
         this.history = history;
     }
 
-    public Status(String id, String status, Long modified, String historyId, History history) {
+    public Status(String id, String status, Long modified,  String endpoint, String historyId, History history) {
         this.id = id;
         this.status = status;
         this.created = DateTimeUtil.getTimestamp();
         this.modified = modified;
+        this.endpoint = endpoint;
         this.history = Map.of(historyId, history);
     }
 
-    public Status(String id, String status, Long modified) {
+    public Status(String id, String status,  String endpoint, Long modified) {
         this.id = id;
         this.status = status;
         this.created = DateTimeUtil.getTimestamp();
         this.modified = modified;
+        this.endpoint = endpoint;
         this.history = new HashMap<String, History>();
     }
 
@@ -161,6 +168,13 @@ public class Status {
         return this.history.getOrDefault(name, null);
     }
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
 }
 
 
