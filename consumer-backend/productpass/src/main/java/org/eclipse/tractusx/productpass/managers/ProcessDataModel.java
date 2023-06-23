@@ -58,6 +58,9 @@ public class ProcessDataModel {
         this.dataModel.put(processId, process);
         return this;
     }
+    public String getState(String processId){
+        return this.dataModel.get(processId).getState();
+    }
     public ProcessDataModel startProcess(String processId, Runnable processRunnable){
         try {
             Process process = this.dataModel.getOrDefault(processId, null);

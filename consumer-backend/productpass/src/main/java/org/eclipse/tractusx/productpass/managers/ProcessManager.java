@@ -153,7 +153,14 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to set process state [" + processState + "] for process [" + processId + "]");
         }
     }
-
+    public String getProcessState(HttpServletRequest httpRequest, String processId) {
+        try { // Setting and updating a process state
+            ProcessDataModel dataModel = (ProcessDataModel) httpUtil.getSessionValue(httpRequest, this.processDataModelName);
+            return dataModel.getState(processId);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to get process state for process [" + processId + "]");
+        }
+    }
     private String getProcessDir(String processId, Boolean absolute) {
         String dataDir = fileUtil.getDataDir();
         if (absolute) {
