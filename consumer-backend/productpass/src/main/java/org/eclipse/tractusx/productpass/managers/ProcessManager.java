@@ -30,14 +30,16 @@ import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ManagerException;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
+import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
+import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.manager.Status;
-import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
-import org.eclipse.tractusx.productpass.models.negotiation.Negotiation;
-import org.eclipse.tractusx.productpass.models.negotiation.NegotiationRequest;
+import org.eclipse.tractusx.productpass.models.negotiation.*;
+import org.eclipse.tractusx.productpass.models.passports.Passport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -56,7 +58,7 @@ public class ProcessManager {
 
     private FileUtil fileUtil;
     private @Autowired ProcessConfig processConfig;
-
+    private @Autowired Environment env;
     private final String metaFileName = "meta";
     private final String datasetFileName = "dataset";
     private final String negotiationFileName = "negotiation";
@@ -65,6 +67,7 @@ public class ProcessManager {
     private final String processDataModelName = "processDataModel";
 
     private final String digitalTwinFileName = "digitalTwin";
+    private final String passportFileName = "passport";
 
 
     @Autowired
@@ -297,7 +300,7 @@ public class ProcessManager {
 
             String path = this.getProcessFilePath(processId, this.negotiationFileName);
             Map<String, Object> negotiationPayload = (Map<String, Object>) jsonUtil.fromJsonFileToObject(path, Map.class);
-            negotiationPayload.put("get", Map.of("request", Map.of(), "response", negotiation));
+            negotiationPayload.put("get", Map.of("response", negotiation));
 
             return this.saveProcessPayload(
                     processId,
@@ -310,17 +313,70 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the negotiation!");
         }
     }
+    public String saveTransfer(String processId, Transfer transfer) {
+        try {
+
+            String path = this.getProcessFilePath(processId, this.transferFileName);
+            Map<String, Object> transferPayload = (Map<String, Object>) jsonUtil.fromJsonFileToObject(path, Map.class);
+            transferPayload.put("get", Map.of( "response", transfer));
+
+            return this.saveProcessPayload(
+                    processId,
+                    transferPayload,
+                    this.transferFileName,
+                    transfer.getId(),
+                    "COMPLETED",
+                    "transfer-completed");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer!");
+        }
+    }
     public String saveNegotiationRequest(String processId, NegotiationRequest negotiationRequest, IdResponse negotiationResponse) {
         try {
             return this.saveProcessPayload(
                     processId,
                     Map.of("init",Map.of("request", negotiationRequest, "response", negotiationResponse)),
                     this.negotiationFileName,
-                    negotiationRequest.getOffer().getOfferId(),
+                    negotiationResponse.getId(),
                     "NEGOTIATING",
                     "negotiation-request");
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the negotiation request!");
+        }
+    }
+
+    public String saveTransferRequest(String processId, TransferRequest transferRequest, IdResponse transferResponse) {
+        try {
+            return this.saveProcessPayload(
+                    processId,
+                    Map.of("init",Map.of("request", transferRequest, "response", transferResponse)),
+                    this.transferFileName,
+                     transferResponse.getId(),
+                    "TRANSFERRING",
+                    "transfer-request");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer request!");
+        }
+    }
+    public String savePassport(HttpServletRequest httpRequest, String processId, DataPlaneEndpoint endpointData, Passport passport) {
+        try {
+            Boolean prettyPrint = env.getProperty("passport.dataTransfer.indent", Boolean.class, true);
+            Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
+
+            Object passportContent = passport;
+            Process process = this.getProcess(httpRequest, processId);
+            if(encrypt) {
+                passportContent = CrypUtil.encryptAes(jsonUtil.toJson(passport, prettyPrint), this.generateToken(process, endpointData.getOfferId())); // Encrypt the data with the token
+            }
+            return this.saveProcessPayload(
+                    processId,
+                    passportContent,
+                    this.passportFileName,
+                    endpointData.getId(),
+                    "RECEIVED",
+                    "passport-received");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the passport!");
         }
     }
 

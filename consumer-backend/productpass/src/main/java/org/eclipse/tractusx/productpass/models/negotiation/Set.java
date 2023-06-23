@@ -61,6 +61,7 @@ public class Set extends DidDocument{
 
     public Set() {
     }
+    
 
     public String getTarget() {
         return target;

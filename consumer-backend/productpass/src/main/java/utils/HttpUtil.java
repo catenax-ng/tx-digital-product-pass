@@ -278,6 +278,22 @@ public class HttpUtil {
                 "Bad Request"
         );
     }
+    public  Response getNotFound() {
+        return new Response(
+                null,
+                404,
+                "Not Found"
+        );
+    }
+
+    public  Response getNotFound(String message) {
+        return new Response(
+                message,
+                404,
+                "Not Found"
+        );
+    }
+
 
     public  Response getInternalError() {
         return new Response(

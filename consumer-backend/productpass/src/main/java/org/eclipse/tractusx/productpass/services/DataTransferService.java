@@ -144,7 +144,11 @@ public class DataTransferService extends BaseService {
         private Dataset dataset;
 
         private Negotiation negotiation;
+        private Transfer transfer;
+        private TransferRequest transferRequest;
+        private IdResponse negotiationResponse;
 
+        private IdResponse tranferResponse;
         private Integer negotiationAttempts;
 
         private Integer transferAttempts;
@@ -170,14 +174,48 @@ public class DataTransferService extends BaseService {
             );
         }
 
+        public TransferRequest buildTransferRequest(Dataset dataset, Status status, Negotiation negotiation){
+            try {
+                Offer contractOffer = this.buildOffer(dataset);
+                String receiverEndpoint = env.getProperty("configuration.edc.receiverEndpoint") + "/" + this.processId; // Send process Id to identification the session.
+                TransferRequest.TransferType transferType = new TransferRequest.TransferType();
+
+                transferType.setContentType("application/octet-stream");
+                transferType.setIsFinite(true);
+
+                TransferRequest.DataDestination dataDestination = new TransferRequest.DataDestination();
+                dataDestination.setProperties(new Properties("HttpProxy"));
+
+                TransferRequest.PrivateProperties privateProperties = new TransferRequest.PrivateProperties();
+                privateProperties.setReceiverHttpEndpoint(receiverEndpoint);
+                return new TransferRequest(
+                        jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
+                        dataset.getAssetId(),
+                        status.getEndpoint(),
+                        negotiation.getContractAgreementId(),
+                        dataDestination,
+                        false,
+                        privateProperties,
+                        "dataspace-protocol-http",
+                        transferType
+                );
+            }catch (Exception e){
+                throw new ServiceException(this.getClass().getName(), e, "Failed to build the transfer request!");
+            }
+        }
         @Override
         public void run() {
+            // NEGOTIATIONGIH PROCESS
             try {
-                IdResponse negotiationResponse = this.requestNegotiation(this.negotiationRequest);
-                processManager.saveNegotiationRequest(this.processId, this.negotiationRequest, negotiationResponse);
-
-                Negotiation negotiationStatus = this.getNegotiationData(negotiationResponse);
-                processManager.saveNegotiation(this.processId, negotiationStatus);
+                processManager.saveNegotiationRequest(processId, negotiationRequest, new IdResponse(processId, null));
+                this.negotiationResponse = this.requestNegotiation(this.negotiationRequest);
+                processManager.saveNegotiationRequest(processId, negotiationRequest, negotiationResponse);
+                this.negotiation = this.getNegotiationData(negotiationResponse);
+                processManager.saveNegotiation(this.processId, this.negotiation);
+                String state = this.negotiation.getState();
+                if (!(state.equals("CONFIRMED") || state.equals("FINALIZED"))) {
+                    throw new ServiceException(this.getClass().getName(), "Contract Negotiation Process Failed ["+this.negotiation.getId()+"]");
+                }
             }catch (Exception e){
                 processManager.setStatus(this.processId, "negotiation-failed", new History(
                         this.processId,
@@ -186,15 +224,19 @@ public class DataTransferService extends BaseService {
                 this.dataModel.setState(processId, "FAILED");
                 throw new ServiceException(this.getClass().getName(), e, "Failed to do the contract negotiation!");
             }
+            this.dataModel.setState(processId, "NEGOTIATED");
+
+            // TRANSFER PROCESS
             try{
-                processManager.setStatus(processId, "TRANSFERRING");
-                this.doTransfer();
-                String dummyUuid2 = CrypUtil.getUUID();
-                processManager.setStatus(processId, "contract-transfer", new History(
-                        dummyUuid2,
-                        "TRANSFERRED"
-                ));
-                this.dataModel.setState(processId, "COMPLETED");
+                this.transferRequest = buildTransferRequest(this.dataset, this.status, this.negotiation);
+                processManager.saveTransferRequest(this.processId, transferRequest, new IdResponse(processId, null));
+                this.tranferResponse = this.requestTransfer(transferRequest);
+                processManager.saveTransferRequest(this.processId, transferRequest, this.tranferResponse);
+                this.transfer = this.getTransferData(this.tranferResponse);
+                processManager.saveTransfer(this.processId, transfer);
+                if (!transfer.getState().equals("COMPLETED")) {
+                    throw new ServiceException(this.getClass().getName(), "Transfer Process Failed ["+this.tranferResponse.getId()+"]");
+                }
             }catch (Exception e){
                 processManager.setStatus(processId, "transfer-failed", new History(
                         processId,
@@ -203,6 +245,7 @@ public class DataTransferService extends BaseService {
                 this.dataModel.setState(processId, "FAILED");
                 throw new ServiceException(this.getClass().getName(), e, "Failed to do the contract transfer");
             }
+            this.dataModel.setState(processId, "COMPLETED");
         }
         public Negotiation getNegotiationData(IdResponse negotiationResponse) {
             Negotiation negotiation = null;
@@ -223,14 +266,37 @@ public class DataTransferService extends BaseService {
             }
 
             if (negotiationResponse.getId() == null) {
-                throw new ServiceException(this.getClass().getName(), "Failed to start the negotiation for offer ["+negotiationRequest.getOffer().getOfferId()+"]");
+                throw new ServiceException(this.getClass().getName(), "The ID from the Offer is null ["+negotiationRequest.getOffer().getOfferId()+"]");
             }
             LogUtil.printMessage("[PROCESS "+ this.processId+"] Negotiation Requested ["+negotiationResponse.getId()+"]");
             return negotiationResponse;
         }
-        public void doTransfer() {
-            LogUtil.printWarning("No transfer logic is implemented!");
+        public IdResponse requestTransfer(TransferRequest transferRequest) {
+            IdResponse transferResponse = null;
+            try {
+                transferResponse = initiateTransfer(transferRequest);
+            } catch (Exception e) {
+                throw new ServiceException(this.getClass().getName(), e, "Failed to start the transfer for contract  ["+transferRequest.getContractId()+"]");
+            }
+            if (transferResponse.getId() == null) {
+                throw new ServiceException(this.getClass().getName(), "The ID from the transfer is null for contract  ["+transferRequest.getContractId()+"]");
+            }
+            LogUtil.printMessage("[PROCESS "+ this.processId+"] Transfer Requested ["+transferResponse.getId()+"]");
+            return transferResponse;
         }
+
+        public Transfer getTransferData(IdResponse transferData){
+            /*[8]=========================================*/
+            // Check for transfer updates and the status
+            Transfer transfer = null;
+            try {
+                transfer = seeTransfer(transferData.getId());
+            } catch (Exception e) {
+                throw new ServiceException(this.getClass().getName(), e, "Failed to get the negotiation ["+transferData.getId()+"]");
+            }
+            return transfer;
+        }
+
         public void setNegotiationRequest(NegotiationRequest negotiationRequest) {
             this.negotiationRequest = negotiationRequest;
         }
@@ -244,10 +310,12 @@ public class DataTransferService extends BaseService {
         }
 
         public Offer buildOffer(Dataset dataset){
+            Set policyCopy = (Set) jsonUtil.bindObject(dataset.getPolicy(), Set.class);
+            policyCopy.setId(null);
             return new Offer(
                     dataset.getPolicy().getId(),
                     dataset.getAssetId(),
-                    dataset.getPolicy()
+                    policyCopy
             );
         }
 
@@ -302,6 +370,38 @@ public class DataTransferService extends BaseService {
         public void setProcessId(String processId) {
             this.processId = processId;
         }
+
+        public Transfer getTransfer() {
+            return transfer;
+        }
+
+        public void setTransfer(Transfer transfer) {
+            this.transfer = transfer;
+        }
+
+        public TransferRequest getTransferRequest() {
+            return transferRequest;
+        }
+
+        public void setTransferRequest(TransferRequest transferRequest) {
+            this.transferRequest = transferRequest;
+        }
+
+        public IdResponse getNegotiationResponse() {
+            return negotiationResponse;
+        }
+
+        public void setNegotiationResponse(IdResponse negotiationResponse) {
+            this.negotiationResponse = negotiationResponse;
+        }
+
+        public IdResponse getTranferResponse() {
+            return tranferResponse;
+        }
+
+        public void setTranferResponse(IdResponse tranferResponse) {
+            this.tranferResponse = tranferResponse;
+        }
     }
 
     public Catalog getContractOfferCatalog(String providerUrl) {
@@ -342,7 +442,7 @@ public class DataTransferService extends BaseService {
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "doContractNegotiations",
                     e,
-                    "It was not possible to retrieve the catalog!");
+                    "It was not possible to retrieve the contract negotiation!");
         }
     }
     public IdResponse doContractNegotiations(Offer contractOffer, String providerUrl) {
@@ -358,7 +458,7 @@ public class DataTransferService extends BaseService {
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "doContractNegotiations",
                     e,
-                    "It was not possible to retrieve the catalog!");
+                    "It was not possible to execute the contract negotiation!");
         }
     }
 
@@ -369,7 +469,6 @@ public class DataTransferService extends BaseService {
             String endpoint = CatenaXUtil.buildManagementEndpoint(env, this.negotiationPath);
             // Get variables from configuration
             String url = endpoint + "/" + id;
-
             HttpHeaders headers = httpUtil.getHeaders();
             headers.add("Content-Type", "application/json");
             headers.add("X-Api-Key", this.apiKey);
@@ -379,7 +478,7 @@ public class DataTransferService extends BaseService {
             boolean sw = true;
             Instant start = Instant.now();
             Instant end = start;
-            LogUtil.printDebug("["+id+"] ===== [STARTING CHECKING STATUS FOR CONTRACT NEGOTIATION]  ===========================================");
+            LogUtil.printStatus("["+id+"] ===== [STARTING CHECKING STATUS FOR CONTRACT NEGOTIATION]  ===========================================");
             while (sw) {
                 ResponseEntity<?> response = httpUtil.doGet(url, JsonNode.class, headers, params, false, false);
                 body = (JsonNode) response.getBody();
@@ -388,21 +487,21 @@ public class DataTransferService extends BaseService {
                     throw new ServiceException(this.getClass().getName() + "." + "getNegotiations",
                             "No response received from url [" + url + "]!");
                 }
-                if (!body.has("state") || body.get("state") == null) {
-                    LogUtil.printDebug("["+id+"] ===== [ERROR CONTRACT NEGOTIATION] ===========================================");
+                if (!body.has("edc:state") || body.get("edc:state") == null) {
+                    LogUtil.printStatus("["+id+"] ===== [ERROR CONTRACT NEGOTIATION] ===========================================");
                     throw new ServiceException(this.getClass().getName() + "." + "getNegotiations",
                             "It was not possible to do contract negotiations!");
                 }
-                String state = body.get("state").asText();
-                if (state.equals("CONFIRMED") || state.equals("ERROR") || state.equals("FINALIZED")  || state.equals("VERIFIED")) {
+                String state = body.get("edc:state").asText();
+                if (state.equals("CONFIRMED") || state.equals("ERROR") || state.equals("FINALIZED")  || state.equals("TERMINATED") || state.equals("TERMINATING")) {
                     sw = false;
-                    LogUtil.printDebug("["+id+"] ===== [FINISHED CONTRACT NEGOTIATION] ===========================================");
+                    LogUtil.printStatus("["+id+"] ===== [FINISHED CONTRACT NEGOTIATION] ===========================================");
                 }
                 if (!state.equals(actualState)) {
                     actualState = state; // Update current state
                     end = Instant.now();
                     Duration timeElapsed = Duration.between(start, end);
-                    LogUtil.printDebug("["+id+"] The contract negotiation status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
+                    LogUtil.printStatus("["+id+"] The contract negotiation status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
                 }
             }
@@ -410,12 +509,12 @@ public class DataTransferService extends BaseService {
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getNegotiation",
                     e,
-                    "It was not possible to retrieve the catalog!");
+                    "It was not possible to see the contract negotiation!");
         }
     }
 
 
-    public Transfer initiateTransfer(TransferRequest transferRequest) {
+    public IdResponse initiateTransfer(TransferRequest transferRequest) {
         try {
             this.checkEmptyVariables();
             HttpHeaders headers = httpUtil.getHeaders();
@@ -427,7 +526,7 @@ public class DataTransferService extends BaseService {
             Object body = transferRequest;
             ResponseEntity<?> response = httpUtil.doPost(url, String.class, headers, httpUtil.getParams(), body, false, false);
             String responseBody = (String) response.getBody();
-            return (Transfer) jsonUtil.bindJsonNode(jsonUtil.toJsonNode(responseBody), Transfer.class);
+            return (IdResponse) jsonUtil.bindJsonNode(jsonUtil.toJsonNode(responseBody), IdResponse.class);
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "doTransferProcess",
                     e,
@@ -435,44 +534,44 @@ public class DataTransferService extends BaseService {
         }
     }
 
-    public Transfer getTransfer(String Id) {
+    public Transfer seeTransfer(String id) {
         try {
             this.checkEmptyVariables();
             HttpHeaders headers = httpUtil.getHeaders();
             String endpoint = CatenaXUtil.buildManagementEndpoint(env, this.transferPath);
+            String path = endpoint + "/" + id;
             headers.add("Content-Type", "application/json");
             headers.add("X-Api-Key", this.apiKey);
-            String url = Paths.get(endpoint, Id).toAbsolutePath().toString();
             Map<String, Object> params = httpUtil.getParams();
             JsonNode body =  null;
             String actualState = "";
             boolean sw = true;
             Instant start = Instant.now();
             Instant end = start;
-            LogUtil.printDebug("["+Id+"] ===== [STARTING CONTRACT TRANSFER] ===========================================");
+            LogUtil.printDebug("["+id+"] ===== [STARTING CONTRACT TRANSFER] ===========================================");
             while (sw) {
-                ResponseEntity<?> response = httpUtil.doGet(url, JsonNode.class, headers, params, false, false);
+                ResponseEntity<?> response = httpUtil.doGet(path, JsonNode.class, headers, params, false, false);
                 body = (JsonNode) response.getBody();
                 if(body == null){
                     sw = false;
                     throw new ServiceException(this.getClass().getName() + "." + "getNegotiations",
-                            "No response received from url [" + url + "]!");
+                            "No response received from url [" + path + "]!");
                 }
-                if (!body.has("state") || body.get("state") == null) {
-                    LogUtil.printDebug("["+Id+"] ===== [ERROR CONTRACT TRANSFER]===========================================");
+                if (!body.has("edc:state") || body.get("edc:state") == null) {
+                    LogUtil.printStatus("["+id+"] ===== [ERROR CONTRACT TRANSFER]===========================================");
                     throw new ServiceException(this.getClass().getName() + "." + "getTransfer",
                             "It was not possible to do the transfer process!");
                 }
-                String state = body.get("state").asText();
-                if (state.equals("COMPLETED") || state.equals("ERROR")) {
-                    LogUtil.printDebug("["+Id+"] ===== [FINISHED CONTRACT TRANSFER] ["+Id+"]===========================================");
+                String state = body.get("edc:state").asText();
+                if (state.equals("COMPLETED") || state.equals("ERROR") || state.equals("FINALIZED")  || state.equals("VERIFIED") || state.equals("TERMINATED") || state.equals("TERMINATING")) {
+                    LogUtil.printStatus("["+id+"] ===== [FINISHED CONTRACT TRANSFER] ["+id+"]===========================================");
                     sw = false;
                 }
                 if (!state.equals(actualState)) {
                     actualState = state; // Update current state
                     end = Instant.now();
                     Duration timeElapsed = Duration.between(start, end);
-                    LogUtil.printDebug("["+Id+"] The data transfer status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
+                    LogUtil.printStatus("["+id+"] The data transfer status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
                 }
             }
@@ -480,7 +579,7 @@ public class DataTransferService extends BaseService {
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getTransfer",
                     e,
-                    "It was not possible to transfer the contract! " + Id);
+                    "It was not possible to transfer the contract! " + id);
         }
     }
 

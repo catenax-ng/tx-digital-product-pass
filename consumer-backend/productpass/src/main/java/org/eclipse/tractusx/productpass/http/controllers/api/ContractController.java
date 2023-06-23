@@ -35,20 +35,17 @@ import jakarta.validation.Valid;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
-import org.eclipse.tractusx.productpass.models.http.requests.Negotiate;
+import org.eclipse.tractusx.productpass.models.http.requests.TokenRequest;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
-import org.eclipse.tractusx.productpass.models.passports.Passport;
-import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.services.AasService;
 import org.eclipse.tractusx.productpass.services.AuthenticationService;
 import org.eclipse.tractusx.productpass.services.DataTransferService;
@@ -245,7 +242,7 @@ public class ContractController {
 
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
     @Operation(summary = "Sign contract retrieved from provider and start negotiation")
-    public Response sign(@Valid @RequestBody Negotiate negotiateBody) {
+    public Response sign(@Valid @RequestBody TokenRequest tokenRequestBody) {
         Long signedAt = DateTimeUtil.getTimestamp();
         Response response = httpUtil.getInternalError();
 
@@ -257,13 +254,13 @@ public class ContractController {
         try {
             // Check for the mandatory fields
             List<String> mandatoryParams = List.of("processId", "contractId", "token");
-            if (!jsonUtil.checkJsonKeys(negotiateBody, mandatoryParams, ".", false)) {
+            if (!jsonUtil.checkJsonKeys(tokenRequestBody, mandatoryParams, ".", false)) {
                 response = httpUtil.getBadRequest("One or all the mandatory parameters " + mandatoryParams + " are missing");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
             // Check for processId
-            String processId = negotiateBody.getProcessId();
+            String processId = tokenRequestBody.getProcessId();
             if (!processManager.checkProcess(httpRequest, processId)) {
                 response = httpUtil.getBadRequest("The process id does not exists!");
                 return httpUtil.buildResponse(response, httpResponse);
@@ -277,7 +274,7 @@ public class ContractController {
             }
 
             // Get status to check for contract id
-            String contractId = negotiateBody.getContractId();
+            String contractId = tokenRequestBody.getContractId();
             Status status = processManager.getStatus(processId);
 
             // Check if was already declined
@@ -307,7 +304,7 @@ public class ContractController {
 
             // Check the validity of the token
             String expectedToken = processManager.generateToken(process, contractId);
-            String token = negotiateBody.getToken();
+            String token = tokenRequestBody.getToken();
             if (!expectedToken.equals(token)) {
                 response = httpUtil.getForbiddenResponse("The token is invalid!");
                 return httpUtil.buildResponse(response, httpResponse);
@@ -349,7 +346,7 @@ public class ContractController {
 
     @RequestMapping(value = "/decline", method = RequestMethod.POST)
     @Operation(summary = "Decline passport negotiation")
-    public Response decline(@Valid @RequestBody Negotiate negotiateBody) {
+    public Response decline(@Valid @RequestBody TokenRequest tokenRequestBody) {
         Response response = httpUtil.getInternalError();
 
         // Check for authentication
@@ -360,13 +357,13 @@ public class ContractController {
         try {
             // Check for the mandatory fields
             List<String> mandatoryParams = List.of("processId", "contractId", "token");
-            if (!jsonUtil.checkJsonKeys(negotiateBody, mandatoryParams, ".", false)) {
+            if (!jsonUtil.checkJsonKeys(tokenRequestBody, mandatoryParams, ".", false)) {
                 response = httpUtil.getBadRequest("One or all the mandatory parameters " + mandatoryParams + " are missing");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
             // Check for processId
-            String processId = negotiateBody.getProcessId();
+            String processId = tokenRequestBody.getProcessId();
             if (!processManager.checkProcess(httpRequest, processId)) {
                 response = httpUtil.getBadRequest("The process id does not exists!");
                 return httpUtil.buildResponse(response, httpResponse);
@@ -380,7 +377,7 @@ public class ContractController {
             }
 
             // Get status to check for contract id
-            String contractId = negotiateBody.getContractId();
+            String contractId = tokenRequestBody.getContractId();
             Status status = processManager.getStatus(processId);
 
             // Check if was already declined
@@ -404,7 +401,7 @@ public class ContractController {
 
             // Check the validity of the token
             String expectedToken = processManager.generateToken(process, contractId);
-            String token = negotiateBody.getToken();
+            String token = tokenRequestBody.getToken();
             if (!expectedToken.equals(token)) {
                 response = httpUtil.getForbiddenResponse("The token is invalid!");
                 return httpUtil.buildResponse(response, httpResponse);

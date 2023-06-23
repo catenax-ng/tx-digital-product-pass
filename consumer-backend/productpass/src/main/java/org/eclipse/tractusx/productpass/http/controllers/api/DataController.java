@@ -29,23 +29,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
-import org.eclipse.tractusx.productpass.config.ProcessConfig;
-import org.eclipse.tractusx.productpass.exceptions.ControllerException;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
-import org.eclipse.tractusx.productpass.managers.ProcessManager;
-import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
-import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
-import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
-import org.eclipse.tractusx.productpass.models.http.requests.Negotiate;
-import org.eclipse.tractusx.productpass.models.http.requests.Search;
-import org.eclipse.tractusx.productpass.models.manager.Process;
-import org.eclipse.tractusx.productpass.models.negotiation.Catalog;
-import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
-import org.eclipse.tractusx.productpass.models.negotiation.Offer;
 import org.eclipse.tractusx.productpass.models.passports.Passport;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.services.AasService;
@@ -59,11 +44,6 @@ import utils.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/data")

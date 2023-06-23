@@ -35,7 +35,8 @@ public class Transfer extends DidDocument{
     String state;
     @JsonProperty("edc:stateTimestamp")
     Long stateTimestamp;
-
+    @JsonProperty("edc:errorDetail")
+    String errorDetail;
     @JsonProperty("edc:type")
     String edcType;
 
@@ -83,6 +84,19 @@ public class Transfer extends DidDocument{
     }
 
     public Transfer() {
+    }
+
+    public Transfer(String id, String type, String state, Long stateTimestamp, String errorDetail, String edcType, List<JsonNode> callbackAddresses, DataDestination dataDestination, DataRequest dataRequest, String receiverHttpEndpoint, JsonNode context) {
+        super(id, type);
+        this.state = state;
+        this.stateTimestamp = stateTimestamp;
+        this.errorDetail = errorDetail;
+        this.edcType = edcType;
+        this.callbackAddresses = callbackAddresses;
+        this.dataDestination = dataDestination;
+        this.dataRequest = dataRequest;
+        this.receiverHttpEndpoint = receiverHttpEndpoint;
+        this.context = context;
     }
 
     public String getState() {
@@ -147,6 +161,14 @@ public class Transfer extends DidDocument{
 
     public void setContext(JsonNode context) {
         this.context = context;
+    }
+
+    public String getErrorDetail() {
+        return errorDetail;
+    }
+
+    public void setErrorDetail(String errorDetail) {
+        this.errorDetail = errorDetail;
     }
 
 

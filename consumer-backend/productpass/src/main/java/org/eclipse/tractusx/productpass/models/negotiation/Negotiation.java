@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Negotiation extends DidDocument {
     @JsonProperty("edc:type")
@@ -37,12 +39,14 @@ public class Negotiation extends DidDocument {
 
     @JsonProperty("edc:state")
     String state;
+    @JsonProperty("edc:errorDetail")
+    String errorDetail;
 
     @JsonProperty("edc:counterPartyAddress")
     String counterPartyAddress;
 
     @JsonProperty("edc:callbackAddresses")
-    String callbackAddresses;
+    List<String> callbackAddresses;
 
     @JsonProperty("edc:contractAgreementId")
     String contractAgreementId;
@@ -50,7 +54,7 @@ public class Negotiation extends DidDocument {
     @JsonProperty("@context")
     JsonNode context;
 
-    public Negotiation(String id, String type, String edcType, String protocol, String state, String counterPartyAddress, String callbackAddresses, String contractAgreementId, JsonNode context) {
+    public Negotiation(String id, String type, String edcType, String protocol, String state, String counterPartyAddress, List<String> callbackAddresses, String contractAgreementId, JsonNode context) {
         super(id, type);
         this.edcType = edcType;
         this.protocol = protocol;
@@ -61,7 +65,7 @@ public class Negotiation extends DidDocument {
         this.context = context;
     }
 
-    public Negotiation(String edcType, String protocol, String state, String counterPartyAddress, String callbackAddresses, String contractAgreementId, JsonNode context) {
+    public Negotiation(String edcType, String protocol, String state, String counterPartyAddress, List<String> callbackAddresses, String contractAgreementId, JsonNode context) {
         this.edcType = edcType;
         this.protocol = protocol;
         this.state = state;
@@ -71,7 +75,25 @@ public class Negotiation extends DidDocument {
         this.context = context;
     }
 
+
+
     public Negotiation() {
+    }
+
+    public Negotiation(String id, String type) {
+        super(id, type);
+    }
+
+    public Negotiation(String id, String type, String edcType, String protocol, String state, String errorDetail, String counterPartyAddress, List<String> callbackAddresses, String contractAgreementId, JsonNode context) {
+        super(id, type);
+        this.edcType = edcType;
+        this.protocol = protocol;
+        this.state = state;
+        this.errorDetail = errorDetail;
+        this.counterPartyAddress = counterPartyAddress;
+        this.callbackAddresses = callbackAddresses;
+        this.contractAgreementId = contractAgreementId;
+        this.context = context;
     }
 
     public String getEdcType() {
@@ -106,11 +128,11 @@ public class Negotiation extends DidDocument {
         this.counterPartyAddress = counterPartyAddress;
     }
 
-    public String getCallbackAddresses() {
+    public List<String> getCallbackAddresses() {
         return callbackAddresses;
     }
 
-    public void setCallbackAddresses(String callbackAddresses) {
+    public void setCallbackAddresses(List<String> callbackAddresses) {
         this.callbackAddresses = callbackAddresses;
     }
 
@@ -128,5 +150,13 @@ public class Negotiation extends DidDocument {
 
     public void setContext(JsonNode context) {
         this.context = context;
+    }
+
+    public String getErrorDetail() {
+        return errorDetail;
+    }
+
+    public void setErrorDetail(String errorDetail) {
+        this.errorDetail = errorDetail;
     }
 }

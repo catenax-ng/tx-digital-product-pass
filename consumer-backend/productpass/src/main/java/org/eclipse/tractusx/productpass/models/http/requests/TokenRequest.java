@@ -28,7 +28,7 @@ package org.eclipse.tractusx.productpass.models.http.requests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
-public class Negotiate {
+public class TokenRequest {
     @NotNull(message = "Process id needs to be defined!")
     @JsonProperty("processId")
     String processId;
@@ -41,7 +41,7 @@ public class Negotiate {
     String token;
 
 
-    public Negotiate(String processId, String contractId, String token) {
+    public TokenRequest(String processId, String contractId, String token) {
         this.processId = processId;
         this.contractId = contractId;
         this.token = token;
@@ -55,7 +55,7 @@ public class Negotiate {
         this.token = token;
     }
 
-    public Negotiate() {
+    public TokenRequest() {
     }
 
     public String getProcessId() {

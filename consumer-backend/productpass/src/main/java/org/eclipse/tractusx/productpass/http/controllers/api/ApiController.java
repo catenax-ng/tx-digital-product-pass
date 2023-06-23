@@ -30,13 +30,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.bouncycastle.pqc.crypto.lms.LMOtsParameters;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
+import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
 import org.eclipse.tractusx.productpass.models.http.Response;
+import org.eclipse.tractusx.productpass.models.http.requests.TokenRequest;
 import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
+import org.eclipse.tractusx.productpass.models.manager.History;
+import org.eclipse.tractusx.productpass.models.manager.Process;
+import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.Passport;
 import org.eclipse.tractusx.productpass.models.passports.PassportResponse;
@@ -73,6 +79,9 @@ public class ApiController {
     private @Autowired PassportConfig passportConfig;
     private @Autowired HttpUtil httpUtil;
     private @Autowired JsonUtil jsonUtil;
+
+    private @Autowired ProcessManager processManager;
+
     @RequestMapping(value="/api/*", method = RequestMethod.GET)
     @Hidden         // hide this endpoint from api documentation - swagger-ui
     Response index() throws Exception{
@@ -106,215 +115,83 @@ public class ApiController {
             @RequestParam(value = "idShort", required = false, defaultValue = "batteryPass") String idShort,
             @RequestParam(value = "dtIndex", required = false, defaultValue = "0") Integer dtIndex
     ) {
-        // Check if user is Authenticated
-        if(!authService.isAuthenticated(httpRequest)){
-            Response response = httpUtil.getNotAuthorizedResponse();
+        return httpUtil.getNotFound("Not available");
+    }
+
+    @RequestMapping(value = "/passport", method = {RequestMethod.POST})
+    @Operation(summary = "Returns versioned product passport by id", responses = {
+            @ApiResponse(description = "Default Response Structure", content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Response.class))),
+            @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = PassportResponse.class))),
+            @ApiResponse(description = "Content of Passport Field in Data Field",useReturnTypeSchema = true, content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = PassportV3.class)))
+    })
+    public Response getPassport(@Valid @RequestBody TokenRequest tokenRequestBody) {
+        Response response = httpUtil.getInternalError();
+
+        // Check for authentication
+        if (!authService.isAuthenticated(httpRequest)) {
+            response = httpUtil.getNotAuthorizedResponse();
             return httpUtil.buildResponse(response, httpResponse);
         }
-        // Initialize response
-        Response response = httpUtil.getResponse();
-        List<String> versions = passportConfig.getVersions();
         try {
-            Offer contractOffer = null;
-
-            // Start Digital Twin Query
-            AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = null;
-            Thread digitalTwinRegistryThread = ThreadUtil.runThread(digitalTwinRegistry);
-
-            // Wait for digital twin query
-            digitalTwinRegistryThread.join();
-            DigitalTwin digitalTwin;
-            SubModel subModel;
-            String connectorId;
-            String connectorAddress;
-            try {
-                digitalTwin = digitalTwinRegistry.getDigitalTwin();
-                subModel = digitalTwinRegistry.getSubModel();
-                connectorId = subModel.getIdShort();
-
-                // Get first connectorAddress, a possibility is to check for "EDC" type
-                connectorAddress = subModel.getEndpoints().get(0).getProtocolInformation().getEndpointAddress();
-
-            } catch (Exception e) {
-                response.message = "Failed to get the submodel from the digital twin registry!";
-                response.status = 404;
-                response.statusText = "Not Found";
+            // Check for the mandatory fields
+            List<String> mandatoryParams = List.of("processId", "contractId", "token");
+            if (!jsonUtil.checkJsonKeys(tokenRequestBody, mandatoryParams, ".", false)) {
+                response = httpUtil.getBadRequest("One or all the mandatory parameters " + mandatoryParams + " are missing");
                 return httpUtil.buildResponse(response, httpResponse);
             }
-            if (connectorId.isEmpty() || connectorAddress.isEmpty()) {
-                response.message = "Failed to get connectorId and connectorAddress!";
-                response.status = 400;
-                response.statusText = "Bad Request";
-                response.data = subModel;
+
+            // Check for processId
+            String processId = tokenRequestBody.getProcessId();
+            if (!processManager.checkProcess(httpRequest, processId)) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
 
-            try {
-                connectorAddress = CatenaXUtil.buildEndpoint(connectorAddress);
-            }catch (Exception e) {
-                response.message = "Failed to build endpoint url to ["+connectorAddress+"]!";
-                response.status = 422;
-                response.statusText = "Unprocessable Content";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            if (connectorAddress.isEmpty()) {
-                response.message = "Failed to parse endpoint ["+connectorAddress+"]!";
-                response.status = 422;
-                response.statusText = "Unprocessable Content";
-                response.data = subModel;
+            Process process = processManager.getProcess(httpRequest, processId);
+            if (process == null) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-            String assetId = String.join("-",digitalTwin.getIdentification(), subModel.getIdentification());
+            // Get status to check for contract id
+            String contractId = tokenRequestBody.getContractId();
+            Status status = processManager.getStatus(processId);
 
-            /*[1]=========================================*/
-            // Get catalog with all the contract offers
-            // Check if contract offer was not received
-            if (contractOffer == null) {
-                response.message = "Asset Id not found in any contract!";
-                response.status = 404;
-                response.statusText = "Not Found";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            /*[2]=========================================*/
-            // Start Negotiation
-            IdResponse negotiationResponse;
-            try {
-                negotiationResponse = dataService.doContractNegotiations(contractOffer, connectorAddress);
-            } catch (Exception e) {
-                response.message = "Negotiation Id not received, something went wrong" + " [" + e.getMessage() + "]";
-                response.status = 400;
-                response.statusText = "Bad Request";
+            if (status.historyExists("contract-decline")) {
+                response = httpUtil.getForbiddenResponse("The contract for this passport has been declined!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-            if (negotiationResponse.getId() == null) {
-                response.message = "Negotiation Id not received, something went wrong";
-                response.status = 400;
-                response.statusText = "Bad Request";
+            // Check if the contract id is correct
+            History history = status.getHistory("contract-dataset");
+            if (!history.getId().equals(contractId)) {
+                response = httpUtil.getBadRequest("This contract id is incorrect!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check the validity of the token
+            String expectedToken = processManager.generateToken(process, contractId);
+            String token = tokenRequestBody.getToken();
+            if (!expectedToken.equals(token)) {
+                response = httpUtil.getForbiddenResponse("The token is invalid!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
 
-            String receiverEndpoint = env.getProperty("configuration.edc.receiverEndpoint");
-            TransferRequest.TransferType transferType = null;
-
-            transferType.setContentType("application/octet-stream");
-            transferType.setIsFinite(true);
-
-            TransferRequest.DataDestination dataDestination = null;
-            dataDestination.setProperties(new Properties("HttpProxy"));
-
-            TransferRequest.PrivateProperties privateProperties = null;
-            privateProperties.setReceiverHttpEndpoint(receiverEndpoint);
-
-            /*[6]=========================================*/
-            // Configure Transfer Request
-            TransferRequest transferRequest = new TransferRequest(
-                    jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
-                    assetId,
-                    connectorAddress,
-                    contractOffer.getOfferId(),
-                    dataDestination,
-                    false,
-                    privateProperties,
-                    "dataspace-protocol-http",
-                    transferType
-            );
-            /*[7]=========================================*/
-            // Initiate the transfer process
-            Transfer transfer = null;
-            try {
-                transfer = dataService.initiateTransfer(transferRequest);
-            } catch (Exception e) {
-                response.message = "It was not posible to initiate the transfer process!";
-                response.status = 500;
-                response.statusText = "Internal Server Error";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-            if (transfer.getId() == null) {
-                response.message = "Transfer Id not received, something went wrong";
-                response.status = 400;
-                response.statusText = "Bad Request";
+            if (status.historyExists("contract-decline")) {
+                response = httpUtil.getForbiddenResponse("The contract for this passport has been declined!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-
-            /*[8]=========================================*/
-            // Check for transfer updates and the status
-            try {
-                transfer = dataService.getTransfer(transfer.getId());
-            } catch (Exception e) {
-                response.message = "It was not possible to retrieve the transfer!";
-                response.status = 500;
-                response.statusText = "Internal Server Error";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            // If error return transfer message
-            if (transfer.getState().equals("ERROR")) {
-                response.data = transfer;
-                response.message = "The transfer process failed!";
-                response.status = 400;
-                response.statusText = "Bad Request";
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            /*[9]=========================================*/
-            // Get passport by versions
-
-            int actualRetries = 1;
-            Integer maxRetries = env.getProperty("configuration.maxRetries", Integer.class,5);
-            while (actualRetries <= maxRetries) {
-                try {
-                    response = dataController.getPassport(transferRequest.getAssetId(), version);
-                } catch (Exception e) {
-                    LogUtil.printError("[" + transferRequest.getAssetId() + "] Waiting 5 seconds and retrying #"+actualRetries+" of "+maxRetries+"... ");
-                    Thread.sleep(5000);
-                }
-                if(response.data!=null){
-                    break;
-                }
-                actualRetries++;
-            }
-
-            // Correct Response
-            if(response.data != null) {
-                Passport passport = (Passport) response.data;
-                Map<String, Object> metadata = Map.of(
-                        "contractOffer", contractOffer,
-                        "negotiation", new Negotiation(),
-                        "transferRequest", transferRequest,
-                        "transfer", transfer
-                );
-                response.data = new PassportResponse(metadata, passport);
-                return httpUtil.buildResponse(response, httpResponse);
-            }
-
-            // Error or Exception response
-            if(response.message == null){
-                response.message = "Passport for transfer [" + transferRequest.getAssetId() + "] not found in provider!";
-                response.status = 404;
-                response.statusText = "Not Found";
-                LogUtil.printError("["+response.status+" Not Found]: "+response.message);
-            }
-            return httpUtil.buildResponse(response, httpResponse);
-
-        } catch (InterruptedException e) {
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-            response.message = e.getMessage();
-            response.status = 500;
-            response.statusText = "Internal Server Error";
             return httpUtil.buildResponse(response, httpResponse);
         } catch (Exception e) {
             response.message = e.getMessage();
-            response.status = 500;
-            response.statusText = "Internal Server Error";
             return httpUtil.buildResponse(response, httpResponse);
         }
-
     }
 
 }
