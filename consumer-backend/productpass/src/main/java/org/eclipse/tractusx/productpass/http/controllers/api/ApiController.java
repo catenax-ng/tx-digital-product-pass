@@ -200,7 +200,7 @@ public class ApiController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-            if (!status.historyExists("passport-retrieved")) {
+            if (status.historyExists("passport-retrieved")) {
                 response = httpUtil.getNotFound("The passport was already retrieved and is no longer available!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
