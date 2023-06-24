@@ -276,7 +276,7 @@ public class ProcessManager {
         if (thread == null) {
             throw new ManagerException(this.getClass().getName(), "Thread not found!");
         }
-        thread.join();
+        thread.interrupt(); // Interrupt thread
         this.setProcessState(httpRequest, processId, "TERMINATED");
 
         return this.setStatus(processId, "negotiation-canceled", new History(
