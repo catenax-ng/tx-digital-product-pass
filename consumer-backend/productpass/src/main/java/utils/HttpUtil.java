@@ -79,6 +79,10 @@ public class HttpUtil {
     public  void setSessionValue(HttpServletRequest httpRequest, String key, Object value) {
         httpRequest.getSession().setAttribute(key, value);
     }
+    public String getSessionId(HttpServletRequest httpRequest) {
+        return httpRequest.getSession().getId();
+    }
+
 
     public  Boolean isInSession(HttpServletRequest httpRequest, String key) {
         try {

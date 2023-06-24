@@ -85,7 +85,7 @@ public class ProcessManager {
             if (processDataModel == null) {
                 processDataModel = new ProcessDataModel();
                 this.httpUtil.setSessionValue(httpRequest, "processDataModel", processDataModel);
-                LogUtil.printMessage("[PROCESS] Process Data Model created, the server is ready to start processing requests...");
+                LogUtil.printMessage("[PROCESS] Process Data Model created for Session ["+this.httpUtil.getSessionId(httpRequest)+"], the server is ready to start processing requests...");
             }
             return processDataModel;
         } catch (Exception e) {
@@ -111,6 +111,9 @@ public class ProcessManager {
         }
     }
 
+    public String generateStatusToken(Status status, String contractId) {
+        return CrypUtil.sha256("signToken=[" + status.getCreated() + "|" + status.id + "|" + contractId + "|" + processConfig.getSignToken() + "]"); // Add extra level of security, that just the user that has this token can sign
+    }
 
     public String generateToken(Process process, String contractId) {
         return CrypUtil.sha256("signToken=[" + process.getCreated() + "|" + process.id + "|" + contractId + "|" + processConfig.getSignToken() + "]"); // Add extra level of security, that just the user that has this token can sign
@@ -125,6 +128,17 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to check if process exists [" + processId + "]");
         }
     }
+    public Boolean checkProcess(String processId) {
+        try {
+            // Getting a process
+            String path = this.getProcessFilePath(processId, this.metaFileName);
+            return fileUtil.pathExists(path);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to check if process exists [" + processId + "]");
+        }
+    }
+
+
 
 
     public void startNegotiation(HttpServletRequest httpRequest, String processId, Runnable contractNegotiation) {
@@ -172,14 +186,15 @@ public class ProcessManager {
     }
 
     public Process createProcess(HttpServletRequest httpRequest, String connectorAddress) {
-        Process process = new Process(CrypUtil.getUUID(), "CREATED");
+        Long createdTime = DateTimeUtil.getTimestamp();
+        Process process = new Process(CrypUtil.getUUID(), "CREATED", createdTime);
         LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
         this.setProcess(httpRequest, process); // Add process to session storage
-        this.newStatusFile(process.id, connectorAddress); // Set the status from the process in file system logs.
+        this.newStatusFile(process.id, connectorAddress, createdTime); // Set the status from the process in file system logs.
         return process;
     }
 
-    public String newStatusFile(String processId, String connectorAddress){
+    public String newStatusFile(String processId, String connectorAddress, Long created){
         try {
             String path = this.getProcessFilePath(processId, this.metaFileName);
             return jsonUtil.toJsonFile(
@@ -188,6 +203,7 @@ public class ProcessManager {
                         processId,
                         "CREATED",
                         connectorAddress,
+                        created,
                         DateTimeUtil.getTimestamp()
                     ),
                     processConfig.getIndent()); // Store the plain JSON
@@ -372,35 +388,57 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer request!");
         }
     }
-    public PassportV3 loadPassport(HttpServletRequest httpRequest, String processId){
+    public PassportV3 loadPassport(String processId){
         try {
             String path = this.getProcessFilePath(processId, this.passportFileName);
+            History history = new History(
+                    processId,
+                    "RETRIEVED"
+            );
             if(!fileUtil.pathExists(path)){
                 throw new ManagerException(this.getClass().getName(), "Passport file ["+path+"] not found!");
             }
+            PassportV3 passport = null;
             Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
             if(encrypt){
-                Process process = this.getProcess(httpRequest, processId);
                 Status status = this.getStatus(processId);
+                History negotiationHistory = status.getHistory("negotiation-accepted");
+                String decryptedPassportJson = CrypUtil.decryptAes(fileUtil.readFile(path), this.generateStatusToken(status, negotiationHistory.getId()));
+                // Delete passport file
 
-                History history = status.getHistory("negotiation-accepted");
-                return (PassportV3) jsonUtil.loadJson(CrypUtil.decryptAes(fileUtil.readFile(path), this.generateToken(process, history.getId())), PassportV3.class);
+                passport =  (PassportV3) jsonUtil.loadJson(decryptedPassportJson, PassportV3.class);
             }else{
-                return (PassportV3) jsonUtil.fromJsonFileToObject(path, PassportV3.class);
+                passport =  (PassportV3) jsonUtil.fromJsonFileToObject(path, PassportV3.class);
             }
+
+            if(passport == null){
+                throw new ManagerException(this.getClass().getName(), "Failed to load the passport");
+            }
+            Boolean deleteResponse = fileUtil.deleteFile(path);
+
+            if(deleteResponse==null){
+                LogUtil.printStatus("[PROCESS + " + processId +"] Passport file not found, failed to delete!");
+            } else if (deleteResponse) {
+                LogUtil.printStatus("[PROCESS + " + processId +"] Passport file deleted successfully!");
+            } else{
+                LogUtil.printStatus("[PROCESS + " + processId +"] Failed to delete passport file!");
+            }
+
+            this.setStatus(processId,"passport-retrieved", history);
+            return passport;
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the passport!");
         }
     }
-    public String savePassport(HttpServletRequest httpRequest, String processId, DataPlaneEndpoint endpointData, Passport passport) {
+    public String savePassport(String processId, DataPlaneEndpoint endpointData, Passport passport) {
         try {
             Boolean prettyPrint = env.getProperty("passport.dataTransfer.indent", Boolean.class, true);
             Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
 
             Object passportContent = passport;
-            Process process = this.getProcess(httpRequest, processId);
+            Status status = getStatus(processId);
             if(encrypt) {
-                passportContent = CrypUtil.encryptAes(jsonUtil.toJson(passport, prettyPrint), this.generateToken(process, endpointData.getOfferId())); // Encrypt the data with the token
+                passportContent = CrypUtil.encryptAes(jsonUtil.toJson(passport, prettyPrint), this.generateStatusToken(status, endpointData.getOfferId())); // Encrypt the data with the token
             }
             return this.saveProcessPayload(
                     processId,

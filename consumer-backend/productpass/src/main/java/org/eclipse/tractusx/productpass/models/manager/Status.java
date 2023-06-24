@@ -72,6 +72,14 @@ public class Status {
         this.history = history;
     }
 
+    public Status(String id, String status, Long created, Long modified,  String endpoint, String historyId, History history) {
+        this.id = id;
+        this.status = status;
+        this.created = created;
+        this.modified = modified;
+        this.endpoint = endpoint;
+        this.history = Map.of(historyId, history);
+    }
     public Status(String id, String status, Long modified,  String endpoint, String historyId, History history) {
         this.id = id;
         this.status = status;
@@ -90,6 +98,14 @@ public class Status {
         this.history = new HashMap<String, History>();
     }
 
+    public Status(String id, String status, String endpoint, Long created, Long modified) {
+        this.id = id;
+        this.status = status;
+        this.created = created;
+        this.modified = modified;
+        this.endpoint = endpoint;
+        this.history = new HashMap<String, History>();
+    }
     public Status() {
     }
 

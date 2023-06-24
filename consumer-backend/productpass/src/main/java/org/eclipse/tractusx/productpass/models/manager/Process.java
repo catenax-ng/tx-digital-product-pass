@@ -57,6 +57,18 @@ public class Process {
 
     public Process() {
     }
+    public Process(String id, String state, Long created, Long updated) {
+        this.id = id;
+        this.state = state;
+        this.created = created;
+        this.updated = updated;
+    }
+    public Process(String id, String state, Long created) {
+        this.id = id;
+        this.state = state;
+        this.created = created;
+        this.updated = DateTimeUtil.getTimestamp();
+    }
 
     public Process(String id, String state) {
         this.id = id;

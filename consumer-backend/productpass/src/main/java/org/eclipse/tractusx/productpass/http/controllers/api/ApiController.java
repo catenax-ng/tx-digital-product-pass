@@ -196,7 +196,7 @@ public class ApiController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-            PassportV3 passport = processManager.loadPassport(httpRequest, processId);
+            PassportV3 passport = processManager.loadPassport(processId);
 
             if(passport == null){
                 response = httpUtil.getNotFound("Failed to load passport!");

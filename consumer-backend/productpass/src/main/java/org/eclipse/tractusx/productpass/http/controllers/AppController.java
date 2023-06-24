@@ -146,7 +146,7 @@ public class AppController {
                 return httpUtil.buildResponse(httpUtil.getBadRequest("Failed to get data plane endpoint data"), httpResponse);
             }
 
-            if(!processManager.checkProcess(httpRequest, processId)){
+            if(!processManager.checkProcess(processId)){
                 return httpUtil.buildResponse(httpUtil.getNotFound("Process not found!"), httpResponse);
             }
 
@@ -154,7 +154,7 @@ public class AppController {
             if(passport == null){
                 return httpUtil.buildResponse(httpUtil.getNotFound("Passport not found!"), httpResponse);
             }
-            String passportPath = processManager.savePassport(httpRequest, processId, endpointData, passport);
+            String passportPath = processManager.savePassport(processId, endpointData, passport);
             LogUtil.printMessage("[EDC] Passport Transfer Data ["+endpointData.getId()+"] Saved Successfully in ["+passportPath+"]!");
         }catch(Exception e) {
             LogUtil.printException(e, "This request is not allowed! It must contain the valid attributes from an EDC endpoint");

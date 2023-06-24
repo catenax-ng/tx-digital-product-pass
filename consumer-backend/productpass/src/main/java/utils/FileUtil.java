@@ -150,6 +150,19 @@ public final class FileUtil {
 
     }
 
+
+    public Boolean deleteFile(String path){
+        try {
+            if(!this.pathExists(path)) {
+                LogUtil.printError("The file does not exists in [" + path + "]!");
+                return null;
+            }
+            return Files.deleteIfExists(Paths.get(path));
+        } catch (Exception e) {
+            throw new UtilException(FileUtil.class, "It was not possible to delete file [" + path + "]");
+        }
+    }
+
     public  String getRootPath(){
         try {
             return System.getProperty("user.dir");
