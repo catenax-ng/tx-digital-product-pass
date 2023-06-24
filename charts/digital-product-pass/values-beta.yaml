@@ -79,6 +79,7 @@ backend:
       clientId: <path:material-pass/data/beta/aasregistry#client.id>
       clientSecret: <path:material-pass/data/beta/aasregistry#client.secret>
       xApiKey: <path:material-pass/data/beta/edc/oauth#api.key>
+      participantId:  <path:material-pass/data/beta/edc/participant#bpnNumber>
 
   application:
     yml: |-

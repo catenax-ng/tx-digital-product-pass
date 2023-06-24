@@ -89,6 +89,7 @@ backend:
       clientId: "Add your secret here"
       clientSecret: "Add your secret here"
       xApiKey: "Add your secret here"
+      participantId: "Add your secret here"
 
   application:
     yml: |-
