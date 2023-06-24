@@ -217,7 +217,7 @@ public class ApiController {
             Map<String, Object> transfer =processManager.loadTransfer(processId);
             response = httpUtil.getResponse();
             response.data = Map.of(
-                    "dataset", dataset,
+                    "contract", dataset,
                     "negotiation", negotiation,
                     "transfer", transfer,
                     "passport", passport
