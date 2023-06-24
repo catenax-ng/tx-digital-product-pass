@@ -211,6 +211,9 @@ public class DataTransferService extends BaseService {
                 this.negotiationResponse = this.requestNegotiation(this.negotiationRequest);
                 processManager.saveNegotiationRequest(processId, negotiationRequest, negotiationResponse);
                 this.negotiation = this.getNegotiationData(negotiationResponse);
+                if(this.negotiation == null){
+                    return;
+                }
                 processManager.saveNegotiation(this.processId, this.negotiation);
                 String state = this.negotiation.getState();
                 if (!(state.equals("CONFIRMED") || state.equals("FINALIZED"))) {
@@ -224,6 +227,11 @@ public class DataTransferService extends BaseService {
                 this.dataModel.setState(processId, "FAILED");
                 throw new ServiceException(this.getClass().getName(), e, "Failed to do the contract negotiation!");
             }
+
+            if(this.dataModel.getState(processId).equals("TERMINATED")){
+                LogUtil.printMessage("Terminated process " + processId + "stopped transfer!");
+                return;
+            };
             this.dataModel.setState(processId, "NEGOTIATED");
 
             // TRANSFER PROCESS
@@ -233,6 +241,9 @@ public class DataTransferService extends BaseService {
                 this.tranferResponse = this.requestTransfer(transferRequest);
                 processManager.saveTransferRequest(this.processId, transferRequest, this.tranferResponse);
                 this.transfer = this.getTransferData(this.tranferResponse);
+                if(this.transfer == null){
+                    return;
+                }
                 processManager.saveTransfer(this.processId, transfer);
                 if (!transfer.getState().equals("COMPLETED")) {
                     throw new ServiceException(this.getClass().getName(), "Transfer Process Failed ["+this.tranferResponse.getId()+"]");
@@ -250,7 +261,7 @@ public class DataTransferService extends BaseService {
         public Negotiation getNegotiationData(IdResponse negotiationResponse) {
             Negotiation negotiation = null;
             try {
-                negotiation = seeNegotiation(negotiationResponse.getId());
+                negotiation = seeNegotiation(negotiationResponse.getId(), this.processId, this.dataModel);
             } catch (Exception e) {
                 throw new ServiceException(this.getClass().getName(), e, "Failed to get the negotiation ["+negotiationResponse.getId()+"]");
             }
@@ -290,7 +301,7 @@ public class DataTransferService extends BaseService {
             // Check for transfer updates and the status
             Transfer transfer = null;
             try {
-                transfer = seeTransfer(transferData.getId());
+                transfer = seeTransfer(transferData.getId(), this.processId, this.dataModel);
             } catch (Exception e) {
                 throw new ServiceException(this.getClass().getName(), e, "Failed to get the negotiation ["+transferData.getId()+"]");
             }
@@ -462,7 +473,7 @@ public class DataTransferService extends BaseService {
         }
     }
 
-    public Negotiation seeNegotiation(String id) {
+    public Negotiation seeNegotiation(String id, String processId, ProcessDataModel dataModel) {
         try {
             this.checkEmptyVariables();
 
@@ -504,6 +515,10 @@ public class DataTransferService extends BaseService {
                     LogUtil.printStatus("["+id+"] The contract negotiation status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
                 }
+                if(dataModel.getState(processId).equals("TERMINATED")){
+                    LogUtil.printMessage("["+id+"] The negotiation was cancelled");
+                    return null;
+                }
             }
             return (Negotiation) jsonUtil.bindJsonNode(body, Negotiation.class);
         } catch (Exception e) {
@@ -534,7 +549,7 @@ public class DataTransferService extends BaseService {
         }
     }
 
-    public Transfer seeTransfer(String id) {
+    public Transfer seeTransfer(String id, String processId, ProcessDataModel dataModel) {
         try {
             this.checkEmptyVariables();
             HttpHeaders headers = httpUtil.getHeaders();
@@ -573,6 +588,10 @@ public class DataTransferService extends BaseService {
                     Duration timeElapsed = Duration.between(start, end);
                     LogUtil.printStatus("["+id+"] The data transfer status changed: [" + state + "] - TIME->[" + timeElapsed + "]s");
                     start = Instant.now();
+                }
+                if(dataModel.getState(processId).equals("TERMINATED")){
+                    LogUtil.printMessage("["+id+"] The transfer was cancelled");
+                    return null;
                 }
             }
             return (Transfer) jsonUtil.bindJsonNode(body, Transfer.class);
