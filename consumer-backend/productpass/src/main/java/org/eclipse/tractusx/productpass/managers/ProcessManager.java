@@ -269,7 +269,24 @@ public class ProcessManager {
                 "DECLINED"
         ));
     }
+    public String cancelProcess(HttpServletRequest httpRequest, String processId) {
+    try {
+        Process process = this.getProcess(httpRequest, processId);
+        Thread thread = process.getThread();
+        if (thread == null) {
+            throw new ManagerException(this.getClass().getName(), "Thread not found!");
+        }
+        thread.join();
+        this.setProcessState(httpRequest, processId, "TERMINATED");
 
+        return this.setStatus(processId, "negotiation-canceled", new History(
+                processId,
+                "CANCELLED"
+        ));
+    }catch (Exception e){
+        throw new ManagerException(this.getClass().getName(),e, "It was not possible to cancel the negotiation thread for process ["+processId+"]!");
+    }
+    }
     public String setSigned(HttpServletRequest httpRequest, String processId, String contractId, Long signedAt) {
 
         this.setProcessState(httpRequest, processId, "STARTING");
@@ -290,6 +307,22 @@ public class ProcessManager {
         }
     }
 
+    public Map<String, Object> loadNegotiation(String processId) {
+        try {
+            String path = this.getProcessFilePath(processId, this.negotiationFileName);
+            return (Map<String, Object>) jsonUtil.fromJsonFileToObject(path, Map.class);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the negotiation file for process id [" + processId + "]");
+        }
+    }
+    public  Map<String, Object>  loadTransfer(String processId) {
+        try {
+            String path = this.getProcessFilePath(processId, this.transferFileName);
+            return (Map<String, Object>) jsonUtil.fromJsonFileToObject(path, Map.class);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the transfer file for process id [" + processId + "]");
+        }
+    }
     public String saveProcessPayload(String processId, Object payload, String fileName, Long startedTime, String assetId, String status, String eventKey) {
         try {
             Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
@@ -417,11 +450,11 @@ public class ProcessManager {
             Boolean deleteResponse = fileUtil.deleteFile(path);
 
             if(deleteResponse==null){
-                LogUtil.printStatus("[PROCESS + " + processId +"] Passport file not found, failed to delete!");
+                LogUtil.printStatus("[PROCESS " + processId +"] Passport file not found, failed to delete!");
             } else if (deleteResponse) {
-                LogUtil.printStatus("[PROCESS + " + processId +"] Passport file deleted successfully!");
+                LogUtil.printStatus("[PROCESS " + processId +"] Passport file deleted successfully!");
             } else{
-                LogUtil.printStatus("[PROCESS + " + processId +"] Failed to delete passport file!");
+                LogUtil.printStatus("[PROCESS " + processId +"] Failed to delete passport file!");
             }
 
             this.setStatus(processId,"passport-retrieved", history);

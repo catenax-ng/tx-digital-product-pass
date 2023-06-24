@@ -240,6 +240,98 @@ public class ContractController {
         }
     }
 
+
+    @RequestMapping(value = "/cancel", method = RequestMethod.POST)
+    @Operation(summary = "Cancel the negotiation")
+    public Response cancel(@Valid @RequestBody TokenRequest tokenRequestBody) {
+        Response response = httpUtil.getInternalError();
+
+        // Check for authentication
+        if (!authService.isAuthenticated(httpRequest)) {
+            response = httpUtil.getNotAuthorizedResponse();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+        try {
+            // Check for the mandatory fields
+            List<String> mandatoryParams = List.of("processId", "contractId", "token");
+            if (!jsonUtil.checkJsonKeys(tokenRequestBody, mandatoryParams, ".", false)) {
+                response = httpUtil.getBadRequest("One or all the mandatory parameters " + mandatoryParams + " are missing");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check for processId
+            String processId = tokenRequestBody.getProcessId();
+            if (!processManager.checkProcess(httpRequest, processId)) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+
+            Process process = processManager.getProcess(httpRequest, processId);
+            if (process == null) {
+                response = httpUtil.getBadRequest("The process id does not exists!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Get status to check for contract id
+            String contractId = tokenRequestBody.getContractId();
+            Status status = processManager.getStatus(processId);
+
+            // Check if was already declined
+            if (status.historyExists("contract-decline")) {
+                response = httpUtil.getForbiddenResponse("This contract was declined! Please request a new one");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            if (status.historyExists("negotiation-canceled")) {
+                response = httpUtil.getForbiddenResponse("This negotiation has already been canceled! Please request a new one");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check if there is a contract available
+            if (!status.historyExists("contract-dataset")) {
+                response = httpUtil.getBadRequest("No contract is available!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check if the contract id is correct
+            History history = status.getHistory("contract-dataset");
+            if (!history.getId().equals(contractId)) {
+                response = httpUtil.getBadRequest("This contract id is incorrect!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            // Check the validity of the token
+            String expectedToken = processManager.generateToken(process, contractId);
+            String token = tokenRequestBody.getToken();
+            if (!expectedToken.equals(token)) {
+                response = httpUtil.getForbiddenResponse("The token is invalid!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            if (status.getStatus().equals("COMPLETED") || status.getStatus().equals("RETRIEVED") || status.historyExists("transfer-request") || status.historyExists("transfer-completed") || status.historyExists("passport-received") || status.historyExists("passport-retrieved")) {
+                response = httpUtil.getForbiddenResponse("This negotiation can not be canceled! It was already transferred!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            String metaFile = processManager.cancelProcess(httpRequest, processId);
+            if(metaFile == null){
+                response.message = "Failed to cancel the negotiation!";
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            LogUtil.printStatus("[PROCESS " + processId + "] Negotiation [" + contractId + "] was canceled!");
+
+            response = httpUtil.getResponse("The negotiation was canceled!");
+            response.data = processManager.getStatus(processId);
+            return httpUtil.buildResponse(response, httpResponse);
+        } catch (Exception e) {
+            response.message = e.getMessage();
+            return httpUtil.buildResponse(response, httpResponse);
+        }
+    }
+
+
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
     @Operation(summary = "Sign contract retrieved from provider and start negotiation")
     public Response sign(@Valid @RequestBody TokenRequest tokenRequestBody) {
@@ -280,6 +372,10 @@ public class ContractController {
             // Check if was already declined
             if (status.historyExists("contract-decline")) {
                 response = httpUtil.getForbiddenResponse("This contract was declined! Please request a new one");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+            if (status.historyExists("negotiation-canceled")) {
+                response = httpUtil.getForbiddenResponse("This negotiation has been canceled! Please request a new one");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
@@ -383,6 +479,11 @@ public class ContractController {
             // Check if was already declined
             if (status.historyExists("contract-decline")) {
                 response = httpUtil.getForbiddenResponse("This contract has already been declined!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+            if (status.historyExists("negotiation-canceled")) {
+                response = httpUtil.getForbiddenResponse("This negotiation has been canceled! Please request a new one");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 

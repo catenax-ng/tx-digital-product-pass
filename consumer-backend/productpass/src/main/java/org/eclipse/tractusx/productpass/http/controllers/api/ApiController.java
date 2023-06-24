@@ -165,6 +165,10 @@ public class ApiController {
                 response = httpUtil.getForbiddenResponse("The contract for this passport has been declined!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
+            if (status.historyExists("negotiation-canceled")) {
+                response = httpUtil.getForbiddenResponse("This negotiation has been canceled! Please request a new one");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
 
             // Check if the contract id is correct
             History history = status.getHistory("contract-dataset");
@@ -196,13 +200,28 @@ public class ApiController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
+            if (!status.historyExists("passport-retrieved")) {
+                response = httpUtil.getNotFound("The passport was already retrieved and is no longer available!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+
+
             PassportV3 passport = processManager.loadPassport(processId);
 
             if(passport == null){
                 response = httpUtil.getNotFound("Failed to load passport!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
-            response.data = passport;
+            Dataset dataset = processManager.loadDataset(processId);
+            Map<String, Object> negotiation = processManager.loadNegotiation(processId);
+            Map<String, Object> transfer =processManager.loadTransfer(processId);
+            response = httpUtil.getResponse();
+            response.data = Map.of(
+                    "dataset", dataset,
+                    "negotiation", negotiation,
+                    "transfer", transfer,
+                    "passport", passport
+            );
             return httpUtil.buildResponse(response, httpResponse);
         } catch (Exception e) {
             response.message = e.getMessage();
