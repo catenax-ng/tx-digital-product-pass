@@ -38,6 +38,7 @@ import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.Passport;
+import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -275,6 +276,7 @@ public class ProcessManager {
 
     public String saveProcessPayload(String processId, Object payload, String fileName, Long startedTime, String assetId, String status, String eventKey) {
         try {
+            Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
             // Define history
             History history = new History(
                     assetId,
@@ -284,7 +286,12 @@ public class ProcessManager {
             // Set status
             this.setStatus(processId, eventKey, history);
             String path = this.getProcessFilePath(processId, fileName);
-            String returnPath = jsonUtil.toJsonFile(path, payload, processConfig.getIndent());
+            String returnPath = "";
+            if(eventKey.equals("passport-received") && encrypt) {
+                returnPath = fileUtil.toFile(path, payload.toString(), false);
+            }else {
+                returnPath = jsonUtil.toJsonFile(path, payload, processConfig.getIndent());
+            }
             if (returnPath == null) {
                 history.setStatus("FAILED");
                 this.setStatus(processId, assetId, history);
@@ -363,6 +370,26 @@ public class ProcessManager {
                     "transfer-request");
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer request!");
+        }
+    }
+    public PassportV3 loadPassport(HttpServletRequest httpRequest, String processId){
+        try {
+            String path = this.getProcessFilePath(processId, this.passportFileName);
+            if(!fileUtil.pathExists(path)){
+                throw new ManagerException(this.getClass().getName(), "Passport file ["+path+"] not found!");
+            }
+            Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
+            if(encrypt){
+                Process process = this.getProcess(httpRequest, processId);
+                Status status = this.getStatus(processId);
+
+                History history = status.getHistory("negotiation-accepted");
+                return (PassportV3) jsonUtil.loadJson(CrypUtil.decryptAes(fileUtil.readFile(path), this.generateToken(process, history.getId())), PassportV3.class);
+            }else{
+                return (PassportV3) jsonUtil.fromJsonFileToObject(path, PassportV3.class);
+            }
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the passport!");
         }
     }
     public String savePassport(HttpServletRequest httpRequest, String processId, DataPlaneEndpoint endpointData, Passport passport) {

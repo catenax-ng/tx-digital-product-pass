@@ -181,7 +181,6 @@ public class ApiController {
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
-
             if (status.historyExists("contract-decline")) {
                 response = httpUtil.getForbiddenResponse("The contract for this passport has been declined!");
                 return httpUtil.buildResponse(response, httpResponse);
@@ -193,11 +192,17 @@ public class ApiController {
             }
 
             if (!status.historyExists("passport-received")) {
-                response = httpUtil.getNotFound("The passport is still not available");
+                response = httpUtil.getNotFound("The passport is not available!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
 
+            PassportV3 passport = processManager.loadPassport(httpRequest, processId);
 
+            if(passport == null){
+                response = httpUtil.getNotFound("Failed to load passport!");
+                return httpUtil.buildResponse(response, httpResponse);
+            }
+            response.data = passport;
             return httpUtil.buildResponse(response, httpResponse);
         } catch (Exception e) {
             response.message = e.getMessage();
