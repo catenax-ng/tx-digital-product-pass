@@ -107,32 +107,6 @@ public class AppController {
         return endpointData;
     }
 
-    @RequestMapping(value = "/endpoint", method = RequestMethod.POST)
-    public Response endpoint(@RequestBody Object body){
-        try{
-            DataPlaneEndpoint endpointData = null;
-            try {
-                 endpointData = this.getEndpointData(body);
-            }catch (Exception e){
-                return httpUtil.buildResponse(httpUtil.getBadRequest(e.getMessage()), httpResponse);
-            }
-            if(endpointData == null){
-                return httpUtil.buildResponse(httpUtil.getBadRequest("Failed to get data plane endpoint data"), httpResponse);
-            }
-            Passport passport = dataPlaneService.getPassport(endpointData);
-            Boolean prettyPrint = env.getProperty("passport.dataTransfer.indent", Boolean.class, true);
-            Boolean encrypt = env.getProperty("passport.dataTransfer.encrypt", Boolean.class, true);
-            String passportPath = passportUtil.savePassport(passport, endpointData, prettyPrint, encrypt);
-            LogUtil.printMessage("[EDC] Passport Transfer Data ["+endpointData.getId()+"] Saved Successfully in ["+passportPath+"]!");
-        }catch(Exception e) {
-            LogUtil.printException(e, "This request is not allowed! It must contain the valid attributes from an EDC endpoint");
-            return httpUtil.buildResponse(httpUtil.getForbiddenResponse(), httpResponse);
-        }
-        return httpUtil.buildResponse(httpUtil.getResponse("ok"), httpResponse);
-    }
-
-
-
     @RequestMapping(value = "/endpoint/{processId}", method = RequestMethod.POST)
     public Response endpoint(@RequestBody Object body, @PathVariable String processId){
         try{
@@ -152,7 +126,7 @@ public class AppController {
 
             Passport passport = dataPlaneService.getPassport(endpointData);
             if(passport == null){
-                return httpUtil.buildResponse(httpUtil.getNotFound("Passport not found!"), httpResponse);
+                return httpUtil.buildResponse(httpUtil.getNotFound("Passport not found in data plane!"), httpResponse);
             }
             String passportPath = processManager.savePassport(processId, endpointData, passport);
             LogUtil.printMessage("[EDC] Passport Transfer Data ["+endpointData.getId()+"] Saved Successfully in ["+passportPath+"]!");

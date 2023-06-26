@@ -73,7 +73,6 @@ public class ApiController {
     private @Autowired HttpServletResponse httpResponse;
     private @Autowired DataTransferService dataService;
     private @Autowired AasService aasService;
-    private @Autowired DataController dataController;
     private @Autowired Environment env;
     private @Autowired AuthenticationService authService;
     private @Autowired PassportConfig passportConfig;
@@ -87,35 +86,6 @@ public class ApiController {
     Response index() throws Exception{
         httpUtil.redirect(httpResponse,"/passport");
         return httpUtil.getResponse("Redirect to UI");
-    }
-
-    /**
-     * @param id Asset id that identifies the object that has a passport
-     * @param idType  Type of asset id, the name of the code in the digital twin registry
-     *                Default: "Battery_ID_DMC_Code"
-     * @param dtIndex Index from the asset in the digital twin registry
-     *                Default: 0
-     * @param idShort Id from subModel
-     *                Default: 0
-     * @return PassportV3
-     */
-    @RequestMapping(value = "/passport/{version}/{id}", method = {RequestMethod.GET})
-    @Operation(summary = "Returns versioned product passport by id", responses = {
-        @ApiResponse(description = "Default Response Structure", content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = Response.class))),
-        @ApiResponse(description = "Content of Data Field in Response", responseCode = "200", content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = PassportResponse.class))),
-        @ApiResponse(description = "Content of Passport Field in Data Field",useReturnTypeSchema = true, content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = PassportV3.class)))
-    })
-    public Response getPassport(
-            @PathVariable("id") String id,
-            @PathVariable("version") String version,
-            @RequestParam(value = "idType", required = false, defaultValue = "partInstanceId") String idType,
-            @RequestParam(value = "idShort", required = false, defaultValue = "batteryPass") String idShort,
-            @RequestParam(value = "dtIndex", required = false, defaultValue = "0") Integer dtIndex
-    ) {
-        return httpUtil.getNotFound("Not available");
     }
 
     @RequestMapping(value = "/passport", method = {RequestMethod.POST})

@@ -313,8 +313,13 @@ public class ContractController {
                 response = httpUtil.getForbiddenResponse("This negotiation can not be canceled! It was already transferred!");
                 return httpUtil.buildResponse(response, httpResponse);
             }
-
-            String metaFile = processManager.cancelProcess(httpRequest, processId);
+            String metaFile = null;
+            try {
+                metaFile = processManager.cancelProcess(httpRequest, processId);
+            } catch (Exception e) {
+                response.message = "This negotiation can not be canceled! The process has already finished!";
+                return httpUtil.buildResponse(response, httpResponse);
+            }
             if(metaFile == null){
                 response.message = "Failed to cancel the negotiation!";
                 return httpUtil.buildResponse(response, httpResponse);
