@@ -18,3 +18,9 @@
 | :---:   |
 | [cmp-xxx](www.link.com) |
 | [cmp-xxx](www.link.com)  |
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

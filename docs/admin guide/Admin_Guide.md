@@ -367,3 +367,9 @@ Once you finish the configuration, to make the endpoint public configure in the 
 *The BPN number is not required for the configuration of the endpoint, just **make sure that the host is pointing to the EDC Provider**.*
 
 
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass
+

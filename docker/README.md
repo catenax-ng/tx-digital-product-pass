@@ -58,3 +58,9 @@ Add this parameter when running docker run:
 ```bash
 -e "JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000" -p 8000:8000
 ```
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

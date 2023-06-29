@@ -465,3 +465,9 @@ An user needs to be able to understand easily the application interface, in orde
 | Git | Is a distributed version control system: tracking changes in any set of files, usually used for coordinating work among programmers collaboratively developing source code during software development. |
 | DevOps | Is a set of practices that combines software development (Dev) and IT operations (Ops). It aims to shorten the systems development life cycle and provide continuous delivery with high software quality. |
 | Repository | Is a database of digital content with an associated set of data management, search and access methods allowing application-independent access to the content, rather like a digital library, but with the ability to store and modify content in addition to searching and retrieving. |
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

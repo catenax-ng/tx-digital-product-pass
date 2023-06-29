@@ -39,3 +39,9 @@ This technical guide depicts the battery pass end-to-end API calls through the p
 - Configure the ***clientId*** and ***clientSecret*** environment variables from the variables tab inside root directory.
 
 For more technical documentation, please refer to the [catenax-at-home-getting-started-guide](https://catenax-ng.github.io/docs/guides/catenax-at-home)
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

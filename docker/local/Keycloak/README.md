@@ -63,3 +63,9 @@ The keycloak configurations are defined in [src/services/service.const.js](../..
 npm install --legacy-peer-deps
 npm run serve
 ```
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

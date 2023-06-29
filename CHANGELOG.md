@@ -311,3 +311,9 @@ The changelog format is based on [Keep a Changelog](https://keepachangelog.com/e
 - Optimized the reponsive from the application
 - Optimized the passport display
 - Updated components with Vuetify 3, making the application more stable. 
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

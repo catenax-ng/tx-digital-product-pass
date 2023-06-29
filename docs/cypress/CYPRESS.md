@@ -47,3 +47,9 @@ This is the documentation for Battery Passport App E2E Cypress test.
 
 ![test](./test2.png)  
 </br></br>
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass

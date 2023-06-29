@@ -80,3 +80,9 @@ The following candidates are not yet implemented:
 * Gearbox Passport
 * Sealant Passport, Tire Passport
 * Generic Product Passport
+
+## License
+* SPDX-License-Identifier: CC-BY-4.0
+* Licence Path: https://creativecommons.org/licenses/by/4.0/legalcode
+* Copyright (c) 2022, 2023 BASF SE, BMW AG, Henkel AG & Co. KGaA
+* Source URL: https://github.com/catenax-ng/tx-digital-product-pass
