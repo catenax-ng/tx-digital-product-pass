@@ -164,6 +164,16 @@ entries:
     version: 0.2.0
   digital-product-pass:
   - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-07-03T15:37:14.961483818Z"
+    description: A Helm chart for Kubernetes
+    digest: 5458e0571f553c03a67ccaf1593b2b690ac52187f07ec97b831da103bb4c053a
+    name: digital-product-pass
+    type: application
+    urls:
+    - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/digital-product-pass-1.0.0/digital-product-pass-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v2
     appVersion: 0.9.0
     created: "2023-07-03T15:19:23.715454414Z"
     description: A Helm chart for Kubernetes
@@ -203,4 +213,4 @@ entries:
     urls:
     - https://github.com/catenax-ng/tx-digital-product-pass/releases/download/digital-product-pass-0.3.2/digital-product-pass-0.3.2.tgz
     version: 0.3.2
-generated: "2023-07-03T15:19:23.715499814Z"
+generated: "2023-07-03T15:37:14.961654417Z"
