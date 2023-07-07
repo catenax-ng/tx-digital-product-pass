@@ -24,7 +24,19 @@
 <template>
   <v-container v-if="loading">
     <div class="loading-container">
-      <Spinner class="spinner-container" />
+      <div v-for="currentStep in 3" :key="currentStep" class="stepper-step">
+        <div class="stepper-circle" :class="{ completed: currentStep < step }">
+          <span v-if="currentStep < step" class="tick">✓</span>
+        </div>
+        <div class="loading-info">
+          <h2 :class="{ 'completed-step': currentStep < step }">
+            {{ getStepTitle(currentStep) }}
+          </h2>
+          <p>
+            {{ getStepStatus(currentStep) }}
+          </p>
+        </div>
+      </div>
     </div>
   </v-container>
   <v-container v-else-if="error" class="h-100 w-100">
@@ -122,6 +134,10 @@ export default {
   data() {
     return {
       tab: null,
+      step: 1,
+      connectionStatus: "Connecting...",
+      serviceStatus: "Warming up EDC",
+      testData: "Looking for some hot passport",
       componentsNames: [
         {
           label: "General Information",
@@ -176,6 +192,9 @@ export default {
       version: PASSPORT_VERSION,
     };
   },
+  mounted() {
+    this.establishConnection();
+  },
   async created() {
     let result = null;
     try {
@@ -217,6 +236,54 @@ export default {
     }
   },
   methods: {
+    establishConnection() {
+      setTimeout(() => {
+        // Simulate establishing connection
+        this.connectionStatus =
+          "Connection established with the ID: " + this.id;
+        this.step = 2;
+        this.checkServiceStatus();
+      }, 2000);
+    },
+    checkServiceStatus() {
+      setTimeout(() => {
+        // Simulate EDC service ready
+        this.serviceStatus = "EDC service is ready";
+        this.step = 3;
+        this.fetchData();
+      }, 3000);
+    },
+    fetchData() {
+      setTimeout(() => {
+        // Simulate JSON data response
+        this.testData = "Data is ready to be displayed";
+        this.step = 4;
+      }, 2000);
+    },
+    getStepTitle(step) {
+      switch (step) {
+        case 1:
+          return "Establishing Connection";
+        case 2:
+          return "EDC Service";
+        case 3:
+          return "Data Response";
+        default:
+          return "";
+      }
+    },
+    getStepStatus(step) {
+      switch (step) {
+        case 1:
+          return this.connectionStatus;
+        case 2:
+          return this.serviceStatus;
+        case 3:
+          return JSON.stringify(this.testData, null, 2);
+        default:
+          return "";
+      }
+    },
     async getPassport(id) {
       let response = null;
       // Get Passport in Backend
@@ -225,7 +292,11 @@ export default {
         let backendService = new BackendService();
         // Get access token from IDP
         // Get the passport for the selected version
-        response = await backendService.getPassport(this.version, id, this.auth);
+        response = await backendService.getPassport(
+          this.version,
+          id,
+          this.auth
+        );
       } catch (e) {
         console.log("passportView.getPassport() -> " + e);
         this.errorObj.title = jsonUtil.exists("message", response)
@@ -278,3 +349,49 @@ export default {
   },
 };
 </script>
+
+<style>
+.stepper-step {
+  display: flex;
+  align-items: center;
+}
+
+.stepper-circle {
+  position: absolute;
+  left: 650px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.stepper-circle.completed {
+  background-color: grey;
+}
+
+.tick {
+  color: white;
+  font-size: 14px;
+}
+
+.completed-step {
+  color: grey;
+}
+.loading-info {
+  display: flex;
+  flex-direction: column;
+}
+.stepper-line {
+  height: 2px;
+  background-color: #0f71cb;
+  transition: width 0.5s;
+}
+.step-status {
+  margin-top: 10px;
+  text-align: center;
+}
+</style>

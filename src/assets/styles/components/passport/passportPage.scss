@@ -26,9 +26,12 @@
 }
 
 .loading-container {
+  position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100vh;
 }
 .pass-container {
   margin: 0 40px 0 40px;
