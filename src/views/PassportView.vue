@@ -23,19 +23,53 @@
 
 <template>
   <v-container v-if="loading">
+    <!-- asd -->
     <div class="loading-container">
-      <div v-for="currentStep in 3" :key="currentStep" class="stepper-step">
-        <div class="stepper-circle" :class="{ completed: currentStep < step }">
-          <span v-if="currentStep < step" class="tick">✓</span>
-        </div>
-        <div class="loading-info">
-          <h2 :class="{ 'completed-step': currentStep < step }">
-            {{ getStepTitle(currentStep) }}
-          </h2>
-          <p>
-            {{ getStepStatus(currentStep) }}
-          </p>
-        </div>
+      <v-col class="v-col-auto">
+        <div>DPP ID: {{ id }}</div>
+        <v-btn
+          size="large"
+          class="btn"
+          rounded="pill"
+          variant="outlined"
+          @click="toggleConfirmation"
+          >Get Passport</v-btn
+        >
+        <div>See Contract</div>
+      </v-col>
+
+      <div v-if="getConfirmation">
+        <v-timeline
+          side="end"
+          align="start"
+          truncate-line="both"
+          style="height: auto"
+        >
+          <v-timeline-item
+            v-for="currentStep in 3"
+            :key="currentStep"
+            :icon="currentStep < step ? 'mdi-check' : null"
+            :dot-color="[currentStep < step ? 'green' : 'grey']"
+            :size="currentStep < step ? 'large' : 'small'"
+            :class="{ completed: currentStep < step }"
+          >
+            <div class="d-flex">
+              <div>
+                <strong>
+                  <h2 :class="{ 'completed-step': currentStep < step }">
+                    {{ getStepTitle(currentStep) }}
+                  </h2></strong
+                >
+
+                <div class="text-caption">
+                  <p>
+                    {{ getStepStatus(currentStep) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </v-timeline-item>
+        </v-timeline>
       </div>
     </div>
   </v-container>
@@ -134,6 +168,7 @@ export default {
   data() {
     return {
       tab: null,
+      getConfirmation: false,
       step: 1,
       connectionStatus: "Connecting...",
       serviceStatus: "Warming up EDC",
@@ -236,6 +271,9 @@ export default {
     }
   },
   methods: {
+    toggleConfirmation() {
+      this.getConfirmation = !this.getConfirmation;
+    },
     establishConnection() {
       setTimeout(() => {
         // Simulate establishing connection
@@ -243,7 +281,7 @@ export default {
           "Connection established with the ID: " + this.id;
         this.step = 2;
         this.checkServiceStatus();
-      }, 2000);
+      }, 4000);
     },
     checkServiceStatus() {
       setTimeout(() => {
@@ -251,7 +289,7 @@ export default {
         this.serviceStatus = "EDC service is ready";
         this.step = 3;
         this.fetchData();
-      }, 3000);
+      }, 2000);
     },
     fetchData() {
       setTimeout(() => {
