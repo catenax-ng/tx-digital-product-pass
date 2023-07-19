@@ -57,8 +57,8 @@ To get started you can have a look into our documentation:
 | [Postman Overview](./postman/README.md)                                    | Technical guide depicts the battery pass end-to-end API calls through the postman REST client                                                                      |
 | [Changelog](./CHANGELOG.md)                                                | Changelog                                                                                                                                                          |
 
-## Installation
-[INSTALL](./INSTALL.md)
+## Install Instructions
+For detailed install instructions please refer to our [INSTALL](./INSTALL.md)
 
 ## License
 
