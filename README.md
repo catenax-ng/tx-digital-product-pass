@@ -79,8 +79,8 @@ To get started you can have a look into our documentation:
 | JS frontends       | [Node.JS](https://hub.docker.com/_/node)  <br/> [Nginx](https://hub.docker.com/r/nginxinc/nginx-unprivileged) |
       
 
-## Installation
-[INSTALL](./INSTALL.md)
+## Install Instructions
+For detailed install instructions please refer to our [INSTALL](./INSTALL.md)
 
 ## License
 
