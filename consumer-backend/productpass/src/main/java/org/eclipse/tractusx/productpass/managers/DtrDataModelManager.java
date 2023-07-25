@@ -28,6 +28,7 @@ package org.eclipse.tractusx.productpass.managers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.tractusx.productpass.exceptions.DataModelException;
 import org.eclipse.tractusx.productpass.exceptions.ManagerException;
+import org.eclipse.tractusx.productpass.models.catenax.DtrCache;
 import org.eclipse.tractusx.productpass.models.negotiation.Negotiation;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
@@ -42,6 +43,7 @@ import utils.*;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +55,7 @@ public class DtrDataModelManager {
     private DataTransferService dataTransferService;
     private FileUtil fileUtil;
     private JsonUtil jsonUtil;
-    private ConcurrentHashMap<String, List<Dtr>> dtrDataModel;
+    private DtrCache dtrCache;
     private ConcurrentHashMap<String, Catalog> catalogsCache;
     private final long searchTimeoutSeconds = 10;
     private final long negotiationTimeoutSeconds = 20;
@@ -71,7 +73,7 @@ public class DtrDataModelManager {
     private State state;
 
     public enum State {
-        Stopped,
+        Created,
         Running,
         Error,
         Finished
@@ -80,11 +82,11 @@ public class DtrDataModelManager {
     public DtrDataModelManager(FileUtil fileUtil, JsonUtil jsonUtil, DataTransferService dataTransferService)  {
         this.catalogsCache = new ConcurrentHashMap<>();
         this.dataTransferService = dataTransferService;
-        this.state = State.Stopped;
+        this.state = State.Created;
         this.fileUtil = fileUtil;
         this.jsonUtil = jsonUtil;
         this.dtrDataModelFilePath = this.createDataModelFile();
-        this.dtrDataModel =  this.loadDtrDataModel();
+        this.dtrCache = new DtrCache(this.loadDtrDataModel());
     }
 
     public Runnable startProcess (List<EdcDiscoveryEndpoint> edcEndpoints) {
@@ -200,27 +202,15 @@ public class DtrDataModelManager {
 
     public DtrDataModelManager addConnectionToBpnEntry (String bpn, Dtr dtr) {
         if (!(bpn.isEmpty() || bpn.isBlank() || dtr.getEndpoint().isEmpty() || dtr.getEndpoint().isBlank()) ) {
-            if (this.dtrDataModel.contains(bpn)) {
-                if (!this.dtrDataModel.get(bpn).contains(dtr))
-                    this.dtrDataModel.get(bpn).add(dtr);
+            if (this.getDtrDataModel().contains(bpn)) {
+                if (!this.getDtrDataModel().get(bpn).contains(dtr))
+                    this.getDtrDataModel().get(bpn).add(dtr);
             } else {
-                this.dtrDataModel.put(bpn, List.of(dtr));
+                this.getDtrDataModel().put(bpn, List.of(dtr));
             }
         }
         return this;
     }
-
-    /*public ProcessDtrDataModel addConnectionsToBpnEntry (String bpn, List<String> connectionEdcEndpoints) {
-        if (!(bpn.isEmpty() || bpn.isBlank()) || checkConnectionEdcEndpoints(connectionEdcEndpoints) ) {
-            if (this.dtrDataModel.contains(bpn)) {
-                this.dtrDataModel.get(bpn).addAll(connectionEdcEndpoints);
-                this.dtrDataModel.get(bpn).stream().distinct().collect(Collectors.toList());
-            } else {
-                this.dtrDataModel.put(bpn, connectionEdcEndpoints);
-            }
-        }
-        return this;
-    }*/
 
     public ConcurrentHashMap<String, List<Dtr>> loadDataModel() {
         try {
@@ -231,7 +221,7 @@ public class DtrDataModelManager {
         }
     }
     public ConcurrentHashMap<String, List<Dtr>> getDtrDataModel() {
-        return dtrDataModel;
+        return this.dtrCache.getDtrDataModel();
     }
 
     private boolean checkConnectionEdcEndpoints (List<String> connectionEdcEndpoints) {
@@ -274,13 +264,17 @@ public class DtrDataModelManager {
     }
 
     public boolean saveDtrDataModel() {
-       String filePath = jsonUtil.toJsonFile(this.dtrDataModelFilePath, this.dtrDataModel, true);
-       LogUtil.printMessage("[DTR DataModel] Saved [" + this.dtrDataModel.size() + "] assets in DTR data model." );
-       return filePath != null;
+        this.dtrCache.getMeta().setUpdatedAt(new Date());
+        String filePath = jsonUtil.toJsonFile(this.dtrDataModelFilePath, this.dtrCache.getDtrDataModel(), true);
+        LogUtil.printMessage("[DTR DataModel] Saved [" + this.dtrCache.getDtrDataModel().size() + "] assets in DTR data model." );
+        return filePath != null;
     }
 
     private ConcurrentHashMap<String, List<Dtr>> loadDtrDataModel() {
         try {
+            Date date = new Date();
+            this.dtrCache.getMeta().setCreatedAt(date);
+            this.dtrCache.getMeta().setUpdatedAt(date);
             ConcurrentHashMap<String, List<Dtr>> result = (ConcurrentHashMap<String, List<Dtr>>) jsonUtil.fromJsonFileToObject(this.dtrDataModelFilePath, ConcurrentHashMap.class);
             if (result == null) {
                 return new ConcurrentHashMap<String, List<Dtr>>();
@@ -288,10 +282,39 @@ public class DtrDataModelManager {
             LogUtil.printMessage("Loaded [" + result.size() + "] entries from DTR Data Model Json.");
             return result;
         } catch (Exception e) {
-            LogUtil.printException(e, "Was not possible to load Dtr Data Model!");
+            LogUtil.printWarning("Was not possible to load Dtr Data Model!");
             return new ConcurrentHashMap<String, List<Dtr>>();
         }
 
+    }
+
+    private void deleteDtrDataModel() {
+        try {
+            fileUtil.deleteFile(this.dtrDataModelFilePath);
+        } catch (Exception e) {
+            LogUtil.printWarning("The Dtr Data Model couldn't be deleted.");
+        }
+    }
+
+    private void DtrCacheExpirationCheck (Thread thread) {
+        eraseDtrCache();
+    }
+
+    private Runnable eraseDtrCache () {
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (dtrCache.getMeta().getDeleteAt().compareTo(dtrCache.getMeta().getCreatedAt()) >= 0) {
+                        deleteDtrDataModel();
+                        createDataModelFile();
+                        dtrCache = new DtrCache(loadDtrDataModel());
+                    }
+                } catch (NullPointerException e) {
+                    LogUtil.printWarning("Date was null!");
+                }
+            }
+        };
     }
 
 }
