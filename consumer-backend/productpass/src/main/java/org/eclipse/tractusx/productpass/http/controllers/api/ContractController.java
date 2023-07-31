@@ -33,7 +33,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.DiscoveryConfig;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
@@ -46,18 +45,13 @@ import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
-import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
-import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
-import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
-import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.Response;
 import org.eclipse.tractusx.productpass.models.http.requests.DiscoverySearch;
-import org.eclipse.tractusx.productpass.models.http.requests.TokenRequest;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
+import org.eclipse.tractusx.productpass.models.http.requests.TokenRequest;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.manager.Status;
-import org.eclipse.tractusx.productpass.models.negotiation.Catalog;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
 import org.eclipse.tractusx.productpass.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +60,6 @@ import org.springframework.web.bind.annotation.*;
 import utils.*;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,7 +129,7 @@ public class ContractController {
 
             ConcurrentHashMap<String, List<Dtr>> dataModel  = null;
             try {
-                dataModel = this.dtrDataModelManager.loadDataModel();
+                dataModel = this.dtrDataModelManager.getDtrDataModel();
             }catch (Exception e){
                 LogUtil.printWarning("Failed to load data model from disk!");
             }
@@ -219,7 +212,7 @@ public class ContractController {
 
             ConcurrentHashMap<String, List<Dtr>> dataModel  = null;
             try {
-                dataModel = this.dtrDataModelManager.loadDataModel();
+                dataModel = this.dtrDataModelManager.getDtrDataModel();
             }catch (Exception e){
                 LogUtil.printWarning("Failed to load data model from disk!");
             }

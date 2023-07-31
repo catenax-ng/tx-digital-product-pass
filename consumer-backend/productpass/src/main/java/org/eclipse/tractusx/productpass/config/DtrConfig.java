@@ -25,10 +25,12 @@
 
 package org.eclipse.tractusx.productpass.config;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Map;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Configuration
 @ConfigurationProperties(prefix="configuration.dtr")
@@ -37,8 +39,30 @@ public class DtrConfig {
     String centralUrl;
     String internalDtr;
     DecentralApis decentralApis;
-
     String assetId;
+    Boolean enableCache;
+    CacheLifespan cacheLifespan;
+
+    public DtrConfig() {
+    }
+    public DtrConfig(Boolean central) {
+        this.central = central;
+    }
+
+    public Boolean getEnableCache() {
+        return enableCache;
+    }
+
+    public void setEnableCache(Boolean enableCache) {
+        this.enableCache = enableCache;
+    }
+    public CacheLifespan getCacheLifespan() {
+        return cacheLifespan;
+    }
+
+    public void setCacheLifespan(CacheLifespan cacheLifespan) {
+        this.cacheLifespan = cacheLifespan;
+    }
 
     public DecentralApis getDecentralApis() {
         return decentralApis;
@@ -46,16 +70,41 @@ public class DtrConfig {
     public void setDecentralApis(DecentralApis decentralApis) {
         this.decentralApis = decentralApis;
     }
-    public DtrConfig(Boolean central) {
-        this.central = central;
-    }
-
     public String getInternalDtr() {
         return internalDtr;
     }
 
     public void setInternalDtr(String internalDtr) {
         this.internalDtr = internalDtr;
+    }
+
+    public static class CacheLifespan {
+        private Integer duration;
+        private String timeunit;
+
+        public CacheLifespan() {
+        }
+
+        public CacheLifespan(Integer duration, String timeunit) {
+            this.duration = duration;
+            this.timeunit = timeunit;
+        }
+
+        public Integer getDuration() {
+            return duration;
+        }
+
+        public void setDuration(Integer duration) {
+            this.duration = duration;
+        }
+
+        public String getTimeunit() {
+            return timeunit;
+        }
+
+        public void setTimeunit(String timeunit) {
+            this.timeunit = timeunit;
+        }
     }
 
 
@@ -107,9 +156,6 @@ public class DtrConfig {
             this.subModel = subModel;
         }
     }
-    public DtrConfig() {
-    }
-
 
     public Boolean getCentral() {
         return central;
@@ -133,5 +179,24 @@ public class DtrConfig {
 
     public void setAssetId(String assetId) {
         this.assetId = assetId;
+    }
+
+    public Date convertCacheLifespanToDate (Date date) {
+        Date convertedDate = new Date();
+        switch (this.cacheLifespan.getTimeunit()) {
+            case "SECONDS":
+                    convertedDate = DateUtils.addSeconds(date, this.cacheLifespan.duration);
+                    break;
+            case "MINUTES":
+                    convertedDate = DateUtils.addMinutes(date, this.cacheLifespan.duration);
+                    break;
+            case "DAYS":
+                    convertedDate = DateUtils.addDays(date, this.cacheLifespan.duration);
+                    break;
+            default:
+                convertedDate = DateUtils.addHours(date, this.cacheLifespan.duration);
+
+        }
+        return convertedDate;
     }
 }

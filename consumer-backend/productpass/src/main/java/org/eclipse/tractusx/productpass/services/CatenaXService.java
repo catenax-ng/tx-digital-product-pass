@@ -28,6 +28,7 @@ package org.eclipse.tractusx.productpass.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.tractusx.productpass.config.DiscoveryConfig;
+import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
 import org.eclipse.tractusx.productpass.managers.DtrDataModelManager;
@@ -43,23 +44,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import utils.*;
 
-import java.time.Duration;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CatenaXService extends BaseService {
 
     private final HttpUtil httpUtil;
-
     private final JsonUtil jsonUtil;
     private final FileUtil fileUtil;
     private final VaultService vaultService;
+    private final DtrConfig dtrConfig;
     private final DtrDataModelManager dtrDataModelManager;
     private final DataTransferService dataTransferService;
 
@@ -101,11 +98,12 @@ public class CatenaXService extends BaseService {
         );
     }
     @Autowired
-    public CatenaXService(Environment env, FileUtil fileUtil, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, DtrDataModelManager dtrDataModelManager, AuthenticationService authService, DiscoveryConfig discoveryConfig, DataTransferService dataTransferService) throws ServiceInitializationException {
+    public CatenaXService(Environment env, FileUtil fileUtil, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, DtrDataModelManager dtrDataModelManager, DtrConfig dtrConfig, AuthenticationService authService, DiscoveryConfig discoveryConfig, DataTransferService dataTransferService) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.fileUtil = fileUtil;
         this.jsonUtil = jsonUtil;
         this.vaultService = vaultService;
+        this.dtrConfig = dtrConfig;
         this.dtrDataModelManager = dtrDataModelManager;
         this.authService = authService;
         this.discoveryConfig = discoveryConfig;
@@ -335,9 +333,6 @@ public class CatenaXService extends BaseService {
     public ConcurrentHashMap<String, List<Dtr>> searchDTRs (List<EdcDiscoveryEndpoint> edcEndpoints) {
         try {
             Thread thread = ThreadUtil.runThread(dtrDataModelManager.startProcess(edcEndpoints), "ProcessDtrDataModel");
-            /*if (!thread.join(Duration.ofSeconds(100))) {
-                LogUtil.printMessage("ProcessDtrDataModel thread state: " + thread.getState());
-            }*/
             thread.join();
             LogUtil.printMessage("Found these DTRs:\n " + jsonUtil.toJson(dtrDataModelManager.getDtrDataModel(),true));
             return dtrDataModelManager.getDtrDataModel();
