@@ -28,6 +28,9 @@ package org.eclipse.tractusx.productpass.managers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.DataModelException;
+import org.eclipse.tractusx.productpass.exceptions.ManagerException;
+import org.eclipse.tractusx.productpass.models.catenax.DtrCache;
+import org.eclipse.tractusx.productpass.models.negotiation.Negotiation;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.catenax.DtrCache;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
@@ -49,8 +52,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DtrSearchManager {
     private DataTransferService dataTransferService;
-    private DtrConfig dtrConfig;
-    private ProcessManager processManager;
     private FileUtil fileUtil;
     private JsonUtil jsonUtil;
     private DtrCache dtrCache;
@@ -59,7 +60,6 @@ public class DtrSearchManager {
     private final long negotiationTimeoutSeconds = 20;
     private final String fileName = "dtrDataModel.json";
     private String dtrDataModelFilePath;
-    private boolean enableCache;
 
     public State getState() {
         return state;
@@ -174,7 +174,24 @@ public class DtrSearchManager {
         };
     }
 
-    public String createDataModelFile(){ return fileUtil.createFile(this.getDataModelPath()); }
+    public String createDataModelFile() {
+        Map<String, Object> dataModel = Map.of();
+        // If path exists try to
+        if(this.dtrConfig.getTemporaryStorage() && this.fileUtil.pathExists(this.getDataModelPath())) {
+            try {
+                // Try to load the data model if it exists
+                dataModel = (Map<String, Object>) jsonUtil.fromJsonFileToObject(this.getDataModelPath(), Map.class);
+            } catch (Exception e) {
+                LogUtil.printWarning("It was not possible to load data model content.");
+                dataModel = Map.of();
+            }
+            if (dataModel != null) {
+                return this.getDataModelPath(); // There is no need to create the dataModelFile
+            }
+        }
+        LogUtil.printMessage("Created DTR DataModel file at [" + this.getDataModelPath()+"]");
+        return jsonUtil.toJsonFile(this.getDataModelPath(), dataModel, true);
+    }
 
     public String getDataModelPath() {
         return Path.of(this.getDataModelDir(), this.fileName).toAbsolutePath().toString();
@@ -214,8 +231,22 @@ public class DtrSearchManager {
         return this;
     }
 
+
+
+    public ConcurrentHashMap<String, List<Dtr>> loadDataModel() {
+        try {
+            String path = this.getDataModelPath();
+            if(fileUtil.pathExists(path)) {
+                this.createDataModelFile();
+            }
+            return (ConcurrentHashMap<String, List<Dtr>>) jsonUtil.fromJsonFileToObject(path, ConcurrentHashMap.class);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName() + ".loadDataModel", e, "It was not possible to load the DTR data model");
+        }
+    }
+
     public ConcurrentHashMap<String, List<Dtr>> getDtrDataModel() {
-        return this.dtrCache.getDtrDataModel();
+        return dtrDataModel;
     }
 
     private Runnable createAndSaveDtr(Dataset dataset, String bpn, String connectionUrl, String processId) {
@@ -223,16 +254,14 @@ public class DtrSearchManager {
             @Override
             public void run() {
                 try {
-                    Offer offer = dataTransferService.buildOffer(dataset);
-                    LogUtil.printMessage("OFFER:" + offer);
+                    Offer offer = dataTransferService.buildOffer(dataset, 0);
                     IdResponse negotiationResponse = dataTransferService.doContractNegotiations(offer, CatenaXUtil.buildDataEndpoint(connectionUrl));
                     if (negotiationResponse == null) {
-                        LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                         return;
                     }
                     Negotiation negotiation = dataTransferService.seeNegotiation(negotiationResponse.getId());
                     if (negotiation == null) {
-                        LogUtil.printWarning("Was not possible to see Negotiation for URL: " + connectionUrl);
+                        LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                         return;
                     }
                     Dtr dtr = new Dtr(negotiation.getContractAgreementId(), connectionUrl, offer.getAssetId());
@@ -244,7 +273,7 @@ public class DtrSearchManager {
                     processManager.addSearchStatusDtr(processId, dtr);
 
                 } catch (Exception e) {
-                    LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
+                    throw new ManagerException(this.getClass().getName() + ".createAndSaveDtr",e,"Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                 }
             }
         };
@@ -276,12 +305,15 @@ public class DtrSearchManager {
             return null;
         }
     }
-
     private void loadDtrCache() {
         try {
+
             if (this.dtrDataModelFilePath == null) {
                 createNewDtrCache(enableCache);
                 return;
+            }
+            if(fileUtil.pathExists(this.dtrDataModelFilePath)) {
+                createNewDtrCache(enableCache);
             }
             DtrCache dtrCache = (DtrCache) jsonUtil.fromJsonFileToObject(this.dtrDataModelFilePath, DtrCache.class);
             if (dtrCache == null) {
@@ -302,7 +334,6 @@ public class DtrSearchManager {
             createNewDtrCache(enableCache);
         }
     }
-
     private void createNewDtrCache (boolean enableCache) {
         DtrCache dtrCache = new DtrCache(new ConcurrentHashMap<String, List<Dtr>>());
         dtrCache.setEnabledCache(enableCache);

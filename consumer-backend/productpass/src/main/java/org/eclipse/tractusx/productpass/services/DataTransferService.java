@@ -178,7 +178,7 @@ public class DataTransferService extends BaseService {
         }
     }
     public NegotiationRequest buildRequest(Dataset dataset, Status status) {
-        Offer contractOffer = this.buildOffer(dataset);
+        Offer contractOffer = this.buildOffer(dataset, 0);
         return new NegotiationRequest(
                 jsonUtil.toJsonNode(Map.of("odrl", "http://www.w3.org/ns/odrl/2/")),
                 status.getEndpoint(),
@@ -186,11 +186,19 @@ public class DataTransferService extends BaseService {
                 contractOffer
         );
     }
-    public Offer buildOffer(Dataset dataset) {
-        Set policyCopy = (Set) jsonUtil.bindObject(dataset.getPolicy(), Set.class);
+    public Offer buildOffer(Dataset dataset, Integer defaultIndex) {
+        Object rawPolicy = dataset.getPolicy();
+        Set policy = null;
+        if(rawPolicy instanceof LinkedHashMap){
+            policy = (Set) jsonUtil.bindObject(rawPolicy, Set.class);
+        }else{
+            List<LinkedHashMap> policyList = (List<LinkedHashMap>) jsonUtil.bindObject(rawPolicy, List.class);
+            policy = (Set) jsonUtil.bindObject(policyList.get(defaultIndex), Set.class); // Get fist policy from the list to resolve the conflict
+        }
+        Set policyCopy = (Set) jsonUtil.bindObject(policy, Set.class);
         policyCopy.setId(null);
         return new Offer(
-                dataset.getPolicy().getId(),
+                policy.getId(),
                 dataset.getAssetId(),
                 policyCopy
         );
@@ -223,7 +231,7 @@ public class DataTransferService extends BaseService {
 
         public TransferRequest buildTransferRequest(Dataset dataset, Status status, Negotiation negotiation) {
             try {
-                Offer contractOffer = buildOffer(dataset);
+                Offer contractOffer = buildOffer(dataset, 0);
                 String receiverEndpoint = env.getProperty("configuration.edc.receiverEndpoint") + "/" + this.processId; // Send process Id to identification the session.
                 TransferRequest.TransferType transferType = new TransferRequest.TransferType();
 
