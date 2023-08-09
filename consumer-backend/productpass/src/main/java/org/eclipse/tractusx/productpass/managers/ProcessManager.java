@@ -26,31 +26,28 @@
 package org.eclipse.tractusx.productpass.managers;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ManagerException;
+import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
-import org.eclipse.tractusx.productpass.models.dtregistry.EndPoint;
+import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin3;
 import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.edc.Jwt;
+import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Process;
+import org.eclipse.tractusx.productpass.models.manager.SearchStatus;
 import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
 import org.eclipse.tractusx.productpass.models.passports.Passport;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
-import org.eclipse.tractusx.productpass.services.DataTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import utils.*;
 
-import javax.xml.crypto.Data;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +69,7 @@ public class ProcessManager {
 
     private final String digitalTwinFileName = "digitalTwin";
     private final String passportFileName = "passport";
-
+    private final String searchFileName = "search";
 
     @Autowired
     public ProcessManager(HttpUtil httpUtil, JsonUtil jsonUtil, FileUtil fileUtil, ProcessConfig processConfig) {
@@ -113,6 +110,7 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to get process [" + processId + "]");
         }
     }
+
 
     public String generateStatusToken(Status status, String contractId) {
         return CrypUtil.sha256("signToken=[" + status.getCreated() + "|" + status.id + "|" + contractId + "|" + processConfig.getSignToken() + "]"); // Add extra level of security, that just the user that has this token can sign
@@ -188,12 +186,83 @@ public class ProcessManager {
         }
     }
 
+    private String getTmpProcessDir(String processId, Boolean absolute) {
+        String tmpDir = fileUtil.getTmpDir();
+        if (absolute) {
+            return Path.of(tmpDir, processConfig.getDir(), processId).toAbsolutePath().toString();
+        } else {
+            return Path.of(tmpDir, processConfig.getDir(), processId).toString();
+        }
+    }
+    public Process createProcess(HttpServletRequest httpRequest) {
+        return this.createProcess(httpRequest, "");
+    }
+
     public Process createProcess(HttpServletRequest httpRequest, String connectorAddress) {
         Long createdTime = DateTimeUtil.getTimestamp();
         Process process = new Process(CrypUtil.getUUID(), "CREATED", createdTime);
         LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
         this.setProcess(httpRequest, process); // Add process to session storage
         this.newStatusFile(process.id, connectorAddress, createdTime); // Set the status from the process in file system logs.
+        return process;
+    }
+    public SearchStatus setSearch(String processId, Search search) {
+        try {
+            String path = this.getTmpProcessFilePath(processId, this.searchFileName);
+            SearchStatus searchStatus = null;
+            if (!fileUtil.pathExists(path)) {
+                throw new ManagerException(this.getClass().getName(), "Temporary process file does not exists for id ["+processId+"]!");
+            }
+            searchStatus = (SearchStatus) jsonUtil.fromJsonFileToObject(path, SearchStatus.class);
+            searchStatus.setSearch(search);
+            jsonUtil.toJsonFile(path, searchStatus, processConfig.getIndent()); // Store the plain JSON
+            return searchStatus;
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to create/update the search in search status file");
+        }
+    }
+    public String addSearchStatusDtr(String processId, Dtr dtr) {
+        try {
+            String path = this.getTmpProcessFilePath(processId, this.searchFileName);
+            SearchStatus searchStatus = null;
+            if (!fileUtil.pathExists(path)) {
+                throw new ManagerException(this.getClass().getName(), "Temporary process file does not exists for id ["+processId+"]!");
+            }
+            searchStatus = (SearchStatus) jsonUtil.fromJsonFileToObject(path, SearchStatus.class);
+            searchStatus.addDtr(dtr);
+            return jsonUtil.toJsonFile(path, searchStatus, processConfig.getIndent()); // Store the plain JSON
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to create/update the search status file");
+        }
+    }
+    public String initProcess() {
+        try {
+            String processId = CrypUtil.getUUID();
+            SearchStatus searchProcess = new SearchStatus();
+            String searchFilePath = this.getTmpProcessFilePath(processId, this.searchFileName);
+            jsonUtil.toJsonFile(searchFilePath, searchProcess, processConfig.getIndent()); // Store the plain JSON
+            return processId;
+        }catch (Exception e){
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to create tmp process file!");
+        }
+    }
+
+
+    public Process createProcess(String processId, HttpServletRequest httpRequest) {
+        Long createdTime = DateTimeUtil.getTimestamp();
+        Process process = new Process(processId, "CREATED", createdTime);
+        LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
+        this.setProcess(httpRequest, process); // Add process to session storage
+        this.newStatusFile(process.id,"", createdTime); // Set the status from the process in file system logs.
+        return process;
+    }
+    public Process createProcess(HttpServletRequest httpRequest, String processId, List<String> bpns) {
+        Long createdTime = DateTimeUtil.getTimestamp();
+        Process process = new Process(processId, "CREATED", createdTime);
+        LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
+        this.setProcess(httpRequest, process); // Add process to session storage
+        this.newStatusFile(process.id,"", createdTime); // Set the status from the process in file system logs.
+        this.setBpns(process.id, bpns);
         return process;
     }
 
@@ -225,7 +294,10 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to create the status file");
         }
     }
-
+    public String getTmpProcessFilePath(String processId, String filename) {
+        String processDir = this.getTmpProcessDir(processId, false);
+        return Path.of(processDir, filename + ".json").toAbsolutePath().toString();
+    }
     public String getProcessFilePath(String processId, String filename) {
         String processDir = this.getProcessDir(processId, false);
         return Path.of(processDir, filename + ".json").toAbsolutePath().toString();
@@ -345,6 +417,15 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the dataset for process id [" + processId + "]");
         }
     }
+    public SearchStatus getSearchStatus(String processId) {
+        try {
+            String path = this.getTmpProcessFilePath(processId, this.searchFileName);
+            return (SearchStatus) jsonUtil.fromJsonFileToObject(path, SearchStatus.class);
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to load the search status for process id [" + processId + "]");
+        }
+    }
+
 
     public Map<String, Object> loadNegotiation(String processId) {
         try {
@@ -427,7 +508,7 @@ public class ProcessManager {
                     transferPayload,
                     fileName,
                     transfer.getId(),
-                    "COMPLETED",
+                    !dtr?"COMPLETED":"FOUND-DTR",
                     "transfer-completed");
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer!");
@@ -458,6 +539,23 @@ public class ProcessManager {
                     !dtr?"transfer-request":"dtr-transfer-request");
         } catch (Exception e) {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the transfer request!");
+        }
+    }
+
+    public String setEndpoint(String processId, String endpoint){
+        try {
+            String path = this.getProcessFilePath(processId, this.metaFileName);
+            Status statusFile = null;
+            if (!fileUtil.pathExists(path)) {
+                throw new ManagerException(this.getClass().getName(), "Process file does not exists for id ["+processId+"]!");
+            }
+
+            statusFile = (Status) jsonUtil.fromJsonFileToObject(path, Status.class);
+            statusFile.setEndpoint(endpoint);
+            statusFile.setModified(DateTimeUtil.getTimestamp());
+            return jsonUtil.toJsonFile(path, statusFile, processConfig.getIndent()); // Store the plain JSON
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to create/update the status file");
         }
     }
     public String getContractId(DataPlaneEndpoint endpointData){
@@ -554,6 +652,23 @@ public class ProcessManager {
             throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the digitalTwin!");
         }
     }
+
+    public String saveDigitalTwin3(String processId, DigitalTwin3 digitalTwin, Long startedTime) {
+        try {
+            return this.saveProcessPayload(
+                    processId,
+                    digitalTwin,
+                    this.digitalTwinFileName,
+                    startedTime,
+                    digitalTwin.getIdentification(),
+                    "READY",
+                    "digital-twin-request");
+        } catch (Exception e) {
+            throw new ManagerException(this.getClass().getName(), e, "It was not possible to save the digitalTwin!");
+        }
+    }
+
+
 
     public String saveDataset(String processId, Dataset dataset, Long startedTime, Boolean dtr) {
         try {

@@ -26,17 +26,15 @@
 package org.eclipse.tractusx.productpass.managers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.DataModelException;
-import org.eclipse.tractusx.productpass.exceptions.ManagerException;
-import org.eclipse.tractusx.productpass.models.catenax.DtrCache;
-import org.eclipse.tractusx.productpass.models.negotiation.Negotiation;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
+import org.eclipse.tractusx.productpass.models.catenax.DtrCache;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
 import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.negotiation.Catalog;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
+import org.eclipse.tractusx.productpass.models.negotiation.Negotiation;
 import org.eclipse.tractusx.productpass.models.negotiation.Offer;
 import org.eclipse.tractusx.productpass.services.DataTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +45,12 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
-public class DtrDataModelManager {
+public class DtrSearchManager {
     private DataTransferService dataTransferService;
     private DtrConfig dtrConfig;
+    private ProcessManager processManager;
     private FileUtil fileUtil;
     private JsonUtil jsonUtil;
     private DtrCache dtrCache;
@@ -79,10 +77,12 @@ public class DtrDataModelManager {
         Error,
         Finished
     }
+
     @Autowired
-    public DtrDataModelManager(FileUtil fileUtil, JsonUtil jsonUtil, DataTransferService dataTransferService, DtrConfig dtrConfig)  {
+    public DtrSearchManager(FileUtil fileUtil, JsonUtil jsonUtil, DataTransferService dataTransferService, DtrConfig dtrConfig, ProcessManager processManager) {
         this.catalogsCache = new ConcurrentHashMap<>();
         this.dataTransferService = dataTransferService;
+        this.processManager = processManager;
         this.dtrConfig = dtrConfig;
         this.state = State.Created;
         this.fileUtil = fileUtil;
@@ -91,17 +91,18 @@ public class DtrDataModelManager {
         this.loadDtrCache();
     }
 
-    public Runnable startProcess (List<EdcDiscoveryEndpoint> edcEndpoints) {
+    public Runnable startProcess(List<EdcDiscoveryEndpoint> edcEndpoints, String processId) {
         return new Runnable() {
             @Override
             public void run() {
                 state = State.Running;
-                if (edcEndpoints == null) {
+                if (edcEndpoints == null || processId == null) {
                     return;
                 }
                 List<EdcDiscoveryEndpoint> edcEndpointsToSearch = null;
                 try {
-                    edcEndpointsToSearch = (List<EdcDiscoveryEndpoint>) jsonUtil.bindReferenceType(edcEndpoints, new TypeReference<List<EdcDiscoveryEndpoint>>() {});
+                    edcEndpointsToSearch = (List<EdcDiscoveryEndpoint>) jsonUtil.bindReferenceType(edcEndpoints, new TypeReference<List<EdcDiscoveryEndpoint>>() {
+                    });
                 } catch (Exception e) {
                     throw new DataModelException(this.getClass().getName(), e, "Could not bind the reference type!");
                 }
@@ -134,7 +135,7 @@ public class DtrDataModelManager {
                             if (contractOffers instanceof LinkedHashMap) {
                                 Dataset dataset = (Dataset) jsonUtil.bindObject(contractOffers, Dataset.class);
                                 if (dataset != null) {
-                                    Thread singleOfferThread = ThreadUtil.runThread(createAndSaveDtr(dataset, edcEndPoint.getBpn(), connectionUrl), "CreateAndSaveDtr");
+                                    Thread singleOfferThread = ThreadUtil.runThread(createAndSaveDtr(dataset, edcEndPoint.getBpn(), connectionUrl, processId), "CreateAndSaveDtr");
                                     try {
                                         if (!singleOfferThread.join(Duration.ofSeconds(negotiationTimeoutSeconds))) {
                                             singleOfferThread.interrupt();
@@ -152,7 +153,7 @@ public class DtrDataModelManager {
                                 return;
                             }
                             contractOfferList.parallelStream().forEach(dataset -> {
-                                Thread multipleOffersThread = ThreadUtil.runThread(createAndSaveDtr(dataset, edcEndPoint.getBpn(), connectionUrl), "CreateAndSaveDtr");
+                                Thread multipleOffersThread = ThreadUtil.runThread(createAndSaveDtr(dataset, edcEndPoint.getBpn(), connectionUrl, processId), "CreateAndSaveDtr");
                                 try {
                                     if (!multipleOffersThread.join(Duration.ofSeconds(negotiationTimeoutSeconds))) {
                                         multipleOffersThread.interrupt();
@@ -175,14 +176,15 @@ public class DtrDataModelManager {
 
     public String createDataModelFile(){ return fileUtil.createFile(this.getDataModelPath()); }
 
-    public String getDataModelPath(){
+    public String getDataModelPath() {
         return Path.of(this.getDataModelDir(), this.fileName).toAbsolutePath().toString();
     }
+
     public String getDataModelDir() {
-        return fileUtil.createTmpDir("DtrDataModel");
+        return fileUtil.getTmpDir();
     }
 
-    private Runnable searchDigitalTwinCatalogExecutor (String connectionUrl) {
+    private Runnable searchDigitalTwinCatalogExecutor(String connectionUrl) {
         return new Runnable() {
             @Override
             public void run() {
@@ -200,7 +202,7 @@ public class DtrDataModelManager {
         };
     }
 
-    public DtrDataModelManager addConnectionToBpnEntry (String bpn, Dtr dtr) {
+    private DtrSearchManager addConnectionToBpnEntry (String bpn, Dtr dtr) {
         if (!(bpn.isEmpty() || bpn.isBlank() || dtr.getEndpoint().isEmpty() || dtr.getEndpoint().isBlank()) ) {
             if (this.getDtrDataModel().contains(bpn)) {
                 if (!this.getDtrDataModel().get(bpn).contains(dtr))
@@ -216,37 +218,31 @@ public class DtrDataModelManager {
         return this.dtrCache.getDtrDataModel();
     }
 
-    private boolean checkConnectionEdcEndpoints (List<String> connectionEdcEndpoints) {
-        AtomicInteger count = new AtomicInteger(0);
-        int connectionsSize = connectionEdcEndpoints.size();
-        connectionEdcEndpoints.parallelStream().forEach(connection -> {
-            if (connection.isBlank() || connection.isEmpty()) {
-                count.getAndIncrement();
-                synchronized (connectionEdcEndpoints) {
-                    connectionEdcEndpoints.remove(connection);
-                }
-            }
-        });
-        return count.get() == connectionsSize;
-    }
-
-    private Runnable createAndSaveDtr (Dataset dataset, String bpn, String connectionUrl) {
+    private Runnable createAndSaveDtr(Dataset dataset, String bpn, String connectionUrl, String processId) {
         return new Runnable() {
             @Override
             public void run() {
-                Offer offer = dataTransferService.buildOffer(dataset);
                 try {
+                    Offer offer = dataTransferService.buildOffer(dataset);
+                    LogUtil.printMessage("OFFER:" + offer);
                     IdResponse negotiationResponse = dataTransferService.doContractNegotiations(offer, CatenaXUtil.buildDataEndpoint(connectionUrl));
                     if (negotiationResponse == null) {
+                        LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                         return;
                     }
                     Negotiation negotiation = dataTransferService.seeNegotiation(negotiationResponse.getId());
                     if (negotiation == null) {
-                        LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
+                        LogUtil.printWarning("Was not possible to see Negotiation for URL: " + connectionUrl);
                         return;
                     }
-                    addConnectionToBpnEntry(bpn, new Dtr(negotiation.getContractAgreementId(), connectionUrl, offer.getAssetId()));
-                    saveDtrDataModel();
+                    Dtr dtr = new Dtr(negotiation.getContractAgreementId(), connectionUrl, offer.getAssetId());
+                    if (dtrConfig.getTemporaryStorage()) {
+                        addConnectionToBpnEntry(bpn, dtr);
+                        saveDtrDataModel();
+                    }
+
+                    processManager.addSearchStatusDtr(processId, dtr);
+
                 } catch (Exception e) {
                     LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                 }
@@ -255,7 +251,7 @@ public class DtrDataModelManager {
 
     }
 
-    public void saveDtrDataModel() {
+    private void saveDtrDataModel() {
         if (!this.dtrCache.isEnabledCache()) {
             return;
         }
@@ -336,11 +332,11 @@ public class DtrDataModelManager {
     }
 
     private TimerTask eraseDtrCache () {
-        LogUtil.printWarning("Cache is scheduled to be erased now!");
         return new TimerTask() {
             @Override
             public void run() {
                 try {
+                    LogUtil.printWarning("Cache is scheduled to be erased now!");
                     deleteDtrCache();
                     createDataModelFile();
                     createNewDtrCache(enableCache);

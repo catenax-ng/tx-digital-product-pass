@@ -29,7 +29,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Configuration
@@ -38,7 +37,9 @@ public class DtrConfig {
     Boolean central;
     String centralUrl;
     String internalDtr;
+    Boolean temporaryStorage;
     DecentralApis decentralApis;
+    Long transferTimeout;
     String assetId;
     Boolean enableCache;
     CacheLifespan cacheLifespan;
@@ -78,6 +79,7 @@ public class DtrConfig {
         this.internalDtr = internalDtr;
     }
 
+
     public static class CacheLifespan {
         private Integer duration;
         private String timeunit;
@@ -105,8 +107,23 @@ public class DtrConfig {
         public void setTimeunit(String timeunit) {
             this.timeunit = timeunit;
         }
+
+    }
+    public Long getTransferTimeout() {
+        return transferTimeout;
     }
 
+    public void setTransferTimeout(Long transferTimeout) {
+        this.transferTimeout = transferTimeout;
+    }
+
+    public Boolean getTemporaryStorage() {
+        return temporaryStorage;
+    }
+
+    public void setTemporaryStorage(Boolean temporaryStorage) {
+        this.temporaryStorage = temporaryStorage;
+    }
 
     public static class DecentralApis{
         String prefix;

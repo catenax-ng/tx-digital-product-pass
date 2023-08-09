@@ -23,28 +23,37 @@
 
 package org.eclipse.tractusx.productpass.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
+import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
+import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
+import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
+import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
+import org.eclipse.tractusx.productpass.models.dtregistry.*;
+import org.eclipse.tractusx.productpass.models.edc.AssetSearch;
 import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
+import org.eclipse.tractusx.productpass.models.manager.SearchStatus;
+import org.eclipse.tractusx.productpass.models.manager.Status;
+import org.eclipse.tractusx.productpass.models.manager.Process;
 import org.eclipse.tractusx.productpass.models.negotiation.Transfer;
 import org.eclipse.tractusx.productpass.models.negotiation.TransferRequest;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
-import org.eclipse.tractusx.productpass.models.dtregistry.DigitalTwin;
 import org.eclipse.tractusx.productpass.models.auth.JwtToken;
-import org.eclipse.tractusx.productpass.models.dtregistry.SubModel;
+import org.sonarsource.scanner.api.internal.shaded.minimaljson.Json;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import utils.HttpUtil;
-import utils.JsonUtil;
-import utils.LogUtil;
+import utils.*;
 
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
@@ -66,13 +75,20 @@ public class AasService extends BaseService {
     private final AuthenticationService authService;
 
     Map<String, Object> apis;
+    private DtrSearchManager dtrSearchManager;
+    private ProcessManager processManager;
+
+    private DataTransferService dataService;
 
     @Autowired
-    public AasService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, AuthenticationService authService, DtrConfig dtrConfig) throws ServiceInitializationException {
+    public AasService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, AuthenticationService authService, DtrConfig dtrConfig, DtrSearchManager dtrSearchManager, ProcessManager processManager, DataTransferService dataService) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.jsonUtil = jsonUtil;
         this.authService = authService;
         this.dtrConfig = dtrConfig;
+        this.dtrSearchManager = dtrSearchManager;
+        this.processManager = processManager;
+        this.dataService = dataService;
         this.init(env);
         this.checkEmptyVariables();
     }
@@ -129,6 +145,32 @@ public class AasService extends BaseService {
                     "It was not possible to get subModel!");
         }
     }
+    public DigitalTwin3 searchDigitalTwin3(String assetType, String assetId, Integer position, String registryUrl, DataPlaneEndpoint edr) {
+        try {
+            ArrayList<String> digitalTwinIds = this.queryDigitalTwin(assetType, assetId, registryUrl, edr);
+            if (digitalTwinIds == null || digitalTwinIds.size() == 0) {
+                throw new ServiceException(this.getClass().getName() + "." + "searchDigitalTwin",
+                        "It was not possible to get digital twin for the selected asset type and the the selected assetId");
+            }
+            if (position > digitalTwinIds.size()) {
+                throw new ServiceException(this.getClass().getName() + "." + "searchDigitalTwin",
+                        "It was not possible to get digital twin in the selected position for the selected asset type and the the selected assetId");
+            }
+
+
+            String digitalTwinId = digitalTwinIds.get(position);
+            DigitalTwin3 digitalTwin = this.getDigitalTwin3(digitalTwinId, registryUrl, edr);
+            if (digitalTwin == null) {
+                throw new ServiceException(this.getClass().getName() + "." + "searchDigitalTwin",
+                        "It was not possible to get digital twin in the selected position for the selected asset type and the the selected assetId");
+            }
+            return digitalTwin;
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "searchDigitalTwin",
+                    e,
+                    "It was not possible to search digital twin!");
+        }
+    }
 
     public DigitalTwin searchDigitalTwin(String assetType, String assetId, Integer position, String registryUrl, DataPlaneEndpoint edr) {
         try {
@@ -158,8 +200,8 @@ public class AasService extends BaseService {
     }
 
 
-    public String getPathEndpoint(String key, Boolean prefix) {
-        if (this.central) {
+    public String getPathEndpoint(String registryUrl, String key, Boolean prefix) {
+        if (this.central || registryUrl == null || registryUrl.isEmpty()) {
             return (String) jsonUtil.getValue(this.apis, "central." + key, ".", null);
         }
         String path = (String) jsonUtil.getValue(this.apis, "decentral." + key, ".", null);
@@ -168,7 +210,20 @@ public class AasService extends BaseService {
         }
         return jsonUtil.getValue(this.apis, "decentral.prefix", ".", null) + path;
     }
-
+    public SubModel3 searchSubModel3ById(DigitalTwin3 digitalTwin, String idShort) {
+        try {
+            SubModel3 subModel = this.getSubModel3ById(digitalTwin, idShort);
+            if (subModel == null) {
+                throw new ServiceException(this.getClass().getName() + "." + "searchSubModel3ById",
+                        "It was not possible to get submodel in the selected position for the selected asset type and the the selected assetId");
+            }
+            return subModel;
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "searchSubModel3ById",
+                    e,
+                    "It was not possible to search submodel!");
+        }
+    }
     public SubModel searchSubModelById(DigitalTwin digitalTwin, String idShort) {
         try {
             SubModel subModel = this.getSubModelById(digitalTwin, idShort);
@@ -199,10 +254,25 @@ public class AasService extends BaseService {
         }
     }
 
+    public DigitalTwin3 getDigitalTwin3(String digitalTwinId, String registryUrl, DataPlaneEndpoint edr) {
+        try {
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
+            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId;
+            Map<String, Object> params = httpUtil.getParams();
+            HttpHeaders headers = this.getTokenHeader(edr);
+            ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, true, false);
+            String responseBody = (String) response.getBody();
+            return (DigitalTwin3) jsonUtil.bindJsonNode(jsonUtil.toJsonNode(responseBody), DigitalTwin3.class);
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "getDigitalTwin",
+                    e,
+                    "It was not possible to get digital twin!");
+        }
 
+    }
     public DigitalTwin getDigitalTwin(String digitalTwinId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint("digitalTwin", true);
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
             String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId;
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
@@ -234,16 +304,41 @@ public class AasService extends BaseService {
 
     public SubModel getSubModel(DigitalTwin digitalTwin, Integer position, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint("digitalTwin", true);
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
             SubModel subModel = this.getSubModelFromDigitalTwin(digitalTwin, position);
-            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwin.getIdentification() + this.getPathEndpoint("subModel", false) + "/" + subModel.getIdentification();
+            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwin.getIdentification() + this.getPathEndpoint(registryUrl,"subModel", false) + "/" + subModel.getIdentification();
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
+            LogUtil.printMessage(jsonUtil.toJson(headers, true));
             ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, true, false);
             String responseBody = (String) response.getBody();
             return (SubModel) jsonUtil.bindJsonNode(jsonUtil.toJsonNode(responseBody), SubModel.class);
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getSubModel",
+                    e,
+                    "It was not possible to get subModel!");
+        }
+    }
+
+    public SubModel3 getSubModel3ById(DigitalTwin3 digitalTwin, String idShort) {
+        try {
+            ArrayList<SubModel3> subModels = digitalTwin.getSubmodelDescriptors();
+            if (subModels.size() < 1) {
+                throw new ServiceException(this.getClass().getName() + "." + "getSubModel3ById",
+                        "No subModel found in digitalTwin!");
+            }
+            // Search for first subModel with matching idShort, if it fails gives null
+            SubModel3 subModel = subModels.stream().filter(s -> s.getIdShort().equalsIgnoreCase(idShort)).findFirst().orElse(null);
+
+            if (subModel == null) {
+                // If the subModel idShort does not exist
+                throw new ServiceException(this.getClass().getName() + "." + "getSubModel3ById",
+                        "SubModel for idShort not found!");
+            }
+            // Return subModel if found
+            return subModel;
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "getSubModel3ById",
                     e,
                     "It was not possible to get subModel!");
         }
@@ -275,8 +370,8 @@ public class AasService extends BaseService {
 
     public SubModel getSubModel(String digitalTwinId, String subModelId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint("digitalTwin", true);
-            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId + this.getPathEndpoint("subModel", false) + subModelId;
+            String path = this.getPathEndpoint(registryUrl,"digitalTwin", true);
+            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId + this.getPathEndpoint(registryUrl,"subModel", false) + subModelId;
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
             ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, true, false);
@@ -300,7 +395,7 @@ public class AasService extends BaseService {
 
             // Get the normal headers based on the EDR
             HttpHeaders headers = this.httpUtil.getHeaders();
-            headers.add(edr.getAuthKey(), edr.getAuthKey());
+            headers.add(edr.getAuthKey(), ""+edr.getAuthCode());
             return headers;
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getTokenHeader",
@@ -308,26 +403,104 @@ public class AasService extends BaseService {
         }
     }
 
-    public String getRegistryUrl(String registerUrl) {
+    public String getRegistryUrl(String url) {
         try {
-            return (!this.central && !registerUrl.isEmpty()) ? registerUrl : this.registryUrl;
+            return (url == null || this.central || url.isEmpty()) ? this.registryUrl : url;
         } catch (Exception e) {
             // Do nothing
         }
         return this.registryUrl;
     }
 
+
+    public AssetSearch centralDtrSearch(String processId, Search searchBody){
+        try {
+            // Start Digital Twin Query
+            AasService.DigitalTwinRegistryQueryById digitalTwinRegistry = this.new DigitalTwinRegistryQueryById(searchBody);
+            Long dtRequestTime = DateTimeUtil.getTimestamp();
+            Thread digitalTwinRegistryThread = ThreadUtil.runThread(digitalTwinRegistry);
+
+            // Wait for digital twin query
+            digitalTwinRegistryThread.join();
+            DigitalTwin digitalTwin;
+            SubModel subModel;
+            String connectorId;
+            String connectorAddress;
+            try {
+                digitalTwin = digitalTwinRegistry.getDigitalTwin();
+                subModel = digitalTwinRegistry.getSubModel();
+                connectorId = subModel.getIdShort();
+                EndPoint endpoint = subModel.getEndpoints().stream().filter(obj -> obj.getInterfaceName().equals("EDC")).findFirst().orElse(null);
+                if (endpoint == null) {
+                    throw new ControllerException(this.getClass().getName(), "No EDC endpoint found in DTR SubModel!");
+                }
+                connectorAddress = endpoint.getProtocolInformation().getEndpointAddress();
+            } catch (Exception e) {
+                return null;
+            }
+            if (connectorId.isEmpty() || connectorAddress.isEmpty()) {
+                return null;
+            }
+
+
+            try {
+                connectorAddress = CatenaXUtil.buildEndpoint(connectorAddress);
+            } catch (Exception e) {
+                return null;
+            }
+            if (connectorAddress.isEmpty()) {
+                return null;
+            }
+            processManager.saveDigitalTwin(processId, digitalTwin, dtRequestTime);
+            LogUtil.printDebug("[PROCESS " + processId + "] Digital Twin [" + digitalTwin.getIdentification() + "] and Submodel [" + subModel.getIdentification() + "] with EDC endpoint [" + connectorAddress + "] retrieved from DTR");
+            String assetId = String.join("-", digitalTwin.getIdentification(), subModel.getIdentification());
+            return new AssetSearch(assetId, connectorAddress);
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "centralDtrSearch",
+                    e,
+                    "It was not possible to search and find digital twin");
+        }
+    }
+    public AssetSearch decentralDtrSearch(String processId, Search searchBody){
+        try {
+            Status status = this.processManager.getStatus(processId);
+            SearchStatus searchStatus = this.processManager.setSearch(processId, searchBody);
+            for (String endpointId : searchStatus.getDtrs().keySet()) {
+                Dtr dtr = searchStatus.getDtr(endpointId);
+                DataTransferService.DigitalTwinRegistryTransfer dtrTransfer = dataService.new DigitalTwinRegistryTransfer(
+                        processId,
+                        endpointId,
+                        status,
+                        searchBody,
+                        dtr
+                );
+                Thread thread =  ThreadUtil.runThread(dtrTransfer, dtr.getEndpoint());
+                thread.join(this.dtrConfig.getTransferTimeout());
+            }
+            // TODO: Wait until transfer is finished and retrieve digital twin ids
+            ThreadUtil.sleep(5000); // Wait until is stored
+            if (!status.historyExists("digital-twin-found")) {
+                return null;
+            }
+            return new AssetSearch(status.getHistory("digital-twin-found").getId(), status.getEndpoint());
+        } catch (Exception e) {
+            throw new ServiceException(this.getClass().getName() + "." + "decentralDtrSearch",
+                    e,
+                    "It was not possible to search and find digital twin");
+        }
+    }
+
     public ArrayList<String> queryDigitalTwin(String assetType, String assetId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint("search", true);
+            String path = this.getPathEndpoint(registryUrl, "search", true);
             String url = this.getRegistryUrl(registryUrl) + path;
             Map<String, Object> params = httpUtil.getParams();
             ResponseEntity<?> response = null;
-            if (!this.central) {
+            if (!this.central && registryUrl != null && edr != null) {
                 // Set request body as post if the central query is disabled
                 Object body = Map.of(
                         "query", Map.of(
-                                "assetsIds", List.of(
+                                "assetIds", List.of(
                                         Map.of(
                                                 "name", assetType,
                                                 "value", assetId
@@ -336,8 +509,7 @@ public class AasService extends BaseService {
                         )
                 );
                 HttpHeaders headers = this.getTokenHeader(edr);
-                headers.add("Content-Type", "application/json");
-                response = httpUtil.doPost(registryUrl, JsonNode.class, headers, httpUtil.getParams(), body, false, false);
+                response = httpUtil.doPost(url, ArrayList.class, headers, httpUtil.getParams(), body, false, false);
             } else {
                 // Query as GET if the central query is enabled
                 Map<String, ?> assetIds = Map.of(
@@ -346,8 +518,7 @@ public class AasService extends BaseService {
                 );
 
                 String jsonString = jsonUtil.toJson(assetIds, false);
-                HttpHeaders headers = httpUtil.getHeadersWithToken(this.authService.getToken().getAccessToken());
-                ;
+                HttpHeaders headers = httpUtil.getHeadersWithToken(this.authService.getToken().getAccessToken());;
                 params.put("assetIds", jsonString);
                 response = httpUtil.doGet(url, ArrayList.class, headers, params, true, false);
             }
@@ -364,29 +535,31 @@ public class AasService extends BaseService {
         }
     }
 
-    public class DecentralDigitalTwinRegistryQueryById extends DigitalTwinRegistryQueryById {
+    public class DecentralDigitalTwinRegistryQueryById implements Runnable {
 
-        private String registryUrl;
         private DataPlaneEndpoint edr;
+        private SubModel3 subModel;
+        private DigitalTwin3 digitalTwin;
 
-        public DecentralDigitalTwinRegistryQueryById(Search search, String registryUrl, DataPlaneEndpoint edr) {
-            super(search);
-            this.registryUrl = registryUrl;
+        private final String assetId;
+        private final String idType;
+
+        private final Integer dtIndex;
+
+
+        private final String idShort;
+        public DecentralDigitalTwinRegistryQueryById(Search search, DataPlaneEndpoint edr) {
+            this.assetId = search.getId();
+            this.idType = search.getIdType();
+            this.dtIndex = search.getDtIndex();
+            this.idShort = search.getIdShort();
             this.edr = edr;
         }
 
         @Override
         public void run() {
-            this.setDigitalTwin(searchDigitalTwin(this.getIdType(), this.getAssetId(), this.getDtIndex(), this.getRegistryUrl(), this.getEdr()));
-            this.setSubModel(searchSubModelById(this.getDigitalTwin(), this.getIdShort()));
-        }
-
-        public String getRegistryUrl() {
-            return registryUrl;
-        }
-
-        public void setRegistryUrl(String registryUrl) {
-            this.registryUrl = registryUrl;
+            this.setDigitalTwin(searchDigitalTwin3(this.getIdType(), this.getAssetId(), this.getDtIndex(),  this.getEdr().getEndpoint(), this.getEdr()));
+            this.setSubModel(searchSubModel3ById(this.getDigitalTwin(), this.getIdShort()));
         }
 
         public DataPlaneEndpoint getEdr() {
@@ -395,6 +568,38 @@ public class AasService extends BaseService {
 
         public void setEdr(DataPlaneEndpoint edr) {
             this.edr = edr;
+        }
+
+        public SubModel3 getSubModel() {
+            return subModel;
+        }
+
+        public void setSubModel(SubModel3 subModel) {
+            this.subModel = subModel;
+        }
+
+        public DigitalTwin3 getDigitalTwin() {
+            return digitalTwin;
+        }
+
+        public void setDigitalTwin(DigitalTwin3 digitalTwin) {
+            this.digitalTwin = digitalTwin;
+        }
+
+        public String getAssetId() {
+            return assetId;
+        }
+
+        public String getIdType() {
+            return idType;
+        }
+
+        public Integer getDtIndex() {
+            return dtIndex;
+        }
+
+        public String getIdShort() {
+            return idShort;
         }
     }
 
