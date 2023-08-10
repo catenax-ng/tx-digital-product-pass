@@ -58,8 +58,8 @@ public class DtrSearchManager {
     private JsonUtil jsonUtil;
     private DtrCache dtrCache;
     private ConcurrentHashMap<String, Catalog> catalogsCache;
-    private final long searchTimeoutSeconds = 10;
-    private final long negotiationTimeoutSeconds = 20;
+    private final long searchTimeoutSeconds;
+    private final long negotiationTimeoutSeconds;
     private final String fileName = "dtrDataModel.json";
     private String dtrDataModelFilePath;
     private boolean enableCache;
@@ -92,6 +92,8 @@ public class DtrSearchManager {
         this.jsonUtil = jsonUtil;
         this.enableCache = this.dtrConfig.getEnableCache();
         this.loadDtrCache();
+        this.searchTimeoutSeconds = this.dtrConfig.getTimeouts().getSearch();
+        this.negotiationTimeoutSeconds = this.dtrConfig.getTimeouts().getNegotiation();
     }
 
     public Runnable startProcess(List<EdcDiscoveryEndpoint> edcEndpoints, String processId) throws ManagerException {
@@ -231,7 +233,7 @@ public class DtrSearchManager {
             public void run() {
                 try {
                     Offer offer = dataTransferService.buildOffer(dataset, 0);
-                    IdResponse negotiationResponse = dataTransferService.doContractNegotiations(offer, CatenaXUtil.buildDataEndpoint(connectionUrl));
+                    IdResponse negotiationResponse = dataTransferService.doContractNegotiations(offer, bpn,  CatenaXUtil.buildDataEndpoint(connectionUrl));
                     if (negotiationResponse == null) {
                         LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                         return;
@@ -241,7 +243,7 @@ public class DtrSearchManager {
                         LogUtil.printWarning("Was not possible to see Negotiation for URL: " + connectionUrl);
                         return;
                     }
-                    Dtr dtr = new Dtr(negotiation.getContractAgreementId(), connectionUrl, offer.getAssetId());
+                    Dtr dtr = new Dtr(negotiation.getContractAgreementId(), connectionUrl, offer.getAssetId(), bpn);
                     if (dtrConfig.getTemporaryStorage()) {
                         addConnectionToBpnEntry(bpn, dtr);
                         saveDtrDataModel();
@@ -349,6 +351,7 @@ public class DtrSearchManager {
                     deleteDtrCache();
                     createDataModelFile();
                     createNewDtrCache(enableCache);
+                    processManager.deleteUnusedProcessFoldersTemp();
                 } catch (NullPointerException e) {
                     LogUtil.printWarning("Date was null!");
                 }

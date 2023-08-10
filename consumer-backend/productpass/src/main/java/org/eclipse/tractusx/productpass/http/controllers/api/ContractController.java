@@ -162,11 +162,7 @@ public class ContractController {
                     });
                 }
                 try {
-                    dataModel = catenaXService.searchDTRs(edcEndpointBinded, processId);
-                    if (dataModel.isEmpty()) {
-                        response.message = "Failed to get the DTRs";
-                        return httpUtil.buildResponse(response, httpResponse);
-                    }
+                   catenaXService.searchDTRs(edcEndpointBinded, processId);
                 } catch (Exception e) {
                     throw new ControllerException("SearchDTRs", e, "Failed to get the DTRs");
                 }
@@ -190,6 +186,14 @@ public class ContractController {
                     }
                 }
             }
+
+            SearchStatus status = processManager.getSearchStatus(processId);
+            if(status == null){
+                return httpUtil.buildResponse(httpUtil.getNotFound("It was not possible to search for the decentral digital twin registries"), httpResponse);
+            }
+            if(status.getDtrs().isEmpty()){
+                return httpUtil.buildResponse(httpUtil.getNotFound("No decentral digital twin registry was found"), httpResponse);
+            }
             response = httpUtil.getResponse();
             response.data = Map.of(
                     "processId", processId
@@ -198,7 +202,9 @@ public class ContractController {
 
         } catch (Exception e) {
             assert response != null;
-            return httpUtil.buildResponse(httpUtil.getInternalError(e.getMessage()), httpResponse);
+            response.message = "It was not possible to create the process and search for the decentral digital twin registries";
+            LogUtil.printException(e, response.message);
+            return httpUtil.buildResponse(response, httpResponse);
         }
     }
 
@@ -269,8 +275,6 @@ public class ContractController {
             // Assing the variables with the content
             String assetId = assetSearch.getAssetId();
             String connectorAddress = assetSearch.getConnectorAddress();
-            processManager.setEndpoint(process.id, connectorAddress);
-
 
             /*[1]=========================================*/
             // Get catalog with all the contract offers
@@ -310,7 +314,8 @@ public class ContractController {
             return httpUtil.buildResponse(response, httpResponse);
         } catch (Exception e) {
             assert response != null;
-            response.message = e.getMessage();
+            response.message = "It was not possible to search for the serialized id";
+            LogUtil.printException(e, response.message);
             return httpUtil.buildResponse(response, httpResponse);
         }
     }
@@ -526,10 +531,12 @@ public class ContractController {
             }
             LogUtil.printMessage("[PROCESS " + processId + "] Contract [" + contractId + "] signed! Starting negotiation...");
 
+
             DataTransferService.NegotiateContract contractNegotiation = dataService
                     .new NegotiateContract(
                     processManager.loadDataModel(httpRequest),
                     processId,
+                    status.getBpn(),
                     dataset,
                     processManager.getStatus(processId)
             );

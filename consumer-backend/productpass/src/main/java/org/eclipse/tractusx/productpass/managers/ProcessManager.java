@@ -47,9 +47,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import utils.*;
 
+import javax.print.DocFlavor;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ProcessManager {
@@ -194,6 +197,39 @@ public class ProcessManager {
             return Path.of(tmpDir, processConfig.getDir(), processId).toString();
         }
     }
+
+    private List<String> getTmpProcessIdsList () {
+        String tmpDir = fileUtil.getTmpDir();
+        return fileUtil.getSubdirectoriesNamesFromDirectory(Path.of(tmpDir, processConfig.getDir()).toAbsolutePath());
+    }
+
+    public void deleteUnusedProcessFoldersTemp () {
+        List<String> processesIds = this.getTmpProcessIdsList();
+        int count = 0;
+        for (String processId : processesIds) {
+            String processTmpDir = this.getTmpProcessDir(processId, true);
+            String processTmpFile = this.getTmpProcessFilePath(processId, this.searchFileName);
+            SearchStatus searchStatus = this.getSearchStatus(processId);
+            Long diff = DateTimeUtil.getTimestamp() - searchStatus.getUpdated();
+            if (TimeUnit.MILLISECONDS.toMinutes(diff) >= this.processConfig.getTmpProcessTimeout()) {
+                try {
+                    if (fileUtil.deleteFile(processTmpFile)) {
+                        if (fileUtil.deleteFile(processTmpDir)) {
+                            ++count;
+                        }
+                    }
+                } catch (Exception e) {
+                    LogUtil.printWarning("The file with path: " + processTmpDir + " was not possible to delete.");
+                }
+            }
+        }
+        if (count == 0) {
+            LogUtil.printWarning("None unused temporary process directories were detected to be deleted!");
+            return;
+        }
+        LogUtil.printWarning("A total of [" + count + "] unused temporary process directories were deleted!");
+    }
+
     public Process createProcess(HttpServletRequest httpRequest) {
         return this.createProcess(httpRequest, "");
     }
@@ -256,26 +292,15 @@ public class ProcessManager {
         this.newStatusFile(process.id,"", createdTime); // Set the status from the process in file system logs.
         return process;
     }
-    public Process createProcess(HttpServletRequest httpRequest, String processId, List<String> bpns) {
+    public Process createProcess(HttpServletRequest httpRequest, String processId, String bpn) {
         Long createdTime = DateTimeUtil.getTimestamp();
         Process process = new Process(processId, "CREATED", createdTime);
         LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
         this.setProcess(httpRequest, process); // Add process to session storage
         this.newStatusFile(process.id,"", createdTime); // Set the status from the process in file system logs.
-        this.setBpns(process.id, bpns);
+        this.setBpn(process.id, bpn);
         return process;
     }
-
-    public Process createProcess(HttpServletRequest httpRequest, List<String> bpns) {
-        Long createdTime = DateTimeUtil.getTimestamp();
-        Process process = new Process(CrypUtil.getUUID(), "CREATED", createdTime);
-        LogUtil.printMessage("Process Created [" + process.id + "], waiting for user to sign or decline...");
-        this.setProcess(httpRequest, process); // Add process to session storage
-        this.newStatusFile(process.id,"", createdTime); // Set the status from the process in file system logs.
-        this.setBpns(process.id, bpns);
-        return process;
-    }
-
 
     public String newStatusFile(String processId, String connectorAddress, Long created){
         try {
@@ -312,7 +337,7 @@ public class ProcessManager {
         }
     }
 
-    public String setBpns(String processId, List<String> bpns) {
+    public String setBpn(String processId, String bpn) {
         try {
             String path = this.getProcessFilePath(processId, this.metaFileName);
             Status statusFile = null;
@@ -321,7 +346,7 @@ public class ProcessManager {
             }
 
             statusFile = (Status) jsonUtil.fromJsonFileToObject(path, Status.class);
-            statusFile.setBpns(bpns);
+            statusFile.setBpn(bpn);
             statusFile.setModified(DateTimeUtil.getTimestamp());
             return jsonUtil.toJsonFile(path, statusFile, processConfig.getIndent()); // Store the plain JSON
         } catch (Exception e) {

@@ -35,11 +35,9 @@ import java.util.List;
 public class ProcessConfig {
 
     private Boolean store = true;
-
-
     private String dir;
-
     private Boolean indent = true;
+    private Integer tmpProcessTimeout;
 
 
     private String signToken;
@@ -74,5 +72,13 @@ public class ProcessConfig {
 
     public void setDir(String dir) {
         this.dir = dir;
+    }
+
+    public Integer getTmpProcessTimeout() {
+        return tmpProcessTimeout;
+    }
+
+    public void setTmpProcessTimeout(Integer deleteTmpProcess) {
+        this.tmpProcessTimeout = deleteTmpProcess;
     }
 }

@@ -331,11 +331,10 @@ public class CatenaXService extends BaseService {
         }
     }
 
-    public ConcurrentHashMap<String, List<Dtr>> searchDTRs (List<EdcDiscoveryEndpoint> edcEndpoints, String processId) throws ServiceException {
+    public void searchDTRs (List<EdcDiscoveryEndpoint> edcEndpoints, String processId) throws ServiceException {
         try {
             Thread thread = ThreadUtil.runThread(dtrSearchManager.startProcess(edcEndpoints, processId), "ProcessDtrSearchManager");
             thread.join();
-            return dtrSearchManager.getDtrDataModel();
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "searchDtrs",
                     e,

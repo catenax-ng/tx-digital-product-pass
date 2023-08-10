@@ -57,7 +57,7 @@ configuration:
   security:
     check:
       enabled: true
-      bpn: false
+      bpn: true
       edc: true
 
   dtr:
@@ -67,14 +67,17 @@ configuration:
     internalDtr: "https://materialpass.int.demo.catena-x.net/BPNL000000000000" # -- If there is an internal DTR available it can be referenced here and will be injected in the list of DTRs
     enableCache: true
     cacheLifespan:
-      duration: 1000
+      duration: 100
       timeunit: "SECONDS"
     decentralApis:
-      prefix: "/api/v3.0"
       search: "/lookup/shells/query"
       digitalTwin: "/shell-descriptors"
       subModel: "/submodel-descriptors"
-    transferTimeout: 10000
+    timeouts:
+      search: 10
+      negotiation: 40
+      transfer: 10
+      digitalTwin: 20
     temporaryStorage: true
 
   discovery:
@@ -91,6 +94,7 @@ configuration:
     dir: 'process'
     indent: true
     signKey: 'c55e3f35200f6afedbce37cefdaf40eadd15c92814edfdbc4d6ab0eacdcdd56dbcd5a2a34ca4b675084d33f9f479d7d79347795148aaf4443e1b47ab96b27e72'
+    tmpProcessTimeout: 10
 
   passport:
     dataTransfer:

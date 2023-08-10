@@ -23,8 +23,6 @@
 
 package utils;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import utils.exceptions.UtilException;
 
@@ -33,6 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public final class FileUtil {
@@ -62,6 +63,13 @@ public final class FileUtil {
 
     public String getBaseClassDir(Class selectedClass){
         return this.normalizePath(selectedClass.getProtectionDomain().getCodeSource().getLocation().getPath());
+    }
+
+    public List<String> getSubdirectoriesNamesFromDirectory (Path dirPath) {
+        return Stream.of(new File(dirPath.toString()).listFiles())
+                .filter(file -> file.isDirectory())
+                .map(File::getName)
+                .collect(Collectors.toList());
     }
 
     public String createFile(String filePath){

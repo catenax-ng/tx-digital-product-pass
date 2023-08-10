@@ -31,15 +31,16 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Date;
 
+
 @Configuration
 @ConfigurationProperties(prefix="configuration.dtr")
 public class DtrConfig {
     Boolean central;
     String centralUrl;
     String internalDtr;
+    Timeouts timeouts;
     Boolean temporaryStorage;
     DecentralApis decentralApis;
-    Long transferTimeout;
     String assetId;
     Boolean enableCache;
     CacheLifespan cacheLifespan;
@@ -79,7 +80,6 @@ public class DtrConfig {
         this.internalDtr = internalDtr;
     }
 
-
     public static class CacheLifespan {
         private Integer duration;
         private String timeunit;
@@ -109,13 +109,6 @@ public class DtrConfig {
         }
 
     }
-    public Long getTransferTimeout() {
-        return transferTimeout;
-    }
-
-    public void setTransferTimeout(Long transferTimeout) {
-        this.transferTimeout = transferTimeout;
-    }
 
     public Boolean getTemporaryStorage() {
         return temporaryStorage;
@@ -123,6 +116,53 @@ public class DtrConfig {
 
     public void setTemporaryStorage(Boolean temporaryStorage) {
         this.temporaryStorage = temporaryStorage;
+    }
+
+    public Timeouts getTimeouts() {
+        return timeouts;
+    }
+
+    public void setTimeouts(Timeouts timeouts) {
+        this.timeouts = timeouts;
+    }
+
+    public static class Timeouts{
+        Integer search;
+        Integer negotiation;
+        Integer transfer;
+        Integer digitalTwin;
+
+        public Integer getSearch() {
+            return search;
+        }
+
+        public void setSearch(Integer search) {
+            this.search = search;
+        }
+
+        public Integer getNegotiation() {
+            return negotiation;
+        }
+
+        public void setNegotiation(Integer negotiation) {
+            this.negotiation = negotiation;
+        }
+
+        public Integer getTransfer() {
+            return transfer;
+        }
+
+        public void setTransfer(Integer transfer) {
+            this.transfer = transfer;
+        }
+
+        public Integer getDigitalTwin() {
+            return digitalTwin;
+        }
+
+        public void setDigitalTwin(Integer digitalTwin) {
+            this.digitalTwin = digitalTwin;
+        }
     }
 
     public static class DecentralApis{

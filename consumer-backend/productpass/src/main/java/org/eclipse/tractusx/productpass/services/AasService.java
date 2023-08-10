@@ -23,17 +23,13 @@
 
 package org.eclipse.tractusx.productpass.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.servlet.http.HttpServletRequest;
-import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
+import org.eclipse.tractusx.productpass.models.auth.JwtToken;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.dtregistry.*;
 import org.eclipse.tractusx.productpass.models.edc.AssetSearch;
@@ -41,25 +37,18 @@ import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.manager.SearchStatus;
 import org.eclipse.tractusx.productpass.models.manager.Status;
-import org.eclipse.tractusx.productpass.models.manager.Process;
-import org.eclipse.tractusx.productpass.models.negotiation.Transfer;
-import org.eclipse.tractusx.productpass.models.negotiation.TransferRequest;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
-import org.eclipse.tractusx.productpass.models.auth.JwtToken;
-import org.sonarsource.scanner.api.internal.shaded.minimaljson.Json;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import utils.*;
 
-import javax.xml.crypto.Data;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AasService extends BaseService {
@@ -101,8 +90,7 @@ public class AasService extends BaseService {
             decentralApis = Map.of(
                     "search", "/lookup/shells/query",
                     "digitalTwin", "/shell-descriptors",
-                    "subModel", "/submodel-descriptors",
-                    "prefix", "/api/v3.0"
+                    "subModel", "/submodel-descriptors"
             );
         }
         this.apis = Map.of(
@@ -200,15 +188,12 @@ public class AasService extends BaseService {
     }
 
 
-    public String getPathEndpoint(String registryUrl, String key, Boolean prefix) {
+    public String getPathEndpoint(String registryUrl, String key) {
         if (this.central || registryUrl == null || registryUrl.isEmpty()) {
             return (String) jsonUtil.getValue(this.apis, "central." + key, ".", null);
         }
         String path = (String) jsonUtil.getValue(this.apis, "decentral." + key, ".", null);
-        if (!prefix) {
-            return path;
-        }
-        return jsonUtil.getValue(this.apis, "decentral.prefix", ".", null) + path;
+        return path;
     }
     public SubModel3 searchSubModel3ById(DigitalTwin3 digitalTwin, String idShort) {
         try {
@@ -256,8 +241,8 @@ public class AasService extends BaseService {
 
     public DigitalTwin3 getDigitalTwin3(String digitalTwinId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
-            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId;
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin");
+            String url = this.getRegistryUrl(registryUrl) + path + "/" + CrypUtil.toBase64Url(digitalTwinId);
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
             ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, true, false);
@@ -272,7 +257,7 @@ public class AasService extends BaseService {
     }
     public DigitalTwin getDigitalTwin(String digitalTwinId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin");
             String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId;
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
@@ -304,9 +289,9 @@ public class AasService extends BaseService {
 
     public SubModel getSubModel(DigitalTwin digitalTwin, Integer position, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint(registryUrl, "digitalTwin", true);
+            String path = this.getPathEndpoint(registryUrl, "digitalTwin");
             SubModel subModel = this.getSubModelFromDigitalTwin(digitalTwin, position);
-            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwin.getIdentification() + this.getPathEndpoint(registryUrl,"subModel", false) + "/" + subModel.getIdentification();
+            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwin.getIdentification() + this.getPathEndpoint(registryUrl,"subModel") + "/" + subModel.getIdentification();
             Map<String, Object> params = httpUtil.getParams();
             HttpHeaders headers = this.getTokenHeader(edr);
             LogUtil.printMessage(jsonUtil.toJson(headers, true));
@@ -363,22 +348,6 @@ public class AasService extends BaseService {
             return subModel;
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "getSubModelByIdShort",
-                    e,
-                    "It was not possible to get subModel!");
-        }
-    }
-
-    public SubModel getSubModel(String digitalTwinId, String subModelId, String registryUrl, DataPlaneEndpoint edr) {
-        try {
-            String path = this.getPathEndpoint(registryUrl,"digitalTwin", true);
-            String url = this.getRegistryUrl(registryUrl) + path + "/" + digitalTwinId + this.getPathEndpoint(registryUrl,"subModel", false) + subModelId;
-            Map<String, Object> params = httpUtil.getParams();
-            HttpHeaders headers = this.getTokenHeader(edr);
-            ResponseEntity<?> response = httpUtil.doGet(url, String.class, headers, params, true, false);
-            String responseBody = (String) response.getBody();
-            return (SubModel) jsonUtil.bindJsonNode(jsonUtil.toJsonNode(responseBody), SubModel.class);
-        } catch (Exception e) {
-            throw new ServiceException(this.getClass().getName() + "." + "getSubModel",
                     e,
                     "It was not possible to get subModel!");
         }
@@ -475,14 +444,23 @@ public class AasService extends BaseService {
                         dtr
                 );
                 Thread thread =  ThreadUtil.runThread(dtrTransfer, dtr.getEndpoint());
-                thread.join(this.dtrConfig.getTransferTimeout());
+                thread.join(Duration.ofSeconds(this.dtrConfig.getTimeouts().getTransfer()));
             }
             // TODO: Wait until transfer is finished and retrieve digital twin ids
-            ThreadUtil.sleep(5000); // Wait until is stored
-            if (!status.historyExists("digital-twin-found")) {
+            Thread blockThread = ThreadUtil.runThread(new DigitalTwinTimeout(this.processManager, processId));
+            try {
+                if(!blockThread.join(Duration.ofSeconds(this.dtrConfig.getTimeouts().getDigitalTwin()))){
+                    LogUtil.printError("Timeout reached while waiting for receiving digital twin!");
+                    return null;
+                };
+            } catch (InterruptedException e) {
                 return null;
             }
-            return new AssetSearch(status.getHistory("digital-twin-found").getId(), status.getEndpoint());
+            status = this.processManager.getStatus(processId);
+            if(status.historyExists("digital-twin-found")){
+                return new AssetSearch(status.getHistory("digital-twin-found").getId(), status.getEndpoint());
+            };
+            return null;
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "decentralDtrSearch",
                     e,
@@ -490,9 +468,40 @@ public class AasService extends BaseService {
         }
     }
 
+    public class DigitalTwinTimeout implements Runnable {
+        private ProcessManager processManager;
+
+        private String processId;
+
+        public DigitalTwinTimeout(ProcessManager processManager, String processId) {
+            this.processManager = processManager;
+            this.processId = processId;
+        }
+
+
+        @Override
+        public void run() {
+            this.waitForDigitalTwin();
+        }
+        public void waitForDigitalTwin(){
+            Status status = this.getStatus();
+            while(!status.historyExists("digital-twin-found")){
+                status = this.getStatus();
+                if(status.getStatus().equals("FAILED")){
+                    break;
+                }
+            }
+        }
+        public Status getStatus(){
+            return this.processManager.getStatus(this.processId);
+        }
+    }
+
+
+
     public ArrayList<String> queryDigitalTwin(String assetType, String assetId, String registryUrl, DataPlaneEndpoint edr) {
         try {
-            String path = this.getPathEndpoint(registryUrl, "search", true);
+            String path = this.getPathEndpoint(registryUrl, "search");
             String url = this.getRegistryUrl(registryUrl) + path;
             Map<String, Object> params = httpUtil.getParams();
             ResponseEntity<?> response = null;
