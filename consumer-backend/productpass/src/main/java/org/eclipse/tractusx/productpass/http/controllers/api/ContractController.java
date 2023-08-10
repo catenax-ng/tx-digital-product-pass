@@ -38,6 +38,7 @@ import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
+import org.eclipse.tractusx.productpass.exceptions.ManagerException;
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
@@ -160,8 +161,15 @@ public class ContractController {
                         endpoint.getConnectorEndpoint().add(this.dtrConfig.getInternalDtr());
                     });
                 }
-                LogUtil.printMessage("EDCs: " + jsonUtil.toJson(edcEndpointBinded, true));
-                catenaXService.searchDTRs(edcEndpointBinded, processId);
+                try {
+                    dataModel = catenaXService.searchDTRs(edcEndpointBinded, processId);
+                    if (dataModel.isEmpty()) {
+                        response.message = "Failed to get the DTRs";
+                        return httpUtil.buildResponse(response, httpResponse);
+                    }
+                } catch (Exception e) {
+                    throw new ControllerException("SearchDTRs", e, "Failed to get the DTRs");
+                }
             }else{
 
                 // Take the results from cache

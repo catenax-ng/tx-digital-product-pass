@@ -192,7 +192,7 @@ public class DataTransferService extends BaseService {
         if(rawPolicy instanceof LinkedHashMap){
             policy = (Set) jsonUtil.bindObject(rawPolicy, Set.class);
         }else{
-            List<LinkedHashMap> policyList = (List<LinkedHashMap>) jsonUtil.bindObject(rawPolicy, List.class);
+            List<Set> policyList = (List<Set>) jsonUtil.bindObject(rawPolicy, List.class);
             policy = (Set) jsonUtil.bindObject(policyList.get(defaultIndex), Set.class); // Get fist policy from the list to resolve the conflict
         }
         Set policyCopy = (Set) jsonUtil.bindObject(policy, Set.class);

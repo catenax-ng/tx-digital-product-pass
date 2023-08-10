@@ -34,6 +34,7 @@ import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationExceptio
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
 import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
 import org.eclipse.tractusx.productpass.models.catenax.Discovery;
+import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import utils.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CatenaXService extends BaseService {
@@ -329,10 +331,11 @@ public class CatenaXService extends BaseService {
         }
     }
 
-    public void searchDTRs (List<EdcDiscoveryEndpoint> edcEndpoints, String processId) {
+    public ConcurrentHashMap<String, List<Dtr>> searchDTRs (List<EdcDiscoveryEndpoint> edcEndpoints, String processId) throws ServiceException {
         try {
             Thread thread = ThreadUtil.runThread(dtrSearchManager.startProcess(edcEndpoints, processId), "ProcessDtrSearchManager");
             thread.join();
+            return dtrSearchManager.getDtrDataModel();
         } catch (Exception e) {
             throw new ServiceException(this.getClass().getName() + "." + "searchDtrs",
                     e,
