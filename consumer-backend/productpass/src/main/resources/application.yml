@@ -69,7 +69,7 @@ configuration:
     internalDtr: "https://materialpass.int.demo.catena-x.net/BPNL000000000000" # -- If there is an internal DTR available it can be referenced here and will be injected in the list of DTRs
     enableCache: true
     cacheLifespan:
-      duration: 100
+      duration: 100000
       timeunit: "SECONDS"
     decentralApis:
       search: "/lookup/shells/query"
@@ -78,7 +78,7 @@ configuration:
     timeouts:
       search: 10
       negotiation: 40
-      transfer: 10
+      transfer: 40
       digitalTwin: 20
     temporaryStorage: true
 
