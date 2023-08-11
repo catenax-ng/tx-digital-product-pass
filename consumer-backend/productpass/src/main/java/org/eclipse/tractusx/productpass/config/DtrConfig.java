@@ -66,6 +66,8 @@ public class DtrConfig {
         this.cacheLifespan = cacheLifespan;
     }
 
+    String endpointInterface;
+    String dspEndpointKey;
     public DecentralApis getDecentralApis() {
         return decentralApis;
     }
@@ -124,6 +126,22 @@ public class DtrConfig {
 
     public void setTimeouts(Timeouts timeouts) {
         this.timeouts = timeouts;
+    }
+
+    public String getEndpointInterface() {
+        return endpointInterface;
+    }
+
+    public void setEndpointInterface(String endpointInterface) {
+        this.endpointInterface = endpointInterface;
+    }
+
+    public String getDspEndpointKey() {
+        return dspEndpointKey;
+    }
+
+    public void setDspEndpointKey(String dspEndpointKey) {
+        this.dspEndpointKey = dspEndpointKey;
     }
 
     public static class Timeouts{
