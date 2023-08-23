@@ -29,9 +29,7 @@ irs-helm:
 
   # namespace: product-material-pass
 
-  springprofile: dev
-
-  irsUrl: "https://materialpass.int.demo.catena-x.net"
+  irsUrl: "https://materialpass.int.demo.catena-x.net/irs"
 
   ingress:
     enabled: true
@@ -55,10 +53,11 @@ irs-helm:
   digitalTwinRegistry:
     type: decentral
     url: https://materialpass.int.demo.catena-x.net/semantics/registry/api/v3.0
+    discoveryFinderUrl: https://semantics.int.demo.catena-x.net/discoveryfinder
   semanticshub:
     url: https://semantics.int.demo.catena-x.net/hub/api/v1/models
   bpdm:
-    url: https://semantics.int.demo.catena-x.net/bpndiscovery/api/administration/connectors/bpnDiscovery/search
+    url: https://semantics.int.demo.catena-x.net/bpndiscovery
 
   minioUser: <path:material-pass/data/int/irs/minio#user>
   minioPassword: <path:material-pass/data/int/irs/minio#password>
@@ -78,7 +77,7 @@ irs-helm:
   edc:
     controlplane:
       endpoint:
-        data: http://materialpass-controlplane:8181/data
+        data: https://materialpass.int.demo.catena-x.net/consumer/data
       apikey:
         secret: <path:material-pass/data/int/edc/oauth#api.key>
 
