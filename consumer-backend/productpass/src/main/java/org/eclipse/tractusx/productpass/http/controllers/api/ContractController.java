@@ -33,15 +33,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.tractusx.productpass.config.DiscoveryConfig;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.config.PassportConfig;
 import org.eclipse.tractusx.productpass.config.ProcessConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
-import org.eclipse.tractusx.productpass.exceptions.DataModelException;
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
@@ -73,7 +70,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContractController {
     private @Autowired HttpServletRequest httpRequest;
     private @Autowired HttpServletResponse httpResponse;
-    private @Autowired DataTransferService dataService;
+    private @Autowired ControlPlaneService dataService;
     private @Autowired VaultService vaultService;
     private @Autowired AasService aasService;
     private @Autowired AuthenticationService authService;
@@ -534,7 +531,7 @@ public class ContractController {
             LogUtil.printMessage("[PROCESS " + processId + "] Contract [" + contractId + "] signed! Starting negotiation...");
 
 
-            DataTransferService.NegotiateContract contractNegotiation = dataService
+            ControlPlaneService.NegotiateContract contractNegotiation = dataService
                     .new NegotiateContract(
                     processManager.loadDataModel(httpRequest),
                     processId,

@@ -23,25 +23,14 @@
 
 package org.eclipse.tractusx.productpass.listeners;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import jakarta.servlet.http.HttpServletRequest;
-import org.eclipse.tractusx.productpass.Application;
-import org.eclipse.tractusx.productpass.exceptions.DataModelException;
-import org.eclipse.tractusx.productpass.http.controllers.api.ContractController;
 import org.eclipse.tractusx.productpass.config.DiscoveryConfig;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
-import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.auth.JwtToken;
-import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.edc.Jwt;
-import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.services.AuthenticationService;
-import org.eclipse.tractusx.productpass.services.DataTransferService;
+import org.eclipse.tractusx.productpass.services.ControlPlaneService;
 import org.eclipse.tractusx.productpass.services.VaultService;
-import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
 import org.eclipse.tractusx.productpass.models.catenax.Discovery;
-import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
 import org.eclipse.tractusx.productpass.services.CatenaXService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -54,16 +43,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import utils.HttpUtil;
 import utils.JsonUtil;
 import utils.LogUtil;
-
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Configuration
@@ -92,7 +74,7 @@ public class AppListener {
     @Autowired
     Environment env;
     @Autowired
-    DataTransferService dataTransferService;
+    ControlPlaneService controlPlaneService;
 
     @EventListener(ApplicationStartedEvent.class)
     public void started() {
@@ -115,7 +97,7 @@ public class AppListener {
             if (edcCheck) {
                 try {
                     LogUtil.printMessage("[ EDC Connection Test ] Testing connection with the EDC Consumer, this may take some seconds...");
-                    String bpnNumber = dataTransferService.checkEdcConsumerConnection();
+                    String bpnNumber = controlPlaneService.checkEdcConsumerConnection();
                     if (!participantId.equals(bpnNumber)) {
                         throw new Exception("[" + this.getClass().getName() + ".onStartUp] Incorrect BPN Number configuration, expected the same participant id as the EDC consumer connector!");
                     }

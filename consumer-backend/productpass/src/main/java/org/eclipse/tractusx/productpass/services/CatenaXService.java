@@ -34,7 +34,6 @@ import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationExceptio
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
 import org.eclipse.tractusx.productpass.models.catenax.BpnDiscovery;
 import org.eclipse.tractusx.productpass.models.catenax.Discovery;
-import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.catenax.EdcDiscoveryEndpoint;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,6 @@ import utils.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CatenaXService extends BaseService {
@@ -58,7 +56,7 @@ public class CatenaXService extends BaseService {
     private final FileUtil fileUtil;
     private final VaultService vaultService;
     private final DtrSearchManager dtrSearchManager;
-    private final DataTransferService dataTransferService;
+    private final ControlPlaneService controlPlaneService;
 
     private final AuthenticationService authService;
 
@@ -100,7 +98,7 @@ public class CatenaXService extends BaseService {
         );
     }
     @Autowired
-    public CatenaXService(Environment env, FileUtil fileUtil, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, DtrSearchManager dtrSearchManager, AuthenticationService authService, DiscoveryConfig discoveryConfig, DataTransferService dataTransferService, DtrConfig dtrConfig) throws ServiceInitializationException {
+    public CatenaXService(Environment env, FileUtil fileUtil, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, DtrSearchManager dtrSearchManager, AuthenticationService authService, DiscoveryConfig discoveryConfig, ControlPlaneService controlPlaneService, DtrConfig dtrConfig) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.fileUtil = fileUtil;
         this.jsonUtil = jsonUtil;
@@ -109,7 +107,7 @@ public class CatenaXService extends BaseService {
         this.dtrSearchManager = dtrSearchManager;
         this.authService = authService;
         this.discoveryConfig = discoveryConfig;
-        this.dataTransferService = dataTransferService;
+        this.controlPlaneService = controlPlaneService;
         this.init(env);
         this.checkEmptyVariables();
     }

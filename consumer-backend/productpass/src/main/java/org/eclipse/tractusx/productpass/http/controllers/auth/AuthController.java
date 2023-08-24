@@ -61,7 +61,6 @@ public class AuthController {
     private Environment env;
     
     @Autowired
-
     HttpUtil httpUtil;
     
     private @Autowired HttpServletRequest httpRequest;

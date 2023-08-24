@@ -23,16 +23,11 @@
 
 package org.eclipse.tractusx.productpass.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.servlet.http.HttpServletRequest;
-import org.apache.juli.logging.Log;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationException;
 import org.eclipse.tractusx.productpass.managers.DtrSearchManager;
-import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
 import org.eclipse.tractusx.productpass.models.dtregistry.*;
@@ -41,26 +36,19 @@ import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.manager.SearchStatus;
 import org.eclipse.tractusx.productpass.models.manager.Status;
-import org.eclipse.tractusx.productpass.models.manager.Process;
-import org.eclipse.tractusx.productpass.models.negotiation.Transfer;
-import org.eclipse.tractusx.productpass.models.negotiation.TransferRequest;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
 import org.eclipse.tractusx.productpass.models.auth.JwtToken;
-import org.sonarsource.scanner.api.internal.shaded.minimaljson.Json;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import utils.*;
 
-import javax.xml.crypto.Data;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AasService extends BaseService {
@@ -79,10 +67,10 @@ public class AasService extends BaseService {
     private DtrSearchManager dtrSearchManager;
     private ProcessManager processManager;
 
-    private DataTransferService dataService;
+    private ControlPlaneService dataService;
 
     @Autowired
-    public AasService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, AuthenticationService authService, DtrConfig dtrConfig, DtrSearchManager dtrSearchManager, ProcessManager processManager, DataTransferService dataService) throws ServiceInitializationException {
+    public AasService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, AuthenticationService authService, DtrConfig dtrConfig, DtrSearchManager dtrSearchManager, ProcessManager processManager, ControlPlaneService dataService) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.jsonUtil = jsonUtil;
         this.authService = authService;
@@ -448,7 +436,7 @@ public class AasService extends BaseService {
             SearchStatus searchStatus = this.processManager.setSearch(processId, searchBody);
             for (String endpointId : searchStatus.getDtrs().keySet()) {
                 Dtr dtr = searchStatus.getDtr(endpointId);
-                DataTransferService.DigitalTwinRegistryTransfer dtrTransfer = dataService.new DigitalTwinRegistryTransfer(
+                ControlPlaneService.DigitalTwinRegistryTransfer dtrTransfer = dataService.new DigitalTwinRegistryTransfer(
                         processId,
                         endpointId,
                         status,

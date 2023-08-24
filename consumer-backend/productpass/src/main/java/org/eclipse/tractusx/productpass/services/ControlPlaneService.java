@@ -24,8 +24,6 @@
 package org.eclipse.tractusx.productpass.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.type.LogicalType;
-import com.google.common.math.Stats;
 import org.eclipse.tractusx.productpass.config.DtrConfig;
 import org.eclipse.tractusx.productpass.exceptions.ControllerException;
 import org.eclipse.tractusx.productpass.exceptions.ServiceException;
@@ -33,13 +31,11 @@ import org.eclipse.tractusx.productpass.exceptions.ServiceInitializationExceptio
 import org.eclipse.tractusx.productpass.managers.ProcessDataModel;
 import org.eclipse.tractusx.productpass.managers.ProcessManager;
 import org.eclipse.tractusx.productpass.models.catenax.Dtr;
-import org.eclipse.tractusx.productpass.models.edc.DataPlaneEndpoint;
 import org.eclipse.tractusx.productpass.models.http.requests.Search;
 import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.manager.History;
 import org.eclipse.tractusx.productpass.models.manager.Status;
 import org.eclipse.tractusx.productpass.models.negotiation.*;
-import org.eclipse.tractusx.productpass.models.negotiation.Properties;
 import org.eclipse.tractusx.productpass.models.negotiation.Set;
 import org.eclipse.tractusx.productpass.models.passports.PassportV3;
 import org.eclipse.tractusx.productpass.models.service.BaseService;
@@ -50,15 +46,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import utils.*;
 
-import javax.xml.crypto.Data;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class DataTransferService extends BaseService {
+public class ControlPlaneService extends BaseService {
 
 
     private final HttpUtil httpUtil;
@@ -82,7 +75,7 @@ public class DataTransferService extends BaseService {
 
 
     @Autowired
-    public DataTransferService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, ProcessManager processManager, DtrConfig dtrConfig) throws ServiceInitializationException {
+    public ControlPlaneService(Environment env, HttpUtil httpUtil, JsonUtil jsonUtil, VaultService vaultService, ProcessManager processManager, DtrConfig dtrConfig) throws ServiceInitializationException {
         this.httpUtil = httpUtil;
         this.jsonUtil = jsonUtil;
         this.processManager = processManager;

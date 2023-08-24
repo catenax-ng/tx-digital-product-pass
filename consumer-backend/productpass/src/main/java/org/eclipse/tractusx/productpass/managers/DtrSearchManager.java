@@ -36,7 +36,7 @@ import org.eclipse.tractusx.productpass.models.http.responses.IdResponse;
 import org.eclipse.tractusx.productpass.models.negotiation.Catalog;
 import org.eclipse.tractusx.productpass.models.negotiation.Dataset;
 import org.eclipse.tractusx.productpass.models.negotiation.Offer;
-import org.eclipse.tractusx.productpass.services.DataTransferService;
+import org.eclipse.tractusx.productpass.services.ControlPlaneService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import utils.*;
@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class DtrSearchManager {
-    private DataTransferService dataTransferService;
+    private ControlPlaneService controlPlaneService;
     private FileUtil fileUtil;
     private JsonUtil jsonUtil;
 
@@ -82,9 +82,9 @@ public class DtrSearchManager {
     }
 
     @Autowired
-    public DtrSearchManager(FileUtil fileUtil, JsonUtil jsonUtil, DataTransferService dataTransferService, DtrConfig dtrConfig, ProcessManager processManager) {
+    public DtrSearchManager(FileUtil fileUtil, JsonUtil jsonUtil, ControlPlaneService controlPlaneService, DtrConfig dtrConfig, ProcessManager processManager) {
         this.catalogsCache = new ConcurrentHashMap<>();
-        this.dataTransferService = dataTransferService;
+        this.controlPlaneService = controlPlaneService;
         this.processManager = processManager;
         this.dtrConfig = dtrConfig;
         this.state = State.Stopped;
@@ -212,7 +212,7 @@ public class DtrSearchManager {
             @Override
             public void run() {
                 try {
-                    Catalog catalog = dataTransferService.searchDigitalTwinCatalog(connectionUrl);
+                    Catalog catalog = controlPlaneService.searchDigitalTwinCatalog(connectionUrl);
                     if (catalog == null) {
                         LogUtil.printWarning("No catalog was found for the URL: " + connectionUrl);
                         return;
@@ -284,12 +284,12 @@ public class DtrSearchManager {
             @Override
             public void run() {
                 try {
-                    Offer offer = dataTransferService.buildOffer(dataset, 0);
-                    IdResponse negotiationResponse = dataTransferService.doContractNegotiations(offer, bpn,  CatenaXUtil.buildDataEndpoint(connectionUrl));
+                    Offer offer = controlPlaneService.buildOffer(dataset, 0);
+                    IdResponse negotiationResponse = controlPlaneService.doContractNegotiations(offer, bpn,  CatenaXUtil.buildDataEndpoint(connectionUrl));
                     if (negotiationResponse == null) {
                         return;
                     }
-                    Negotiation negotiation = dataTransferService.seeNegotiation(negotiationResponse.getId());
+                    Negotiation negotiation = controlPlaneService.seeNegotiation(negotiationResponse.getId());
                     if (negotiation == null) {
                         LogUtil.printWarning("Was not possible to do ContractNegotiation for URL: " + connectionUrl);
                         return;
