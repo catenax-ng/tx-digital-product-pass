@@ -20,6 +20,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #################################################################################
 
+### The fully configuration is available in https://github.com/eclipse-tractusx/item-relationship-service/tree/main/charts/irs-helm
+
+---
+
 irs-helm:
   enabled: true
   bpn: <path:material-pass/data/int/edc/participant#bpnNumber>
