@@ -20,112 +20,64 @@
   SPDX-License-Identifier: Apache-2.0
 -->
 
-
 <template>
-  <v-container v-if="loading">
-    <!-- asd -->
-    <div class="loading-container">
-      <v-col class="v-col-auto">
-        <div>DPP ID: {{ id }}</div>
-        <v-btn
-          size="large"
-          class="btn"
-          rounded="pill"
-          variant="outlined"
-          @click="toggleConfirmation"
-          >Get Passport</v-btn
-        >
-        <div>See Contract</div>
-      </v-col>
-
-      <div v-if="getConfirmation">
-        <v-timeline
-          side="end"
-          align="start"
-          truncate-line="both"
-          style="height: auto"
-        >
-          <v-timeline-item
-            v-for="currentStep in 3"
-            :key="currentStep"
-            :icon="currentStep < step ? 'mdi-check' : null"
-            :dot-color="[currentStep < step ? 'green' : 'grey']"
-            :size="currentStep < step ? 'large' : 'small'"
-            :class="{ completed: currentStep < step }"
-          >
-            <div class="d-flex">
-              <div>
-                <strong>
-                  <h2 :class="{ 'completed-step': currentStep < step }">
-                    {{ getStepTitle(currentStep) }}
-                  </h2></strong
-                >
-
-                <div class="text-caption">
-                  <p>
-                    {{ getStepStatus(currentStep) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </v-timeline-item>
-        </v-timeline>
-      </div>
-    </div>
-  </v-container>
-  <v-container v-else-if="error" class="h-100 w-100">
-    <div class="loading-container d-flex align-items-center w-100 h-100">
-      <ErrorComponent
-        :title="errorObj.status + ' ' + errorObj.statusText"
-        :subTitle="errorObj.title"
-        :description="errorObj.description"
-        reloadLabel="Return"
-        reloadIcon="mdi-arrow-left"
-      />
-    </div>
-  </v-container>
-  <div v-else>
+  <div>
     <HeaderComponent>
-      <span class="header-title">Battery passport</span>
+      <span class="header-title">Digital Product Passport</span>
     </HeaderComponent>
-    <PassportHeader :data="data.passport" type="BatteryID" />
-    <div class="pass-container">
-      <CardsComponent :data="data" />
-    </div>
+    <v-container v-if="loading">
+      <LoadingComponent :id="id" />
+    </v-container>
+    <v-container v-else-if="error" class="h-100 w-100">
+      <div class="loading-container d-flex align-items-center w-100 h-100">
+        <ErrorComponent
+          :title="errorObj.status + ' ' + errorObj.statusText"
+          :subTitle="errorObj.title"
+          :description="errorObj.description"
+          reloadLabel="Return"
+          reloadIcon="mdi-arrow-left"
+        />
+      </div>
+    </v-container>
+    <div v-else>
+      <PassportHeader :data="data.passport" type="BatteryID" />
+      <div class="pass-container">
+        <CardsComponent :data="data" />
+      </div>
 
-    <div class="pass-container footer-spacer">
-      <v-card>
-        <v-tabs v-model="tab" center-active show-arrows class="menu">
-          <v-tab
-            v-for="(section, index) in componentsNames"
-            :key="index"
-            :value="section.component"
-          >
-            <v-icon start md :icon="section.icon"> </v-icon>
-            {{ section.label }}</v-tab
-          >
-        </v-tabs>
-        <v-card-text>
-          <v-window v-model="tab">
-            <v-window-item
+      <div class="pass-container footer-spacer">
+        <v-card>
+          <v-tabs v-model="tab" center-active show-arrows class="menu">
+            <v-tab
               v-for="(section, index) in componentsNames"
               :key="index"
               :value="section.component"
             >
-              <component :is="section.component" :data="data" />
-            </v-window-item>
-          </v-window>
-        </v-card-text>
-      </v-card>
+              <v-icon start md :icon="section.icon"> </v-icon>
+              {{ section.label }}</v-tab
+            >
+          </v-tabs>
+          <v-card-text>
+            <v-window v-model="tab">
+              <v-window-item
+                v-for="(section, index) in componentsNames"
+                :key="index"
+                :value="section.component"
+              >
+                <component :is="section.component" :data="data" />
+              </v-window-item>
+            </v-window>
+          </v-card-text>
+        </v-card>
+      </div>
+      <FooterComponent />
     </div>
-    <FooterComponent />
   </div>
 </template>
 
-
-
 <script>
 // @ is an alias to /src
+
 import GeneralInformation from "@/components/passport/sections/GeneralInformation.vue";
 import CellChemistry from "@/components/passport/sections/CellChemistry.vue";
 import ElectrochemicalProperties from "@/components/passport/sections/ElectrochemicalProperties.vue";
@@ -133,7 +85,7 @@ import BatteryComposition from "@/components/passport/sections/BatteryCompositio
 import StateOfBattery from "@/components/passport/sections/StateOfBattery.vue";
 import Documents from "@/components/passport/sections/Documents.vue";
 import ContractInformation from "@/components/passport/sections/ContractInformation.vue";
-import Spinner from "@/components/general/Spinner.vue";
+import LoadingComponent from "../components/general/LoadingComponent.vue";
 import HeaderComponent from "@/components/general/Header.vue";
 import PassportHeader from "@/components/passport/PassportHeader.vue";
 import CardsComponent from "@/components/passport/Cards.vue";
@@ -161,18 +113,13 @@ export default {
     Documents,
     ContractInformation,
     FooterComponent,
-    Spinner,
+    LoadingComponent,
     Alert,
     ErrorComponent,
   },
   data() {
     return {
       tab: null,
-      getConfirmation: false,
-      step: 1,
-      connectionStatus: "Connecting...",
-      serviceStatus: "Warming up EDC",
-      testData: "Looking for some hot passport",
       componentsNames: [
         {
           label: "General Information",
@@ -199,7 +146,6 @@ export default {
           icon: "mdi-microscope",
           component: "ElectrochemicalProperties",
         },
-
         {
           label: "Additional information",
           icon: "mdi-text-box-multiple-outline",
@@ -227,9 +173,7 @@ export default {
       version: PASSPORT_VERSION,
     };
   },
-  mounted() {
-    this.establishConnection();
-  },
+
   async created() {
     let result = null;
     try {
@@ -271,57 +215,6 @@ export default {
     }
   },
   methods: {
-    toggleConfirmation() {
-      this.getConfirmation = !this.getConfirmation;
-    },
-    establishConnection() {
-      setTimeout(() => {
-        // Simulate establishing connection
-        this.connectionStatus =
-          "Connection established with the ID: " + this.id;
-        this.step = 2;
-        this.checkServiceStatus();
-      }, 4000);
-    },
-    checkServiceStatus() {
-      setTimeout(() => {
-        // Simulate EDC service ready
-        this.serviceStatus = "EDC service is ready";
-        this.step = 3;
-        this.fetchData();
-      }, 2000);
-    },
-    fetchData() {
-      setTimeout(() => {
-        // Simulate JSON data response
-        this.testData = "Data is ready to be displayed";
-        this.step = 4;
-      }, 2000);
-    },
-    getStepTitle(step) {
-      switch (step) {
-        case 1:
-          return "Establishing Connection";
-        case 2:
-          return "EDC Service";
-        case 3:
-          return "Data Response";
-        default:
-          return "";
-      }
-    },
-    getStepStatus(step) {
-      switch (step) {
-        case 1:
-          return this.connectionStatus;
-        case 2:
-          return this.serviceStatus;
-        case 3:
-          return JSON.stringify(this.testData, null, 2);
-        default:
-          return "";
-      }
-    },
     async getPassport(id) {
       let response = null;
       // Get Passport in Backend
@@ -388,48 +281,3 @@ export default {
 };
 </script>
 
-<style>
-.stepper-step {
-  display: flex;
-  align-items: center;
-}
-
-.stepper-circle {
-  position: absolute;
-  left: 650px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #4caf50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-}
-
-.stepper-circle.completed {
-  background-color: grey;
-}
-
-.tick {
-  color: white;
-  font-size: 14px;
-}
-
-.completed-step {
-  color: grey;
-}
-.loading-info {
-  display: flex;
-  flex-direction: column;
-}
-.stepper-line {
-  height: 2px;
-  background-color: #0f71cb;
-  transition: width 0.5s;
-}
-.step-status {
-  margin-top: 10px;
-  text-align: center;
-}
-</style>
