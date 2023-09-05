@@ -55,7 +55,7 @@ irs-helm:
   digitalTwinRegistry:
     type: decentral
     url: https://materialpass.int.demo.catena-x.net/semantics/registry/api/v3.0
-    discoveryFinderUrl: https://semantics.int.demo.catena-x.net/discoveryfinder
+    discoveryFinderUrl: https://semantics.int.demo.catena-x.net/discoveryfinder/api/administration/connectors/discovery/search
   semanticshub:
     url: https://semantics.int.demo.catena-x.net/hub/api/v1/models
   bpdm:
@@ -83,7 +83,7 @@ irs-helm:
   edc:
     controlplane:
       endpoint:
-        data: http://dpp-edc-consumer-controlplane:8081/consumer/management
+        data: https://materialpass.int.demo.catena-x.net/consumer/management
       apikey:
         secret: <path:material-pass/data/int/edc/oauth#api.key>
 
