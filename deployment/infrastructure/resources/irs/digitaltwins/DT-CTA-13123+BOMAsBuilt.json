@@ -30,7 +30,7 @@
                 {
                     "interface": "SUBMODEL-3.0",
                     "protocolInformation": {
-                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/urn:uuid:0f8eb434-32af-48cb-8dc2-6391fb3d8aa8/submodel",
+                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/api/public/data/urn:uuid:0f8eb434-32af-48cb-8dc2-6391fb3d8aa8",
                         "endpointProtocol": "HTTP",
                         "endpointProtocolVersion": [
                             "1.1"
@@ -72,7 +72,7 @@
                 {
                     "interface": "SUBMODEL-3.0",
                     "protocolInformation": {
-                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/urn:uuid:7e3f0673-fa92-43c3-af0d-e86485a97bda/submodel",
+                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/api/public/data/urn:uuid:7e3f0673-fa92-43c3-af0d-e86485a97bda",
                         "endpointProtocol": "HTTP",
                         "endpointProtocolVersion": [
                             "1.1"
@@ -114,7 +114,7 @@
                 {
                     "interface": "SUBMODEL-3.0",
                     "protocolInformation": {
-                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/urn:uuid:d7f23694-6d38-44ca-8ba5-3256e3b4b219/submodel",
+                        "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/api/public/data/urn:uuid:d7f23694-6d38-44ca-8ba5-3256e3b4b219",
                         "endpointProtocol": "HTTP",
                         "endpointProtocolVersion": [
                             "1.1"

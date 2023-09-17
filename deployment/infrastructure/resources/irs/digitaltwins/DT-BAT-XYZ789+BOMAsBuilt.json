@@ -72,7 +72,7 @@
               {
                   "interface": "SUBMODEL-3.0",
                   "protocolInformation": {
-                      "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/urn:uuid:09d5d8a9-9073-47b6-93c6-80caff176dca/submodel",
+                      "href": "https://materialpass.int.demo.catena-x.net/BPNL000000000000/api/public/data/urn:uuid:09d5d8a9-9073-47b6-93c6-80caff176dca",
                       "endpointProtocol": "HTTP",
                       "endpointProtocolVersion": [
                           "1.1"
