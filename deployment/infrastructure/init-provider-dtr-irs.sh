@@ -40,11 +40,11 @@ DT3_SUBMODEL_ID_1='urn:uuid:0f8eb434-32af-48cb-8dc2-6391fb3d8aa8'
 DT3_SUBMODEL_ID_2='urn:uuid:7e3f0673-fa92-43c3-af0d-e86485a97bda'
 DT3_SUBMODEL_ID_3='urn:uuid:d7f23694-6d38-44ca-8ba5-3256e3b4b219'
 
-SERVER_URL='https://materialpass.int.demo.catena-x.net/BPNL000000000000'
-REGISTRY_URL='https://materialpass.int.demo.catena-x.net/semantics/registry/api/v3.0/shell-descriptors'
-SUBMODEL_SERVER='https://materialpass.int.demo.catena-x.net'
+SERVER_URL='<data-provider-url>'
+REGISTRY_URL='<registry-url>/api/v3.0/shell-descriptors'
+SUBMODEL_SERVER='<data-server-url>'
 
-API_KEY='password'
+API_KEY=''
 
 DPP_ASSET='urn:uuid:3e4a5957-f226-478a-ab18-79ced49d6195'
 REGISTRY_ASSET='registry-asset'
