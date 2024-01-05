@@ -70,7 +70,7 @@ jobs:
           # image-ref: "${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           format: "sarif"
           output: "trivy-results1.sarif"
-          severity: "CRITICAL,HIGH"
+          # severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
@@ -110,7 +110,7 @@ jobs:
           output: "trivy-results-dpp-frontend.sarif"
           exit-code: "1"
           hide-progress: false
-          severity: "CRITICAL,HIGH"
+          # severity: "CRITICAL,HIGH"
       
       # Build action for docker hub registry
       - name: Run Trivy vulnerability scanner - Docker Hub
@@ -123,7 +123,7 @@ jobs:
           output: "trivy-results-dpp-frontend.sarif"
           exit-code: "1"
           hide-progress: false
-          severity: "CRITICAL,HIGH"
+          # severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -178,7 +178,7 @@ jobs:
           output: "trivy-results-dpp-backend.sarif"
           exit-code: "1"
           hide-progress: false
-          severity: "CRITICAL,HIGH"
+          # severity: "CRITICAL,HIGH"
 
         # Build action for docker hub registry
       - name: Run Trivy vulnerability scanner - Docker Hub
@@ -191,7 +191,7 @@ jobs:
           output: "trivy-results-dpp-backend.sarif"
           exit-code: "1"
           hide-progress: false
-          severity: "CRITICAL,HIGH"
+          # severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
