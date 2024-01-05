@@ -134,8 +134,6 @@ data:
           indent: true
           # -- directory to store the passport when is not linked to a process
           dir: "data/transfer"
-        # -- passport versions and aspects allowed
-        aspects: {{- toYaml .Values.passport.aspects | nindent 10 }}
     # -- configuration of the spring boot server
     server:
       # -- configuration of backend errors
