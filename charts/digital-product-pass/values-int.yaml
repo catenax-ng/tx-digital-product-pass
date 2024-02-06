@@ -32,7 +32,7 @@ backend:
       nginx.ingress.kubernetes.io/ssl-passthrough: "false"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     hosts:
-      - host: &hostname "dpp.int.demo.catena-x.net"
+      - host: &hostname "materialpass.int.demo.catena-x.net"
         paths:
           - path: /
             pathType: Prefix
@@ -73,14 +73,14 @@ frontend:
       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       nginx.ingress.kubernetes.io/service-upstream: "true"
     hosts:
-      - host: dpp.int.demo.catena-x.net
+      - host: materialpass.int.demo.catena-x.net
         paths:
           - path: /passport(/|$)(.*)
             pathType: Prefix
     tls:
       - secretName: tls-secret
         hosts:
-          - dpp.int.demo.catena-x.net
+          - materialpass.int.demo.catena-x.net
 
   backend:
     hostname: *hostname

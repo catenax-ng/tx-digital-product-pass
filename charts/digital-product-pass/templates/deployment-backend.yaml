@@ -57,31 +57,31 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key:  appId
-                  name: avp-consumer-backend-auth          
+                  name: avp-consumer-backend-auth-copy          
             - name: "client.id"
               valueFrom:
                 secretKeyRef:
                   key:  clientId
-                  name: avp-consumer-backend-auth
+                  name: avp-consumer-backend-auth-copy
             - name: "client.secret"
               valueFrom:
                 secretKeyRef:
                   key:  clientSecret
-                  name: avp-consumer-backend-auth
+                  name: avp-consumer-backend-auth-copy
             - name: "edc.apiKey"
               valueFrom:
                 secretKeyRef:
                   key:  xApiKey
-                  name: avp-consumer-backend-edc-oauth
+                  name: avp-consumer-backend-edc-oauth-copy
             - name: "edc.participantId"
               valueFrom:
                 secretKeyRef:
                   key:  participantId
-                  name: avp-consumer-backend-edc-oauth
+                  name: avp-consumer-backend-edc-oauth-copy
           volumeMounts:
-            - name: backend-config
+            - name: backend-config-copy
               mountPath: /app/config
-            - name: pvc-backend
+            - name: pvc-backend-copy
               mountPath: /app/data/process
               subPath: data/process
             - name: tmpfs
@@ -113,12 +113,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        - name: backend-config
+        - name: backend-config-copy
           configMap:
-            name: backend-config
-        - name: pvc-backend
+            name: backend-config-copy
+        - name: pvc-backend-copy
           persistentVolumeClaim:
-            claimName: pvc-data
+            claimName: pvc-data-copy
         - name: tmpfs
           emptyDir: {}
 
