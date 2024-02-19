@@ -49,7 +49,7 @@
             <div class="text-container">
               <p class="text">{{ $t("searchView.errorCameraOff") }}</p>
               <p class="text">{{ $t("searchView.errorTypeID") }}</p>
-              <p class="error">{{ $t(error) }}</p>
+              <p class="error">{{ $t(`searchView.cameraError.${qrError}`) }}</p>
             </div>
             <SearchInput class="search-input" />
           </div>
@@ -104,9 +104,7 @@
 </template>
 
 <script>
-import { QrcodeStream } from "vue3-qrcode-reader";
-import CatenaLogo from "../media/logo.png";
-import QRFrame from "../media/qrFrame.svg";
+import QrcodeStream from "../components/general/QrcodeStrem.vue";
 import BatteryScanning from "../media/battery-img.jpeg";
 // New picture
 // import BatteryScanning from "../media/backgroundart.jpg";
@@ -114,6 +112,7 @@ import LogotypeDPP from "../media/logotypeDPP.svg";
 import SearchInput from "../components/general/SearchInput.vue";
 import { mapState } from "vuex";
 import store from "@/store/index";
+import { PORTAL_URL } from '../services/service.const';
 
 export default {
   name: "QRScannerView",
@@ -188,8 +187,8 @@ export default {
       this.QRtoggle = false;
     },
     openExternalLink() {
-      window.open(
-        "https://portal.int.demo.catena-x.net/documentation/?path=docs",
+      window.open(PORTAL_URL +
+        "/documentation/?path=docs",
         "_blank"
       );
     },
