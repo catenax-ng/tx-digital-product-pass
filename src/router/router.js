@@ -21,9 +21,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import ErrorComponent from './components/general/ErrorComponent.vue';
+// import ErrorComponent from './components/general/ErrorComponent.vue';
+import ErrorComponent from '../components/general/ErrorComponent.vue';
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "./views/HomeView.vue";
+// import HomeView from "./views/HomeView.vue";
+import HomeView from "../views/HomeView.vue";
 
 
 const routes = [
@@ -45,7 +47,7 @@ const routes = [
     {
         path: "/:id",
         name: "PassportView",
-        component: () => import("./views/PassportView.vue"),
+        component: () => import("../views/PassportView.vue"),
     },
 ];
 
