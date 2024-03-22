@@ -55,7 +55,14 @@ class HttpUtils:
                             data=data,json=json,
                             allow_redirects=allow_redirects)
     
-    
+    # Generates a error response with message
+    @staticmethod
+    def get_error_response(status=500,message="It was not possible to process/execute this request!"):
+        return {
+            message: message,
+            status: status
+        }
+        
 # define user-defined exceptions
 class AuthenticationFailed(Exception):
     "Raised when the authentication attempt fails due to an authentication error"

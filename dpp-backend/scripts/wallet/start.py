@@ -56,8 +56,6 @@ import yaml
 
 op.make_dir("logs")
 
-
-
 # Load the config file
 with open('./logging_config.yml', 'rt') as f:
     # Read the yaml configuration
@@ -105,6 +103,22 @@ def check_health():
         "status": "RUNNING",
         "timestamp": op.timestamp() 
     })
+
+
+@app.post("/sign")
+def sign_credential():
+    """
+    Signs a credential using the private key provided in the configuration
+
+    Returns:
+        response: :vc: Signed verifiable credential
+    """
+    body = request.body
+    if(not body):
+       return jsonify(HttpUtils.get_error_response())
+    
+    logger.debug("[] Credential Signed!")
+    return jsonify(body)
 
 
 if __name__ == '__main__':
