@@ -64,6 +64,27 @@
                 :label="propsData.localIdentifier.key"
               />
             </template>
+            <template v-if="propsData.chemistry">
+              <Field
+                :icon="callIconFinder('chemistry')"
+                :value="propsData.chemistry"
+                :label="$t('sections.identification.chemistry')"
+              />
+            </template>
+            <template v-if="propsData.idDmc">
+              <Field
+                :icon="callIconFinder('idDmc')"
+                :value="propsData.idDmc"
+                :label="$t('sections.identification.idDmc')"
+              />
+            </template>
+            <template v-if="propsData.category">
+              <Field
+                :icon="callIconFinder('category')"
+                :value="propsData.category"
+                :label="$t('sections.identification.category')"
+              />
+            </template>
           </v-col>
           <v-col sm="12" md="4" class="pa-0 ma-0">
             <template v-if="propsData.additionalCode">
@@ -82,6 +103,86 @@
                 :label="propsData.dataCarrier.carrierLayout"
               />
             </template>
+            <template v-if="propsData.identification">
+              <template v-if="propsData.identification.batch">
+                <template
+                  v-for="attr in propsData.identification.batch"
+                  :key="attr"
+                >
+                  <Field
+                    :icon="callIconFinder('batch')"
+                    :value="attr.value"
+                    :label="attr.key"
+                  />
+                </template>
+              </template>
+              <template v-if="propsData.identification.codes">
+                <template
+                  v-for="attr in propsData.identification.codes"
+                  :key="attr"
+                >
+                  <template v-if="attr.description">
+                    <DialogComponent class="field-dialog">
+                      <Field
+                        :icon="callIconFinder('codes')"
+                        :value="attr.value"
+                        :label="attr.key"
+                        info
+                      />
+                      <template v-slot:title>
+                        {{ $t("sections.identification.description") }}
+                      </template>
+                      <template v-slot:text>
+                        {{ attr.description }}
+                      </template>
+                    </DialogComponent>
+                  </template>
+                  <template v-else>
+                    <Field
+                      :icon="callIconFinder('codes')"
+                      :value="attr.value"
+                      :label="attr.key"
+                    />
+                  </template>
+                </template>
+              </template>
+              <template v-if="propsData.identification.type">
+                <template
+                  v-for="(attr, index) in propsData.identification.type"
+                  :key="index"
+                >
+                  <Field
+                    :icon="callIconFinder('type')"
+                    :value="attr"
+                    :label="attr"
+                  />
+                </template>
+              </template>
+              <template v-if="propsData.identification.classification">
+                <template
+                  v-for="attr in propsData.identification.classification"
+                  :key="attr"
+                >
+                  <Field
+                    :icon="callIconFinder('classification')"
+                    :value="attr.classificationID"
+                    :label="attr.classificationStandard"
+                  />
+                </template>
+              </template>
+              <template v-if="propsData.identification.serial">
+                <template
+                  v-for="attr in propsData.identification.serial"
+                  :key="attr"
+                >
+                  <Field
+                    :icon="callIconFinder('serial')"
+                    :value="attr.value"
+                    :label="attr.key"
+                  />
+                </template>
+              </template>
+            </template>
           </v-col>
         </template>
       </v-row>
@@ -90,12 +191,14 @@
 </template>
 <script>
 import Field from "../Field.vue";
+import DialogComponent from "../../general/Dialog.vue";
 import passportUtil from "@/utils/passportUtil.js";
 
 export default {
   name: "IdentificationComponent",
   components: {
     Field,
+    DialogComponent,
   },
   props: {
     data: {

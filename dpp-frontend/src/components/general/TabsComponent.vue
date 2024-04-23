@@ -47,7 +47,11 @@
           :key="index"
           :value="section.component"
         >
-          <component :is="section.component" :data="componentsData" />
+          <component
+            :is="section.component"
+            :data="componentsData"
+            :semanticId="semanticId"
+          />
         </v-window-item>
       </v-window>
     </v-card-text>
@@ -78,6 +82,10 @@ import ProductSpecificParameters from "../passport/sections/ProductSpecificParam
 import Instructions from "../passport/sections/Instructions.vue";
 import SparePartSupplier from "../passport/sections/SparePartSupplier.vue";
 import StateOfHealth from "../passport/sections/StateOfHealth.vue";
+import Performance from "../passport/sections/Performance.vue";
+import Safety from "../passport/sections/Safety.vue";
+import Conformity from "../passport/sections/Conformity.vue";
+import Materials from "../passport/sections/Materials.vue";
 
 export default {
   name: "TabsComponent",
@@ -106,6 +114,10 @@ export default {
     Instructions,
     SparePartSupplier,
     StateOfHealth,
+    Performance,
+    Safety,
+    Conformity,
+    Materials,
   },
   data() {
     return {

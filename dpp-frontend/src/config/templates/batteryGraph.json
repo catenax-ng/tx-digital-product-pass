@@ -33,16 +33,6 @@
           "label": "Cobalt",
           "value": 20,
           "unit": "%"
-        },
-        {
-          "label": "Aluminium",
-          "value": 30,
-          "unit": "%"
-        },
-        {
-          "label": "Carbon black",
-          "value": 10,
-          "unit": "%"
         }
       ]
     }

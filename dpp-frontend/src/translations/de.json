@@ -65,7 +65,11 @@
       "additionalData": "Zusätzliche Daten",
       "sustainability": "Nachhaltigkeit",
       "operation": "Betrieb",
-      "exchange": "Austausch"
+      "exchange": "Austausch",
+      "performance": "Leistung",
+      "materials": "Materialien",
+      "safety": "Sicherheit",
+      "conformity": "Konformität"
     },
     "tppComponentsNames": {
       "productSpecificParameters": "Produktspezifische Parameter",
@@ -111,10 +115,10 @@
   "batteryCards": {
     "titleGeneral": "ALLGEMEIN",
     "labelGeneral": "Typ",
-    "secondLabelGeneral": "Modell",
+    "secondLabelGeneral": "Kategorie",
     "titlePerformance": "LEISTUNG",
     "labelPerformance": "Nennkapazität",
-    "secondLabelPerformance": "Modell",
+    "secondLabelPerformance": "Strom",
     "descriptionPerformanceTitle": "Leistung",
     "descriptionPerformanceValue": "Beschreibung der Leistung",
     "titleHealth": "GESUNDHEIT",
@@ -202,6 +206,54 @@
     "contractId": "Vertrags-ID: "
   },
   "sections": {
+    "performance": {
+      "rated": "Bewertet",
+      "depthOfDischarge": "Entladetiefe",
+      "temperature": "Temperatur",
+      "50PercentLife": "50% Lebensdauer",
+      "initial": "Anfangs",
+      "selfDischargingRate": "Selbstentladerate",
+      "lowerTemperature": "Niedrigere Temperatur",
+      "upperTemperature": "Höhere Temperatur",
+      "lifetime": "Lebensdauer",
+      "dynamic": "Dynamisch",
+      "appliedDischargeRate": "Angewandte Entladerate",
+      "cycleLifeTesting": "Lebensdauertest",
+      "cycles": "Zyklen",
+      "expectedYears": "Erwartete Jahre",
+      "at20SoC": "Bei 20°C",
+      "at80SoC": "Bei 80°C",
+      "power": "Leistung",
+      "cell": "Zelle",
+      "pack": "Pack",
+      "module": "Modul",
+      "voltage": "Spannung",
+      "voltageMin": "Minimale Spannung",
+      "voltageMax": "Maximale Spannung",
+      "voltageNominal": "Nennspannung",
+      "energy": "Energie",
+      "capacity": "Kapazität",
+      "thresholdExhaustion": "Erschöpfungsschwelle",
+      "roundTripEfficiency": "Rundum-Wirkungsgrad",
+      "remaining": "Verbleibende Leistung",
+      "fade": "Leistungsabfall",
+      "operatingEnvironment": "Betriebsumgebung",
+      "stateOfCharge": "Ladezustand",
+      "performanceDocument": "Leistungsdokumentation",
+      "fullCycles": "Volle Zyklen",
+      "negativeEvents": "Negative Ereignisse",
+      "resistance": "Widerstand",
+      "remainingCell": "Verbleibender Zellwiderstand",
+      "remainingPack": "Verbleibender Packwiderstand",
+      "remainingModule": "Verbleibender Modulwiderstand",
+      "increaseCell": "Zunehmender Zellwiderstand",
+      "increasePack": "Zunehmender Packwiderstand",
+      "increaseModule": "Zunehmender Modulwiderstand",
+      "capacityFade": "Kapazitätsverlust",
+      "throughput": "Durchsatz",
+      "remainingEnergy": "Verbleibende Energie",
+      "soce": "Ladezustandsschätzung"
+    },
     "productSpecificParameters": {
       "torqueConverter": "Drehmomentwandler",
       "driveType": "Antriebstyp",
@@ -348,13 +400,16 @@
       "weightOrVolume": "Gewicht oder Volumen",
       "diameter": "Durchmesser",
       "grossWeight": "Bruttogewicht",
-      "grossVolume": "Bruttovolumen"
+      "grossVolume": "Bruttovolumen",
+      "warranty": "Garantie"
     },
     "commercial": {
       "placedOnMarket": "Markteinführung",
       "warranty": "Garantie"
     },
     "handling": {
+      "manufacturerPartId": "Herstellerteilenummer",
+      "nameAtManufacturer": "Name beim Hersteller",
       "maintenanceHistory": "Wartungshistorie",
       "spareParts": "Ersatzteile",
       "substanceOfConcern": "Besorgniserregende Substanz",
@@ -388,6 +443,7 @@
       "expirationDate": "Ablaufdatum"
     },
     "operation": {
+      "intoServiceDate": "Inbetriebnahmedatum",
       "importer": "Importeur-ID",
       "importerEori": "Importer-EORI",
       "manufacturerId": "Hersteller-ID",
@@ -405,6 +461,13 @@
     },
     "sustainability": {
       "state": "Zustand",
+      "status": "Status",
+      "carbonFootprint": "CO2-Fußabdruck",
+      "performanceClass": "Leistungsklasse",
+      "type": "Typ",
+      "rulebook": "Regelwerk",
+      "manufacturingPlant": "Produktionsstätte",
+      "declaration": "Erklärung",
       "material": "Material",
       "carbonContentTotal": "Gesamtkohlenstoffgehalt",
       "crossSectoralStandard": "Sektorenübergreifender Standard",
@@ -425,6 +488,10 @@
       "code": "Code",
       "nameAtManufacturer": "Name beim Hersteller",
       "nameAtCustomer": "Name beim Kunden"
+    },
+    "safety": {
+      "fireClass": "Brandklasse",
+      "media": "Medien"
     }
   }
 }

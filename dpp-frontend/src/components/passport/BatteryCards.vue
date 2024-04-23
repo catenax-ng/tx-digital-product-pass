@@ -62,13 +62,15 @@
                 <div class="co2-label" style="padding-top: 0">
                   {{ $t(card.secondLabel) }}
                 </div>
-                <div>
-                  <img
-                    :src="getImageByKey(separateCollectionImage)"
-                    alt="Separate collection"
-                    style="margin-top: 12px"
-                  />
-                </div>
+                <template v-if="separateCollectionImage">
+                  <div>
+                    <img
+                      :src="getImageByKey(separateCollectionImage)"
+                      alt="Separate collection"
+                      style="margin-top: 12px"
+                    />
+                  </div>
+                </template>
               </div>
             </v-row>
           </v-container>
@@ -142,31 +144,48 @@ export default {
   },
 
   setup() {
+    // const hazardousKeys = Object.keys(
+    //   this.$props.data.aspect.materials.hazardous
+    // );
+
+    // const firstHazardousKey =
+    //   hazardousKeys.length > 0
+    //     ? hazardousKeys[0].toUpperCase()
+    //     : "NO_COLLECTION";
+
+    // return {
+    //   separateCollectionImage: `${firstHazardousKey}`,
+    //   noCollection: this.noCollection,
+    //   Battery00: this.Battery00,
+    //   CADMIUM: this.BatteryCd,
+    //   BatteryHg: this.BatteryHg,
+    //   BatteryPb: this.BatteryPb,
+    // };
     return {
-      noCollection,
       Battery00,
       BatteryCd,
-      BatteryHg,
-      BatteryPb,
     };
   },
   data() {
     return {
-      separateCollectionImage: "BATTERY_CD",
+      separateCollectionImage: "Battery00",
       currentValue:
-        this.$props.data.aspect.batteryCycleLife.cycleLifeTestDepthOfDischarge,
-      maxValue: this.$props.data.aspect.batteryCycleLife.expectedLifetime,
+        this.$props.data.aspect.performance.rated.lifetime.cycleLifeTesting
+          .depthOfDischarge,
+      maxValue:
+        this.$props.data.aspect.performance.rated.lifetime.cycleLifeTesting
+          .cycles,
       cards: [
         {
           title: "batteryCards.titleGeneral",
           label: "batteryCards.labelGeneral",
           secondLabel: "batteryCards.secondLabelGeneral",
           icon: "general",
-          value: this.$props.data.aspect.batteryIdentification
-            ? this.$props.data.aspect.batteryIdentification.batteryType
+          value: this.$props.data.aspect.identification
+            ? this.$props.data.aspect.identification.chemistry
             : "-",
-          secondValue: this.$props.data.aspect.batteryIdentification
-            ? this.$props.data.aspect.batteryIdentification.batteryModel
+          secondValue: this.$props.data.aspect.identification
+            ? this.$props.data.aspect.identification.category
             : "-",
         },
         {
@@ -174,14 +193,11 @@ export default {
           label: "batteryCards.labelPerformance",
           secondLabel: "batteryCards.secondLabelPerformance",
           icon: "performance",
-          value:
-            this.$props.data.aspect.electrochemicalProperties.ratedCapacity,
+          value: this.$props.data.aspect.performance.rated.capacity.value,
           valueUnits: "kWh",
           secondValueUnits: "kW",
-          secondValue: this.$props.data.aspect.electrochemicalProperties
-            .batteryPower
-            ? this.$props.data.aspect.electrochemicalProperties.batteryPower
-                .originalPowerCapability
+          secondValue: this.$props.data.aspect.performance.rated.power
+            ? this.$props.data.aspect.performance.rated.power.value
             : "-",
           description: {
             title: "batteryCards.descriptionPerformanceTitle",
@@ -210,35 +226,7 @@ export default {
           icon: "sustainability",
           secondLabel: "batteryCards.secondLabelSustainability",
 
-          value: [
-            {
-              materialPercentageMassFraction: 47,
-              materialName: "Ni",
-              materialWeight: 2.5,
-            },
-            {
-              materialPercentageMassFraction: 9,
-              materialName: "Co",
-              materialWeight: 2.5,
-            },
-            {
-              materialPercentageMassFraction: 19,
-              materialName: "Li",
-              materialWeight: 2.5,
-            },
-            {
-              materialPercentageMassFraction: 0,
-              materialName: "Pb",
-              materialWeight: 2.5,
-            },
-          ],
-          cathodeCompositionOther: [
-            {
-              materialPercentageMassFraction: 19,
-              materialName: "Pb",
-              materialWeight: 2.5,
-            },
-          ],
+          value: this.$props.data.aspect.materials.active,
           secondValue: this.$props.data.aspect.cO2FootprintTotal,
           description: {
             title: "batteryCards.descriptionHSustainabilityTitle",
@@ -252,11 +240,13 @@ export default {
   methods: {
     getImageByKey(key) {
       const imageMap = {
-        BATTERY_00: this.Battery00,
-        BATTERY_CD: this.BatteryCd,
-        BATTERY_HG: this.BatteryHg,
-        BATTERY_PB: this.BatteryPb,
+        CADMIUM: this.BatteryCd,
+        BatteryCd: this.BatteryPb,
+        MERCURY: this.BatteryHg,
+        Battery00: this.Battery00,
+        NO_COLLECTION: this.noCollection,
       };
+
       return imageMap.hasOwnProperty(key) ? imageMap[key] : this.noCollection;
     },
     callIconFinder(icon) {
