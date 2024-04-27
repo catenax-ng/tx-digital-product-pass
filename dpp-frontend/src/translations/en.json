@@ -43,16 +43,6 @@
     "dpp": "Digital Product Passport",
     "bpp": "Battery Product Passport",
     "tpp": "Transmission Product Passport",
-    "batteryComponentsNames": {
-      "generalInformation": "General Information",
-      "stateOfBattery": "State Of Battery",
-      "components": "Components",
-      "batteryComposition": "Battery Composition",
-      "cellChemistry": "Cell Chemistry",
-      "electrochemicalProperties": "Electrochemical Properties",
-      "documents": "Documents",
-      "exchange": "Exchange"
-    },
     "dppComponentsNames": {
       "typology": "Typology",
       "metadata": "Metadata",
@@ -206,6 +196,17 @@
     "contractId": "Contract ID: "
   },
   "sections": {
+    "materials": {
+      "name": "Name",
+      "otherMaterials": "Other materials",
+      "type": "Type",
+      "location": "Location",
+      "recycledContent": "Recycled content",
+      "materialIdentification": "Material identification",
+      "hazardous": "Hazardous",
+      "compositionOf": "Composition of",
+      "recyclateContent": "Recyclate content"
+    },
     "performance": {
       "rated": "Rated",
       "depthOfDischarge": "Depth of Discharge",
@@ -307,15 +308,6 @@
       "manufacturerContact": "Manufacturer Contact",
       "cO2FootprintTotal": "CO2 Footprint"
     },
-    "stateOfBattery": {
-      "stateOfHealth": "State of health",
-      "cycleLifeTestCRate": "Cycle life test c rate",
-      "stateOfCharge": "State of charge",
-      "cycleLifeTestDepthOfDischarge": "Cycle life test depth of discharge",
-      "expectedLifetime": "Expected lifetime",
-      "temperatureRange": "Temperature range (idle state)",
-      "statusBattery": "Status battery"
-    },
     "components": {
       "searchForChild": "The search for child components started, this may take a while...",
       "noChild": "No child components found",
@@ -324,10 +316,6 @@
     "batteryComposition": {
       "batteryComposites": "Main Battery Composites",
       "criticalRawMaterials": "Critical raw materials"
-    },
-    "cellChemistry": {
-      "electrolyteComposition": "Composition of electrolyte",
-      "recyclateContent": "Recyclate Content Active Materials"
     },
     "electrochemicalProperties": {
       "capacity": "Capacity",
@@ -428,7 +416,10 @@
     "identification": {
       "gtin": "Gtin",
       "manufacturerId": "Manufacturer ID",
-      "dataMatrixCode": "Data matrix code"
+      "dataMatrixCode": "Data matrix code",
+      "chemistry": "Chemistry",
+      "idDmc": "DMC ID",
+      "category": "Category"
     },
     "metadata": {
       "predecessor": "Predecessor",
@@ -440,7 +431,11 @@
       "customerPartId": "Customer part ID",
       "manufacturerPartId": "Manufacturer part ID",
       "status": "Status",
-      "expirationDate": "Expiration date"
+      "expirationDate": "Expiration date",
+      "backupReference": "Backup reference",
+      "registrationIdentifier": "Registration identifier",
+      "economicOperatorId": "Economic operator ID",
+      "passportIdentifier": "Passport identifier"
     },
     "operation": {
       "intoServiceDate": "Into service date",

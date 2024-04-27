@@ -43,16 +43,6 @@
     "dpp": "Digitaler Produkt Pass",
     "bpp": "Batterie Pass",
     "tpp": "Getriebe Pass",
-    "batteryComponentsNames": {
-      "generalInformation": "Allgemeine Informationen",
-      "stateOfBattery": "Zustand der Batterie",
-      "components": "Komponenten",
-      "batteryComposition": "Batteriezusammensetzung",
-      "cellChemistry": "Zellenchemie",
-      "electrochemicalProperties": "Elektrochemische Eigenschaften",
-      "documents": "Dokumente",
-      "exchange": "Austausch"
-    },
     "dppComponentsNames": {
       "typology": "Typologie",
       "metadata": "Metadaten",
@@ -203,9 +193,21 @@
     "passportRetrieval": "Passabruf",
     "retrieving": "Abruf... ",
     "createdProcess": "Erstellte Prozess-ID: ",
-    "contractId": "Vertrags-ID: "
+    "contractId": "Vertrags-ID: ",
+    "compositionOf": "Composition of"
   },
   "sections": {
+    "materials": {
+      "name": "Name",
+      "otherMaterials": "Andere Materialien",
+      "type": "Typ",
+      "location": "Standort",
+      "recycledContent": "Recycelter Inhalt",
+      "materialIdentification": "Materialidentifikation",
+      "hazardous": "Gefährlich",
+      "compositionOf": "Zusammensetzung von",
+      "recyclateContent": "Rezyklatgehalt"
+    },
     "performance": {
       "rated": "Bewertet",
       "depthOfDischarge": "Entladetiefe",
@@ -307,15 +309,6 @@
       "manufacturerContact": "Herstellerkontakt",
       "cO2FootprintTotal": "CO2-Fußabdruck"
     },
-    "stateOfBattery": {
-      "stateOfHealth": "aktueller Zustand",
-      "cycleLifeTestCRate": "Zykluslebensdauertest C-Rate",
-      "stateOfCharge": "Ladezustand",
-      "cycleLifeTestDepthOfDischarge": "Tiefe der Entladung im Zykluslebensdauertest",
-      "expectedLifetime": "Erwartete Lebensdauer",
-      "temperatureRange": "Temperaturbereich (im Ruhezustand)",
-      "statusBattery": "Batterie-Status"
-    },
     "components": {
       "searchForChild": "Die Suche nach verbauten Komponenten hat begonnen, dies kann eine Weile dauern...",
       "noChild": "Keine verbauten Komponenten gefunden",
@@ -324,10 +317,6 @@
     "batteryComposition": {
       "batteryComposites": "Hauptbestandteile der Batterie",
       "criticalRawMaterials": "Kritische Rohstoffe"
-    },
-    "cellChemistry": {
-      "electrolyteComposition": "Zusammensetzung des Elektrolyts",
-      "recyclateContent": "Recyclat-Anteil"
     },
     "electrochemicalProperties": {
       "capacity": "Kapazität",
@@ -440,7 +429,11 @@
       "customerPartId": "Kundenteil-ID",
       "manufacturerPartId": "Herstellerteil-ID",
       "status": "Status",
-      "expirationDate": "Ablaufdatum"
+      "expirationDate": "Ablaufdatum",
+      "backupReference": "Backup-Referenz",
+      "registrationIdentifier": "Registrierungs-ID",
+      "economicOperatorId": "Wirtschaftsteilnehmer-ID",
+      "passportIdentifier": "Pass-ID"
     },
     "operation": {
       "intoServiceDate": "Inbetriebnahmedatum",

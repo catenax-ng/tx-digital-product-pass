@@ -112,7 +112,7 @@
                   <Field
                     :icon="callIconFinder('batch')"
                     :value="attr.value"
-                    :label="attr.key"
+                    :label="callToSentenceCase(attr.key)"
                   />
                 </template>
               </template>
@@ -147,16 +147,11 @@
                 </template>
               </template>
               <template v-if="propsData.identification.type">
-                <template
-                  v-for="(attr, index) in propsData.identification.type"
-                  :key="index"
-                >
-                  <Field
-                    :icon="callIconFinder('type')"
-                    :value="attr"
-                    :label="attr"
-                  />
-                </template>
+                <Field
+                  :icon="callIconFinder('type')"
+                  :value="propsData.identification.type.manufacturerPartId"
+                  :label="propsData.identification.type.nameAtManufacturer"
+                />
               </template>
               <template v-if="propsData.identification.classification">
                 <template
@@ -178,7 +173,7 @@
                   <Field
                     :icon="callIconFinder('serial')"
                     :value="attr.value"
-                    :label="attr.key"
+                    :label="callToSentenceCase(attr.key)"
                   />
                 </template>
               </template>
@@ -214,6 +209,9 @@ export default {
   methods: {
     callIconFinder(unit) {
       return passportUtil.iconFinder(unit);
+    },
+    callToSentenceCase(text) {
+      return passportUtil.toSentenceCase(text);
     },
   },
 };

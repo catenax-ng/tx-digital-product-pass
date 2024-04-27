@@ -1,3 +1,26 @@
+<!--
+  Tractus-X - Digital Product Passport Application
+
+  Copyright (c) 2022, 2024 BASF SE, BMW AG, Henkel AG & Co. KGaA
+  Copyright (c) 2022, 2024 Contributors to the Eclipse Foundation
+
+  See the NOTICE file(s) distributed with this work for additional
+  information regarding copyright ownership.
+ 
+  This program and the accompanying materials are made available under the
+  terms of the Apache License, Version 2.0 which is available at
+  https://www.apache.org/licenses/LICENSE-2.0.
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+  either express or implied. See the
+  License for the specific language govern in permissions and limitations
+  under the License.
+ 
+  SPDX-License-Identifier: Apache-2.0
+-->
+
 <template v-if="propsData">
   <div class="section">
     <v-container class="ma-0">
@@ -9,22 +32,22 @@
                 {{ $t("sections.materials.otherMaterials") }}
               </div>
               <Field
-                icon="name"
+                :icon="callIconFinder('name')"
                 :value="attr.materialName.name"
                 :label="$t('sections.materials.name')"
               />
               <Field
-                icon="type"
+                :icon="callIconFinder('type')"
                 :value="attr.materialName.type"
                 :label="$t('sections.materials.type')"
               />
               <Field
-                :icon="attr.location"
+                :icon="callIconFinder(attr.location)"
                 :value="attr.location"
                 :label="$t('sections.materials.location')"
               />
               <Field
-                icon="recycled"
+                :icon="callIconFinder('recycledContent')"
                 :value="attr.recycled"
                 :label="$t('sections.materials.recycledContent')"
                 unit="%"
@@ -34,14 +57,14 @@
                 :key="attr"
               >
                 <Field
-                  icon="identification"
+                  :icon="callIconFinder('materialIdentification')"
                   :value="attrChild.type + ':' + ' ' + attrChild.id"
                   :label="$t('sections.materials.materialIdentification')"
                 />
               </template>
               <template v-for="attrChild in attr.documentation" :key="attr">
                 <Field
-                  icon="documentation"
+                  :icon="callIconFinder('serial')"
                   :value="attrChild.content"
                   :label="attrChild.header"
                 />
@@ -54,7 +77,7 @@
             </div>
             <template v-for="(attr, key) in propsData.hazardous" :key="key">
               <Field
-                icon="name"
+                :icon="callIconFinder(key)"
                 :value="attr.concentration"
                 unit="%"
                 :label="key"
@@ -64,80 +87,73 @@
         </v-col>
         <v-col sm="12" md="4" class="pa-0 ma-0">
           <div class="element-chart-label"></div>
-          <div class="battery-graph">
-            <div class="graph-icon">
-              <v-icon>mdi-battery-outline</v-icon>
-            </div>
+          <template
+            v-if="this.numberOfLocations == 1 || this.numberOfLocations > 2"
+          >
+            <Doughnut :data="chart" :options="options" />
+          </template>
+          <template v-else>
+            <div class="battery-graph">
+              <div class="graph-icon">
+                <v-icon>mdi-battery-outline</v-icon>
+              </div>
 
-            <div class="composition-graph">
-              <div
-                v-for="(detail, detailIndex) in formattedComposition"
-                :key="detailIndex"
-                class="composition-section"
-                :style="
-                  detailIndex === 0 ? 'align-items: end' : 'align-items: start'
-                "
-              >
+              <div class="composition-graph">
                 <div
-                  class="composition-title"
+                  v-for="(detail, detailIndex) in formattedComposition"
+                  :key="detailIndex"
+                  class="composition-section"
                   :style="
                     detailIndex === 0
-                      ? 'align-self: flex-start'
-                      : 'align-self: flex-end'
+                      ? 'align-items: end'
+                      : 'align-items: start'
                   "
                 >
-                  {{ detail.title }}
-                </div>
-                <div class="composition-bar-container">
                   <div
-                    v-for="(component, index) in detail.composition"
-                    :key="index"
-                    class="composition-bar"
-                    :style="[
-                      {
-                        height: component.value * 1.5 + 'px',
-                        backgroundColor: getColor(detailIndex + '.' + index),
-                      },
-                      detailIndex === 0 && index === 0
-                        ? { 'border-top-left-radius': '6px' }
-                        : {},
-                      detailIndex === 1 && index === 0
-                        ? { 'border-top-right-radius': '6px' }
-                        : {},
-                      detailIndex === 1 &&
-                      index === detail.composition.length - 1
-                        ? { 'border-bottom-right-radius': '6px' }
-                        : {},
-                      detailIndex === 0 &&
-                      index === detail.composition.length - 1
-                        ? { 'border-bottom-left-radius': '6px' }
-                        : {},
-                    ]"
+                    class="composition-title"
+                    :style="
+                      detailIndex === 0
+                        ? 'align-self: flex-start'
+                        : 'align-self: flex-end'
+                    "
                   >
+                    {{ detail.title }}
+                  </div>
+                  <div class="composition-bar-container">
                     <div
-                      :style="detailIndex === 0 ? 'right:12px' : 'left:12px'"
-                      class="component-label-line"
-                    ></div>
-                    <div
-                      class="component-label-container"
-                      :style="{
-                        left: detailIndex === 0 ? '0' : 'auto',
-                        right: detailIndex === 0 ? 'auto' : '0',
-                      }"
+                      v-for="(component, index) in detail.composition"
+                      :key="index"
+                      class="composition-bar"
+                      :style="getBarStyle(detailIndex, index, component.value)"
                     >
-                      {{ component.label }}
+                      <div
+                        :style="detailIndex === 0 ? 'right:12px' : 'left:12px'"
+                        class="component-label-line"
+                      ></div>
+                      <div
+                        class="component-label-container"
+                        :style="{
+                          left: detailIndex === 0 ? '0' : 'auto',
+                          right: detailIndex === 0 ? 'auto' : '0',
+                        }"
+                      >
+                        {{ component.label }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <p class="type">
+                {{ chemistry }}
+              </p>
             </div>
-            <p class="type">Battery composition</p>
-          </div>
+          </template>
         </v-col>
         <v-col sm="12" md="4" class="pa-0 ma-0">
           <div class="element-chart-label" style="margin-bottom: 15px">
-            {{ $t("sections.cellChemistry.recyclateContent") }}
+            {{ $t("sections.materials.recyclateContent") }}
           </div>
+
           <ElementChart :data="propsData.active" style="margin-left: 12px" />
         </v-col>
       </v-row>
@@ -148,12 +164,18 @@
 <script>
 import Field from "../Field.vue";
 import ElementChart from "../../passport/ElementChart.vue";
+import passportUtil from "@/utils/passportUtil.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "vue-chartjs";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default {
-  name: "CellChemistry",
+  name: "MaterialsComponent",
   components: {
     Field,
     ElementChart,
+    Doughnut,
   },
   props: {
     data: {
@@ -163,12 +185,20 @@ export default {
   },
   data() {
     return {
+      chart: null,
+      options: {
+        responsive: true,
+      },
+      numberOfLocations: 0,
       formattedComposition: [],
       propsData: this.$props.data.aspect?.materials || [],
-      electrolyteComposition: [],
+      chemistry: this.$props.data.aspect?.identification?.chemistry || "",
     };
   },
   methods: {
+    callIconFinder(unit) {
+      return passportUtil.iconFinder(unit);
+    },
     parseData() {
       const compositionsByLocation = {};
 
@@ -176,18 +206,23 @@ export default {
         const { location, name, concentration, unit } = item;
         if (!compositionsByLocation[location]) {
           compositionsByLocation[location] = {
-            title: `Composition of ${location}`,
+            title: `${this.$t("sections.materials.compositionOf")} ${location}`,
             composition: [],
           };
         }
         compositionsByLocation[location].composition.push({
           label: name.name,
           value: concentration,
-          unit: "%",
+          unit: unit || "%",
         });
       });
 
       this.formattedComposition = Object.values(compositionsByLocation);
+      this.numberOfLocations = Object.keys(compositionsByLocation).length;
+
+      if (this.numberOfLocations === 1 || this.numberOfLocations > 2) {
+        this.prepareChartData();
+      }
     },
     completeComponents() {
       this.formattedComposition.forEach((detail) => {
@@ -210,6 +245,67 @@ export default {
         }
       });
     },
+    prepareChartData() {
+      this.chart = {
+        labels: this.formattedComposition.map((comp) => comp.title),
+        datasets: [
+          {
+            data: this.formattedComposition.map((comp) =>
+              comp.composition.reduce((acc, curr) => acc + curr.value, 0)
+            ),
+            backgroundColor: this.formattedComposition.map((_, index) =>
+              this.getColorForChart(index)
+            ),
+          },
+        ],
+      };
+    },
+    getBarStyle(detailIndex, index, value) {
+      const baseStyle = {
+        height: `${value * 1.5}px`,
+        backgroundColor: this.getColor(`${detailIndex}.${index}`),
+      };
+      const borderRadiusStyle = this.getBorderRadiusStyle(detailIndex, index);
+      return { ...baseStyle, ...borderRadiusStyle };
+    },
+
+    getBorderRadiusStyle(detailIndex, index) {
+      let style = {};
+      if (detailIndex === 0 && index === 0) {
+        style["border-top-left-radius"] = "6px";
+      }
+      if (detailIndex === 1 && index === 0) {
+        style["border-top-right-radius"] = "6px";
+      }
+      if (
+        detailIndex === 1 &&
+        index === this.formattedComposition[detailIndex].composition.length - 1
+      ) {
+        style["border-bottom-right-radius"] = "6px";
+      }
+      if (
+        detailIndex === 0 &&
+        index === this.formattedComposition[detailIndex].composition.length - 1
+      ) {
+        style["border-bottom-left-radius"] = "6px";
+      }
+      return style;
+    },
+    getColorForChart(index) {
+      const colors = [
+        "#676BC6",
+        "#FFEBCC",
+        "#FFD700",
+        "#BDB76B",
+        "#FF4500",
+        "#2E8B57",
+        "#D2691E",
+        "#88982D",
+        "#428C5B",
+      ];
+      return colors[index % colors.length];
+    },
+
     getColor(label) {
       const colors = {
         "0.0": "#676BC6",
@@ -231,12 +327,15 @@ export default {
         1.9: "#FFA07A",
         "1.10": "#6A5ACD",
       };
-      return colors[label] || "#333";
+      return colors[label] || "#337B89";
     },
   },
   mounted() {
-    this.parseData();
-    this.completeComponents();
+    if (this.propsData.composition) {
+      this.parseData();
+      this.completeComponents();
+    }
   },
 };
 </script>
+

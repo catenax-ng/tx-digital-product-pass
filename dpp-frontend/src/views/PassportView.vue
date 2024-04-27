@@ -362,7 +362,6 @@
 
 <script>
 // @ is an alias to /src
-
 import LoadingComponent from "../components/general/LoadingComponent.vue";
 import TabsComponent from "../components/general/TabsComponent.vue";
 import HeaderComponent from "@/components/general/Header.vue";
@@ -416,49 +415,6 @@ export default {
       policies: [],
       declineContractModal: false,
       showContractModal: true,
-      batteryComponentsNames: [
-        {
-          label: "passportView.batteryComponentsNames.generalInformation",
-          icon: "mdi-information-outline",
-          component: "GeneralInformation",
-        },
-        {
-          label: "passportView.batteryComponentsNames.stateOfBattery",
-          icon: "mdi-battery-charging",
-          component: "StateOfBattery",
-        },
-        {
-          label: "passportView.batteryComponentsNames.components",
-          icon: "mdi-battery-unknown",
-          component: "Components",
-        },
-        {
-          label: "passportView.batteryComponentsNames.batteryComposition",
-          icon: "mdi-battery-unknown",
-          component: "BatteryComposition",
-        },
-        {
-          label: "passportView.batteryComponentsNames.cellChemistry",
-          icon: "mdi-flask-empty-outline",
-          component: "CellChemistry",
-        },
-        {
-          label:
-            "passportView.batteryComponentsNames.electrochemicalProperties",
-          icon: "mdi-microscope",
-          component: "ElectrochemicalProperties",
-        },
-        {
-          label: "passportView.batteryComponentsNames.documents",
-          icon: "mdi-text-box-multiple-outline",
-          component: "Documents",
-        },
-        {
-          label: "passportView.batteryComponentsNames.exchange",
-          icon: "mdi-file-swap-outline",
-          component: "Exchange",
-        },
-      ],
       auth: inject("authentication"),
       data: null,
       loading: true,

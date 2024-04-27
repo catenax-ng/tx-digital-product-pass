@@ -60,10 +60,8 @@
 
 <script>
 import GeneralInformation from "../passport/sections/GeneralInformation.vue";
-import CellChemistry from "../passport/sections/CellChemistry.vue";
 import ElectrochemicalProperties from "../passport/sections/ElectrochemicalProperties.vue";
 import BatteryComposition from "@/components/passport/sections/BatteryComposition.vue";
-import StateOfBattery from "@/components/passport/sections/StateOfBattery.vue";
 import Documents from "@/components/passport/sections/Documents.vue";
 import Exchange from "@/components/passport/sections/Exchange.vue";
 import Serialization from "../passport/sections/Serialization.vue";
@@ -91,10 +89,8 @@ export default {
   name: "TabsComponent",
   components: {
     GeneralInformation,
-    CellChemistry,
     ElectrochemicalProperties,
     BatteryComposition,
-    StateOfBattery,
     Documents,
     Exchange,
     Serialization,

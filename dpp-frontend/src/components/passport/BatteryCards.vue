@@ -62,10 +62,10 @@
                 <div class="co2-label" style="padding-top: 0">
                   {{ $t(card.secondLabel) }}
                 </div>
-                <template v-if="separateCollectionImage">
+                <template v-if="this.$props.data.aspect.materials.hazardous">
                   <div>
                     <img
-                      :src="getImageByKey(separateCollectionImage)"
+                      :src="getImageByKey()"
                       alt="Separate collection"
                       style="margin-top: 12px"
                     />
@@ -144,31 +144,16 @@ export default {
   },
 
   setup() {
-    // const hazardousKeys = Object.keys(
-    //   this.$props.data.aspect.materials.hazardous
-    // );
-
-    // const firstHazardousKey =
-    //   hazardousKeys.length > 0
-    //     ? hazardousKeys[0].toUpperCase()
-    //     : "NO_COLLECTION";
-
-    // return {
-    //   separateCollectionImage: `${firstHazardousKey}`,
-    //   noCollection: this.noCollection,
-    //   Battery00: this.Battery00,
-    //   CADMIUM: this.BatteryCd,
-    //   BatteryHg: this.BatteryHg,
-    //   BatteryPb: this.BatteryPb,
-    // };
     return {
       Battery00,
       BatteryCd,
+      noCollection,
+      BatteryHg,
+      BatteryPb,
     };
   },
   data() {
     return {
-      separateCollectionImage: "Battery00",
       currentValue:
         this.$props.data.aspect.performance.rated.lifetime.cycleLifeTesting
           .depthOfDischarge,
@@ -209,8 +194,9 @@ export default {
           label: "batteryCards.labelHealth",
           secondLabel: "batteryCards.secondLabelHealth",
           icon: "health",
-          value: this.$props.data.aspect.stateOfBattery
-            ? this.$props.data.aspect.stateOfBattery.stateOfHealth
+          value: this.$props.data.aspect.performance?.rated?.roundTripEfficiency
+            ? this.$props.data.aspect.performance.rated.roundTripEfficiency
+                .depthOfDischarge
             : "-",
           valueUnits: "%",
           secondValue: this.$props.data.aspect.batteryIdentification
@@ -225,9 +211,11 @@ export default {
           title: "batteryCards.titleSustainability",
           icon: "sustainability",
           secondLabel: "batteryCards.secondLabelSustainability",
-
           value: this.$props.data.aspect.materials.active,
-          secondValue: this.$props.data.aspect.cO2FootprintTotal,
+          secondValue:
+            this.$props.data.aspect.sustainability.carbonFootprint.length > 0
+              ? this.$props.data.aspect.sustainability.carbonFootprint[0].value
+              : "-",
           description: {
             title: "batteryCards.descriptionHSustainabilityTitle",
             value: "batteryCards.descriptionSustainabilityValue",
@@ -238,16 +226,20 @@ export default {
   },
 
   methods: {
-    getImageByKey(key) {
+    getImageByKey() {
+      const firstHazardousKey = Object.keys(
+        this.$props.data.aspect.materials.hazardous
+      )[0].toUpperCase();
+
       const imageMap = {
         CADMIUM: this.BatteryCd,
-        BatteryCd: this.BatteryPb,
+        LEAD: this.BatteryPb,
         MERCURY: this.BatteryHg,
-        Battery00: this.Battery00,
+        OTHER: this.Battery00,
         NO_COLLECTION: this.noCollection,
       };
 
-      return imageMap.hasOwnProperty(key) ? imageMap[key] : this.noCollection;
+      return imageMap[firstHazardousKey] || this.noCollection;
     },
     callIconFinder(icon) {
       return passportUtil.iconFinder(icon);
