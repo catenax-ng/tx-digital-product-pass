@@ -26,6 +26,17 @@
     <v-container class="ma-0">
       <v-row class="section">
         <v-col sm="12" md="4" class="pa-0 ma-0">
+          <template v-for="(attr, key) in propsData.documents" :key="key">
+            <template v-for="attrChild in attr" :key="attrChild">
+              <Field
+                :icon="callIconFinder('warranty')"
+                :label="callToSentenceCase(key)"
+                :value="attrChild.content"
+                :subText="attrChild.header"
+              />
+            </template>
+          </template>
+
           <template v-if="propsData.substancesOfConcern">
             <template v-for="attr in propsData.substancesOfConcern" :key="attr">
               <Field
@@ -81,6 +92,13 @@
           </template>
         </v-col>
         <v-col sm="12" md="4" class="pa-0 ma-0">
+          <template v-if="propsData.status">
+            <Field
+              :icon="callIconFinder('status')"
+              :label="$t('sections.sustainability.status')"
+              :value="propsData.status"
+            />
+          </template>
           <template v-if="propsData.recyclateContent">
             <template
               v-for="(attr, key) in propsData.recyclateContent"
@@ -126,6 +144,58 @@
           </template>
         </v-col>
         <v-col sm="12" md="4" class="pa-0 ma-0">
+          <template v-if="propsData.carbonFootprint">
+            <template v-if="Array.isArray(propsData.carbonFootprint)">
+              <template v-for="attr in propsData.carbonFootprint" :key="attr">
+                <Field
+                  :icon="callIconFinder('carbonFootprint')"
+                  :label="$t('sections.sustainability.carbonFootprint')"
+                  :value="attr.value"
+                  :unit="attr.unit"
+                  :subText="attr.lifecycle"
+                />
+                <Field
+                  :icon="callIconFinder('performanceClass')"
+                  :label="$t('sections.sustainability.performanceClass')"
+                  :value="attr.performanceClass"
+                />
+                <Field
+                  :icon="callIconFinder('type')"
+                  :label="$t('sections.sustainability.type')"
+                  :value="attr.type"
+                />
+                <template v-for="attrChild in attr.rulebook" :key="attrChild">
+                  <Field
+                    :icon="callIconFinder('rulebook')"
+                    :label="$t('sections.sustainability.rulebook')"
+                    :value="attrChild.content"
+                    :subText="attrChild.header"
+                  />
+                </template>
+                <template
+                  v-for="attrChild in attr.manufacturingPlant"
+                  :key="attrChild"
+                >
+                  <Field
+                    :icon="callIconFinder('manufacturingPlant')"
+                    :label="$t('sections.sustainability.manufacturingPlant')"
+                    :value="attrChild.facility"
+                  />
+                </template>
+                <template
+                  v-for="attrChild in attr.declaration"
+                  :key="attrChild"
+                >
+                  <Field
+                    :icon="callIconFinder('declaration')"
+                    :label="$t('sections.sustainability.declaration')"
+                    :value="attrChild.content"
+                    :subText="attrChild.header"
+                  />
+                </template>
+              </template>
+            </template>
+          </template>
           <template v-if="propsData.criticalRawMaterials">
             <template
               v-for="attr in propsData.criticalRawMaterials"
@@ -161,7 +231,6 @@
                   unit="kg CO₂ eq"
                 />
               </template>
-
               <template
                 v-if="propsData.carbonFootprint.productOrSectorSpecificRules"
               >
@@ -219,6 +288,9 @@ export default {
     };
   },
   methods: {
+    callToSentenceCase(text) {
+      return passportUtil.toSentenceCase(text);
+    },
     callIconFinder(unit) {
       return passportUtil.iconFinder(unit);
     },

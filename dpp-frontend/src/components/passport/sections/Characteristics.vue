@@ -57,7 +57,7 @@
               <Field
                 icon="mdi-arrow-down-circle-outline"
                 :label="$t('sections.characteristics.weight')"
-                :value="propsData.physicalDimension.weight"
+                :value="propsData.physicalDimension.weight.value"
                 :unit="propsData.physicalDimension.weight.unit"
               />
             </template>
@@ -105,6 +105,14 @@
               :icon="callIconFinder('physicalState')"
               :label="$t('sections.characteristics.physicalState')"
               :value="propsData.physicalState"
+            />
+          </template>
+          <template v-if="propsData.warranty">
+            <Field
+              :icon="callIconFinder('warranty')"
+              :label="$t('sections.characteristics.warranty')"
+              :value="propsData.warranty.lifeValue"
+              :unit="propsData.warranty.lifeUnit"
             />
           </template>
         </v-col>

@@ -30,7 +30,7 @@
       <template
         v-else-if="
           data.semanticId ===
-          'urn:bamm:io.catenax.battery.battery_pass:3.0.1#BatteryPass'
+          'urn:bamm:io.catenax.battery.battery_pass:5.0.0#BatteryPass'
         "
       >
         <span class="header-title">{{ $t("passportView.bpp") }}</span>
@@ -50,7 +50,10 @@
     <v-container v-if="loading && !error">
       <LoadingComponent :id="id" />
     </v-container>
-    <v-container class="container-policy-selection" v-else-if="showOverlay && !error">
+    <v-container
+      class="container-policy-selection"
+      v-else-if="showOverlay && !error"
+    >
       <div class="loading-container">
         <v-col class="v-col-auto dpp-id-container contract-modal">
           <v-card class="contract-container">
@@ -65,9 +68,9 @@
                 :key="contractId"
               >
                 <v-row class="policy-group-label">
-                  <v-col cols="auto">{{contractIndex+1}}. {{
-                    $t("passportView.policyAgreement.contractId")
-                  }}
+                  <v-col cols="auto"
+                    >{{ contractIndex + 1 }}.
+                    {{ $t("passportView.policyAgreement.contractId") }}
                   </v-col>
                   <v-col>
                     <span class="contractid-title"> {{ contractId }}</span>
@@ -90,10 +93,14 @@
                                 index + 1
                               }}</strong
                             ></span
-                          >                           
+                          >
                           <div>
                             <v-row>
-                              <v-col cols="auto" justify-content="center" align-content="center">
+                              <v-col
+                                cols="auto"
+                                justify-content="center"
+                                align-content="center"
+                              >
                                 <div class="policy-label">ID</div>
                               </v-col>
                               <v-col>
@@ -104,28 +111,69 @@
                             </v-row>
                             <v-divider></v-divider>
                             <div>
-                            <v-row v-for="(attributes, policyKey, policyIndex) in parsedPolicyConstraints[item['@id']]" :key="`${policyIndex}`">
-                              <template v-if="attributes.length != 0">
-                                <v-col cols="auto" justify-content="center" align-content="center">
-                                  <div class="policy-second-label">{{policyKey}}</div>
-                                </v-col>
-                                <v-col>
-                                  <div class="policy-second-value">
-                                      <v-row class="field-container" v-for="(attribute, attrIndex) in attributes" :key="`${attrIndex}`" >
-                                        <p class="policy-second-value">Action Type: {{ attribute.actionType }}</p>
+                              <v-row
+                                v-for="(
+                                  attributes, policyKey, policyIndex
+                                ) in parsedPolicyConstraints[item['@id']]"
+                                :key="`${policyIndex}`"
+                              >
+                                <template v-if="attributes.length != 0">
+                                  <v-col
+                                    cols="auto"
+                                    justify-content="center"
+                                    align-content="center"
+                                  >
+                                    <div class="policy-second-label">
+                                      {{ policyKey }}
+                                    </div>
+                                  </v-col>
+                                  <v-col>
+                                    <div class="policy-second-value">
+                                      <v-row
+                                        class="field-container"
+                                        v-for="(
+                                          attribute, attrIndex
+                                        ) in attributes"
+                                        :key="`${attrIndex}`"
+                                      >
+                                        <p class="policy-second-value">
+                                          Action Type:
+                                          {{ attribute.actionType }}
+                                        </p>
                                         <div>
                                           <ul>
-                                              <li v-for="(constraint, constraintIndex) in attribute.constraints.constraint" :key="`${constraintIndex}`" >
-                                                <span v-if="attribute.constraints.operator" class="attribute-operator">{{attribute.constraints.operator}}</span>
-                                                <span class="attribute-constraint">- [{{constraint.leftOperand}}] [{{constraint.operator}}] [{{constraint.rightOperand}}]</span>
-                                              </li>
+                                            <li
+                                              v-for="(
+                                                constraint, constraintIndex
+                                              ) in attribute.constraints
+                                                .constraint"
+                                              :key="`${constraintIndex}`"
+                                            >
+                                              <span
+                                                v-if="
+                                                  attribute.constraints.operator
+                                                "
+                                                class="attribute-operator"
+                                                >{{
+                                                  attribute.constraints.operator
+                                                }}</span
+                                              >
+                                              <span class="attribute-constraint"
+                                                >- [{{
+                                                  constraint.leftOperand
+                                                }}] [{{ constraint.operator }}]
+                                                [{{
+                                                  constraint.rightOperand
+                                                }}]</span
+                                              >
+                                            </li>
                                           </ul>
-                                          </div>
-                                      </v-row > 
-                                  </div>
-                                </v-col>
-                              </template>
-                            </v-row>
+                                        </div>
+                                      </v-row>
+                                    </div>
+                                  </v-col>
+                                </template>
+                              </v-row>
                             </div>
                           </div>
                         </div>
@@ -242,11 +290,11 @@
       <template
         v-if="
           data.semanticId ===
-          'urn:bamm:io.catenax.battery.battery_pass:3.0.1#BatteryPass'
+          'urn:bamm:io.catenax.battery.battery_pass:5.0.0#BatteryPass'
         "
       >
         <PassportHeader
-          :id="data.aspect.batteryIdentification.batteryIDDMCCode"
+          :id="data.aspect.identification.idDmc"
           type="Battery ID"
         />
       </template>
@@ -257,7 +305,7 @@
         <template
           v-if="
             data.semanticId ===
-            'urn:bamm:io.catenax.battery.battery_pass:3.0.1#BatteryPass'
+            'urn:bamm:io.catenax.battery.battery_pass:5.0.0#BatteryPass'
           "
         >
           <BatteryCards :data="data" />
@@ -278,11 +326,11 @@
         <template
           v-if="
             data.semanticId ===
-            'urn:bamm:io.catenax.battery.battery_pass:3.0.1#BatteryPass'
+            'urn:bamm:io.catenax.battery.battery_pass:5.0.0#BatteryPass'
           "
         >
           <TabsComponent
-            :componentsNames="batteryComponentsNames"
+            :componentsNames="filteredComponentsNames"
             :componentsData="data"
             :semanticId="data.semanticId"
           />
@@ -314,7 +362,6 @@
 
 <script>
 // @ is an alias to /src
-
 import LoadingComponent from "../components/general/LoadingComponent.vue";
 import TabsComponent from "../components/general/TabsComponent.vue";
 import HeaderComponent from "@/components/general/Header.vue";
@@ -368,49 +415,6 @@ export default {
       policies: [],
       declineContractModal: false,
       showContractModal: true,
-      batteryComponentsNames: [
-        {
-          label: "passportView.batteryComponentsNames.generalInformation",
-          icon: "mdi-information-outline",
-          component: "GeneralInformation",
-        },
-        {
-          label: "passportView.batteryComponentsNames.stateOfBattery",
-          icon: "mdi-battery-charging",
-          component: "StateOfBattery",
-        },
-        {
-          label: "passportView.batteryComponentsNames.components",
-          icon: "mdi-battery-unknown",
-          component: "Components",
-        },
-        {
-          label: "passportView.batteryComponentsNames.batteryComposition",
-          icon: "mdi-battery-unknown",
-          component: "BatteryComposition",
-        },
-        {
-          label: "passportView.batteryComponentsNames.cellChemistry",
-          icon: "mdi-flask-empty-outline",
-          component: "CellChemistry",
-        },
-        {
-          label:
-            "passportView.batteryComponentsNames.electrochemicalProperties",
-          icon: "mdi-microscope",
-          component: "ElectrochemicalProperties",
-        },
-        {
-          label: "passportView.batteryComponentsNames.documents",
-          icon: "mdi-text-box-multiple-outline",
-          component: "Documents",
-        },
-        {
-          label: "passportView.batteryComponentsNames.exchange",
-          icon: "mdi-file-swap-outline",
-          component: "Exchange",
-        },
-      ],
       auth: inject("authentication"),
       data: null,
       loading: true,
@@ -496,9 +500,10 @@ export default {
               let policyId = policy["@id"];
               policyEntry[key] = policy;
               contractPolicies.push(policyEntry);
-              try{
-              this.parsedPolicyConstraints[policyId] =edcUtil.parsePolicyConstraints(policy);
-              }catch(e){
+              try {
+                this.parsedPolicyConstraints[policyId] =
+                  edcUtil.parsePolicyConstraints(policy);
+              } catch (e) {
                 console.error(e);
               }
             });
@@ -509,9 +514,10 @@ export default {
             let policyId = policy["@id"];
             policyEntry[key] = policy;
             contractPolicies.push(policyEntry);
-            try{
-            this.parsedPolicyConstraints[policyId] = edcUtil.parsePolicyConstraints(policy);
-            }catch(e){
+            try {
+              this.parsedPolicyConstraints[policyId] =
+                edcUtil.parsePolicyConstraints(policy);
+            } catch (e) {
               console.error(e);
               return false;
             }
@@ -576,7 +582,7 @@ export default {
             "The request took too long... Please retry or try again later.";
           this.status = 408;
           this.statusText = "Request Timeout";
-          this.error= true;
+          this.error = true;
         }
         this.searchResponse = result;
       } catch (e) {
@@ -600,49 +606,49 @@ export default {
               "data.contracts",
               this.searchResponse
             );
-            if(!this.contractItems){
-                this.errorObj.title =
-                  "No contract items found!";
-                this.errorObj.description =
-                  "It was not possible to display the policies and contracts.";
-                this.status = 500;
-                this.statusText = "Internal Server Error";
-                this.error= true;
+            if (!this.contractItems) {
+              this.errorObj.title = "No contract items found!";
+              this.errorObj.description =
+                "It was not possible to display the policies and contracts.";
+              this.status = 500;
+              this.statusText = "Internal Server Error";
+              this.error = true;
             }
 
             // Extract policies
             let res = this.extractPolicies(this.contractItems);
-            if(!res){
-                this.errorObj.title =
-                  "It was not possible to parse policies!";
-                this.errorObj.description =
-                  "It was not possible to display the policies and contracts.";
-                this.status = 500;
-                this.statusText = "Internal Server Error";
-                this.error= true;
-            }else{
+            if (!res) {
+              this.errorObj.title = "It was not possible to parse policies!";
+              this.errorObj.description =
+                "It was not possible to display the policies and contracts.";
+              this.status = 500;
+              this.statusText = "Internal Server Error";
+              this.error = true;
+            } else {
               // Check if policies array has elements and then access the @id of the first element
               const firstPolicyObj = this.policies[0];
               const initialContractToSign = Object.keys(firstPolicyObj)[0];
               const initialPolicyToSign =
                 firstPolicyObj[initialContractToSign]["@id"];
 
-              if(!this.parsedPolicyConstraints || Object.keys(this.parsedPolicyConstraints).length == 0){
-                  this.errorObj.title =
-                    "No contract policies found!";
-                  this.errorObj.description =
-                    "It was not possible to display the policies and contracts.";
-                  this.status = 500;
-                  this.statusText = "Internal Server Error";
-                  this.error= true;
-              }else{
+              if (
+                !this.parsedPolicyConstraints ||
+                Object.keys(this.parsedPolicyConstraints).length == 0
+              ) {
+                this.errorObj.title = "No contract policies found!";
+                this.errorObj.description =
+                  "It was not possible to display the policies and contracts.";
+                this.status = 500;
+                this.statusText = "Internal Server Error";
+                this.error = true;
+              } else {
                 // Commit the contract ID to the store
                 this.$store.commit("setContractToSign", {
                   contract: initialContractToSign,
                   policy: initialPolicyToSign,
                 });
 
-              this.shouldShowOverlay();
+                this.shouldShowOverlay();
               }
             }
           }
@@ -672,7 +678,7 @@ export default {
             "The request took too long... Please retry or try again later.";
           this.status = 408;
           this.statusText = "Request Timeout";
-          this.error= true;
+          this.error = true;
         }
         this.data = result;
       } catch (e) {
@@ -725,7 +731,7 @@ export default {
             "The request took too long... Please retry or try again later.";
           this.errorObj.status = 408;
           this.errorObj.statusText = "Request Timeout";
-          this.error= true;
+          this.error = true;
         }
         this.data = result;
       } catch (e) {
@@ -823,7 +829,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Internal Server Error";
-        this.error= true;
+        this.error = true;
         return response;
       }
 
@@ -834,7 +840,7 @@ export default {
           "It was not possible to complete the passport transfer.";
         this.errorObj.status = 400;
         this.errorObj.statusText = "Bad Request";
-        this.error= true;
+        this.error = true;
         return null;
       }
       // Check if reponse content was successfull and if not print error comming message from backend
@@ -851,7 +857,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Not found";
-        this.error= true;
+        this.error = true;
       }
 
       return response;
@@ -893,7 +899,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Internal Server Error";
-        this.error= true;
+        this.error = true;
         return response;
       }
 
@@ -904,7 +910,7 @@ export default {
           "It was not possible to complete the passport transfer.";
         this.errorObj.status = 400;
         this.errorObj.statusText = "Bad Request";
-        this.error= true;
+        this.error = true;
         return null;
       }
 
@@ -922,7 +928,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Not found";
-        this.error= true;
+        this.error = true;
       }
 
       return response;
@@ -955,7 +961,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Internal Server Error";
-        this.error= true;
+        this.error = true;
         return response;
       }
 
@@ -966,7 +972,7 @@ export default {
           "It was not possible to complete the passport transfer.";
         this.errorObj.status = 400;
         this.errorObj.statusText = "Bad Request";
-        this.error= true;
+        this.error = true;
         return null;
       }
 
@@ -984,7 +990,7 @@ export default {
         this.errorObj.statusText = jsonUtil.exists("statusText", response)
           ? response["statusText"]
           : "Not found";
-        this.error= true;
+        this.error = true;
       }
 
       return response;
