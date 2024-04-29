@@ -120,14 +120,14 @@ export default class BackendService {
 
         // Get negotiation property
         return negotiationResponse;
-    } 
-    async cancelNegotiation(token, processId, contractId, authentication){
+    }
+    async cancelNegotiation(token, processId, contractId, authentication) {
         let processStatus = null;
         // Use selects here a contract
         let negotiation = {
             "processId": processId,
             "contractId": contractId,
-            "token":  token
+            "token": token
         }
         try {
             processStatus = await this.cancelContract(negotiation, authentication);
@@ -137,12 +137,12 @@ export default class BackendService {
 
         return processStatus;
     }
-    async declineNegotiation(token, processId, authentication){
+    async declineNegotiation(token, processId, authentication) {
         let processStatus = null;
         // Use selects here a contract
         let negotiation = {
             "processId": processId,
-            "token":  token
+            "token": token
         }
         try {
             processStatus = await this.declineContract(negotiation, authentication);
@@ -152,12 +152,12 @@ export default class BackendService {
 
         return processStatus;
     }
-    async negotiateAsset(contracts, token, processId, authentication, contractId=null, policyId=null){
+    async negotiateAsset(contracts, token, processId, authentication, contractId = null, policyId = null) {
         let contract = null;
         // Use selects here a contract
-        if(contractId == null){
+        if (contractId == null) {
             contract = contracts[Object.keys(contracts)[0]];
-            if(contract == null){
+            if (contract == null) {
                 return this.getErrorMessage(
                     "The contract selected is incorrect or does not exists!",
                     500,
@@ -169,17 +169,17 @@ export default class BackendService {
         let negotiation = {
             "processId": processId,
             "contractId": contractId,
-            "token":  token
+            "token": token
         }
-        if(!AUTO_SIGN){
-            if(contractId == null){
+        if (!AUTO_SIGN) {
+            if (contractId == null) {
                 return this.getErrorMessage(
                     "At least one contract needs to be selected",
                     500,
                     "Internal Server Error"
                 )
             }
-            if(policyId == null){
+            if (policyId == null) {
                 return this.getErrorMessage(
                     "At least one policy needs to be selected",
                     500,
@@ -240,32 +240,32 @@ export default class BackendService {
             retries++;
         }
         let history = jsonUtil.get("data.history", statusResponse);
-        if(jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)){
+        if (jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)) {
             return await this.retrievePassport(negotiation, authentication);
         }
         // Get status again
         statusResponse = await this.getStatus(processId, authentication)
         status = jsonUtil.get("data.status", statusResponse);
         history = jsonUtil.get("data.history", statusResponse);
-        if(jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)){
+        if (jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)) {
             return await this.retrievePassport(negotiation, authentication);
         }
 
         retries = 0;
         // Until the transfer is completed or the status is failed
-        while(retries < maxRetries){
+        while (retries < maxRetries) {
             // Wait
             await threadUtil.sleep(waitingTime);
             // Refresh the values
             statusResponse = await this.getStatus(processId, authentication);
             status = jsonUtil.get("data.status", statusResponse);
             history = jsonUtil.get("data.history", statusResponse);
-            if((jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)) || status === "FAILED"){
+            if ((jsonUtil.exists("transfer-completed", history) && jsonUtil.exists("data-received", history)) || status === "FAILED") {
                 break;
             }
             retries++;
         }
-        
+
         // If the status is failed...
         if (status === "FAILED") {
             return this.getErrorMessage(
@@ -277,7 +277,7 @@ export default class BackendService {
         // If is not failed return the passport
         return await this.retrievePassport(negotiation, authentication);
     }
-    
+
     getErrorMessage(message, status, statusText) {
         return {
             "message": message,
@@ -287,7 +287,6 @@ export default class BackendService {
     }
     getHeadersCredentials(authentication) {
         let params = this.getHeaders(authentication);
-        params["withCredentials"] = true;
         return params;
 
     }
